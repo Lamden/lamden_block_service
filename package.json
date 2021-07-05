@@ -1,0 +1,23 @@
+{
+    "name": "lamden-blockservice",
+    "version": "0.5.0",
+    "description": "A service to replicate the lamden blockchain's current state and provide it as a service.",
+    "main": "app.mjs",
+    "scripts": {
+        "WIPE": "WIPE=true node app.mjs",
+        "reparse": "RE_PARSE_BLOCKS=true node app.mjs",
+        "repair": "REPAIR_BLOCKS=1 node app.mjs",
+        "dev": "DEBUG_ON=true node app.mjs",
+        "start": "node app.mjs"
+    },
+    "author": "jeffwscott",
+    "license": "ISC",
+    "dependencies": {
+        "cors": "^2.8.5",
+        "dotenv": "^10.0.0",
+        "express": "^4.17.1",
+        "lodash.merge": "^4.6.2",
+        "mongoose": "^5.13.1",
+        "socket.io": "^4.1.2"
+    }
+}
