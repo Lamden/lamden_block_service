@@ -10,18 +10,12 @@ const MASTERNODE_URLS = {
     'mainnet': "https://masternode-01.lamden.io"
 }
 
-const BLOCKEXPLORER_URLS = {
-    'testnet': "https://testnet.lamden.io",
-    'mainnet': "https://mainnet.lamden.io"
-}
-
 /******* MONGO DB CONNECTION INFO **/
 const NETWORK = process.env.NETWORK || 'testnet'
 const START_AT_BLOCK_NUMBER = parseInt(process.env.START_AT_BLOCK_NUMBER) || 0
 const RE_PARSE_BLOCKS = process.env.RE_PARSE_BLOCKS || false
 const WIPE = process.env.WIPE || false
 const MASTERNODE_URL = process.env.MASTERNODE_URL || MASTERNODE_URLS[NETWORK]
-const BLOCKEXPLORER_URL = process.env.BLOCKEXPLORER_URL || BLOCKEXPLORER_URLS[NETWORK]
 
 /******* SERVER CONNECTION INFO **/
 const BLOCKSERVICE_PORT = process.env.BLOCKSERVICE_PORT || 3535
@@ -32,8 +26,7 @@ let grabberConfig = {
     START_AT_BLOCK_NUMBER,
     MASTERNODE_URL,
     WIPE,
-    RE_PARSE_BLOCKS,
-    BLOCKEXPLORER_URL,
+    RE_PARSE_BLOCKS
 }
 
 const start = async() => {
