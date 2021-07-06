@@ -14,6 +14,7 @@ const MASTERNODE_URLS = {
 const NETWORK = process.env.NETWORK || 'testnet'
 const START_AT_BLOCK_NUMBER = parseInt(process.env.START_AT_BLOCK_NUMBER) || 0
 const RE_PARSE_BLOCKS = process.env.RE_PARSE_BLOCKS || false
+const RE_PARSE_BLOCK = process.env.RE_PARSE_BLOCK || false
 const WIPE = process.env.WIPE || false
 const MASTERNODE_URL = process.env.MASTERNODE_URL || MASTERNODE_URLS[NETWORK]
 
@@ -26,7 +27,8 @@ let grabberConfig = {
     START_AT_BLOCK_NUMBER,
     MASTERNODE_URL,
     WIPE,
-    RE_PARSE_BLOCKS
+    RE_PARSE_BLOCKS,
+    RE_PARSE_BLOCK
 }
 
 const start = async() => {

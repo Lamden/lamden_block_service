@@ -30,13 +30,10 @@ export const getDatabase = () => new Promise(resolver => {
                 throw new Error(error)
             } else {
                 console.log("connection successful");
+                db.queries = getQueries(db)
+                db.models = mongoose_models
                 resolver(db);
             }
         }
     );
-
-    db.queries = getQueries(db)
-    db.models = mongoose_models
-
-    return db
 })

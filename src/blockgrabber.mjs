@@ -7,7 +7,7 @@ import merge from 'lodash.merge';
 
 
 const runBlockGrabber = (config) => {
-    const { WIPE, RE_PARSE_BLOCKS, MASTERNODE_URL, START_AT_BLOCK_NUMBER, DEBUG_ON, REPAIR_BLOCKS, db, server } = config
+    const { WIPE, RE_PARSE_BLOCKS, MASTERNODE_URL, START_AT_BLOCK_NUMBER, DEBUG_ON, REPAIR_BLOCKS, RE_PARSE_BLOCK, db, server } = config
 
     var wipeOnStartup = WIPE;
     var reParseBlocks = RE_PARSE_BLOCKS;
@@ -180,7 +180,7 @@ const runBlockGrabber = (config) => {
                     affectedContractsList: Array.from(affectedContractsList),
                     affectedVariablesList: Array.from(affectedVariablesList),
                     affectedRootKeysList: Array.from(affectedRootKeysList),
-                    state_changes_obj,
+                    state_changes_obj: utils.cleanObj(state_changes_obj),
                     txHash: txInfo.hash,
                     txInfo
                 }
@@ -314,16 +314,26 @@ const runBlockGrabber = (config) => {
         }
     };
 
-    repairBlocks(REPAIR_BLOCKS)
-        .then(() => {
-            repairing = false
-            db.queries.getLastestProcessedBlock()
-                .then((res) => {
-                    currBlockNum = res
-                    console.log("Starting to check for new blocks...")
-                    timerId = setTimeout(checkForBlocks, 0);
-                });
-        })
+    async function start() {
+        await repairBlocks(REPAIR_BLOCKS)
+
+        if (RE_PARSE_BLOCK) {
+            let blockNum = parseInt(RE_PARSE_BLOCK)
+            let blockData = await db.models.Blocks.findOne({ blockNum })
+
+            await processBlock(blockData.blockInfo)
+        }
+
+        db.queries.getLastestProcessedBlock()
+            .then((res) => {
+                currBlockNum = res
+                console.log("Starting to check for new blocks...")
+                timerId = setTimeout(checkForBlocks, 0);
+            });
+
+    }
+
+    start()
 
     return {
         lastCheckedTime: () => lastCheckTime,
