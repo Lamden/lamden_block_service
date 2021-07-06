@@ -35,7 +35,7 @@ export const createServer = (port, db) => {
 
     app.get('/latest_synced_block', async(req, res) => {
         try {
-            let latest_synced_block = await db.queries.getLastSyncedBlock()
+            let latest_synced_block = await db.queries.getLatestSyncedBlock()
             res.send({ latest_synced_block })
         } catch (e) {
             res.send({ error: e })
