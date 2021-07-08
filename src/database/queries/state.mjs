@@ -10,7 +10,12 @@ export const getStateQueries = (db) => {
         }
     }
 
+    async function getAllCurrentState(contractName, variableName = undefined, rootKey = undefined) {
+        return await db.models.CurrentState.find({ rawKey: { $regex: "^" + db.utils.makeKey(contractName, variableName, rootKey) } }, { '_id': 0, 'keys': 0, '__v': 0 })
+    }
+
     return {
-        getKeyFromCurrentState
+        getKeyFromCurrentState,
+        getAllCurrentState
     }
 }

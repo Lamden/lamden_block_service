@@ -1,3 +1,5 @@
+import * as utils from '../utils.mjs'
+
 export const getStateEndpoints = (db) => {
     async function key(req, res) {
         const { contractName, variableName, key } = req.params
@@ -12,15 +14,39 @@ export const getStateEndpoints = (db) => {
         }
     }
 
+    async function all_state(req, res) {
+        const { contractName, variableName, rootkey } = req.params
+
+        let stateResults = await db.queries.getAllCurrentState(contractName, variableName, rootkey)
+        let allStateObjects = stateResults.map(result => utils.keysToObj(utils.deconstructKey(result.rawKey), result.value))
+        let merged = utils.mergeObjects(allStateObjects)
+        res.send(utils.cleanObj(merged))
+    }
+
     return [{
             type: 'get',
-            route: '/current/:contractName/:variableName/:key',
+            route: '/current/one/:contractName/:variableName/:key',
             handler: key
         },
         {
             type: 'post',
             route: '/current/keys',
             handler: keys
+        },
+        {
+            type: 'get',
+            route: '/current/all/:contractName',
+            handler: all_state
+        },
+        {
+            type: 'get',
+            route: '/current/all/:contractName/:variableName',
+            handler: all_state
+        },
+        {
+            type: 'get',
+            route: '/current/all/:contractName/:variableName/:rootkey',
+            handler: all_state
         }
     ]
 }

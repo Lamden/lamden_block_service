@@ -3,8 +3,6 @@ import http from 'http';
 
 import * as utils from './utils.mjs'
 import util from 'util'
-import merge from 'lodash.merge';
-
 
 const runBlockGrabber = (config) => {
     const { WIPE, RE_PARSE_BLOCKS, MASTERNODE_URL, START_AT_BLOCK_NUMBER, DEBUG_ON, REPAIR_BLOCKS, RE_PARSE_BLOCK, db, server } = config
@@ -153,7 +151,7 @@ const runBlockGrabber = (config) => {
 
                     let newStateChangeObj = utils.keysToObj(keyInfo, s.value)
 
-                    state_changes_obj = merge(state_changes_obj, newStateChangeObj)
+                    state_changes_obj = utils.mergeObjects([state_changes_obj, newStateChangeObj])
 
                     affectedContractsList.add(contractName)
                     affectedVariablesList.add(`${contractName}.${variableName}`)

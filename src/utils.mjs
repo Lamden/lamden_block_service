@@ -1,4 +1,5 @@
 import util from 'util'
+import merge from 'lodash.merge';
 
 export const deconstructKey = (rawKey) => {
     let contractName = rawKey.split(".")[0]
@@ -52,4 +53,8 @@ export const cleanObj = (obj) => {
         }
     })
     return obj
+}
+
+export const mergeObjects = (objectList) => {
+    return objectList.reduce((obj1, obj2) => merge(obj1, obj2))
 }
