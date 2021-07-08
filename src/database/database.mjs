@@ -2,6 +2,7 @@ import { config } from 'dotenv'
 config()
 import mongoose_models from './mongoose.models.mjs'
 import { getQueries } from './queries.mjs'
+import * as dbUtils from './db_utils.mjs'
 import mongoose from 'mongoose';
 
 let db = mongoose;
@@ -32,6 +33,7 @@ export const getDatabase = () => new Promise(resolver => {
                 console.log("connection successful");
                 db.queries = getQueries(db)
                 db.models = mongoose_models
+                db.utils = dbUtils
                 resolver(db);
             }
         }

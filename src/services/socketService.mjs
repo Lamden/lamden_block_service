@@ -5,7 +5,7 @@ export const socketService = (io) => {
         io.emit('new-block', JSON.stringify({ message: blockInfo }));
     }
 
-    function emitStateChange(keyInfo, value, stateObj, txInfo) {
+    function emitStateChange(keyInfo, value, state_changes_obj, txInfo) {
         const { contractName, variableName, rootKey } = keyInfo
         const { transaction } = txInfo
         const { payload } = transaction
@@ -13,7 +13,7 @@ export const socketService = (io) => {
         const message = {
             ...keyInfo,
             value,
-            stateObj,
+            state_changes_obj,
             contractCalled: payload.contract,
             methodCalled: payload.method,
             kwargs: payload.kwargs
@@ -45,31 +45,34 @@ export const socketService = (io) => {
     }
 
     function emitTxStateChanges(stateChangeInfo) {
-        const { state_changes_obj, affectedContractsList, affectedVariablesList, affectedRootKeysList, txInfo, blockNum, subblockNum, timestamp } = stateChangeInfo
+        const { state_changes_obj, affectedContractsList, affectedVariablesList, affectedRootKeysList, txInfo, blockNum, subblockNum, timestamp, tx_uid } = stateChangeInfo
         const { transaction } = txInfo
         const { payload } = transaction
 
         const emitName = 'state-changes-by-transaction'
 
         const messageBasic = {
+            tx_uid,
             txInfo,
             blockNum,
             subblockNum,
             timestamp,
+            sender: payload.sender,
             contractCalled: payload.contract,
             methodCalled: payload.method,
-            kwargs: payload.kwargs
+            kwargs: payload.kwargs,
+            state_changes_obj
         }
 
         io.to(`all-${emitName}`).emit(`new-${emitName}`, JSON.stringify({
             room: `all-${emitName}`,
-            message: {...messageBasic, affectedContractsList, affectedVariablesList, affectedRootKeysList, stateObj: state_changes_obj }
+            message: {...messageBasic, affectedContractsList, affectedVariablesList, affectedRootKeysList, state_changes_obj }
         }));
 
         for (const contractName of affectedContractsList) {
             io.to(contractName).emit(`new-${emitName}`, {
                 room: contractName,
-                message: {...messageBasic, contractName, stateObj: state_changes_obj[contractName] }
+                message: {...messageBasic, contractName, state_changes_obj }
             });
         }
 
@@ -77,7 +80,7 @@ export const socketService = (io) => {
             let [contractName, variableName] = variableKeyString.split(".")
             io.to(variableKeyString).emit(`new-${emitName}`, {
                 room: variableKeyString,
-                message: {...messageBasic, contractName, variableName, stateObj: state_changes_obj[contractName][variableName] }
+                message: {...messageBasic, contractName, variableName, state_changes_obj }
             });
         }
 
@@ -86,7 +89,7 @@ export const socketService = (io) => {
             let [variableName, rootKey] = other.split(":")
             io.to(rootKeyString).emit(`new-${emitName}`, {
                 room: rootKeyString,
-                message: {...messageBasic, contractName, variableName, rootKey, stateObj: state_changes_obj[contractName][variableName][rootKey] }
+                message: {...messageBasic, contractName, variableName, rootKey, state_changes_obj }
             });
         }
     }

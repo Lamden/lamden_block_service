@@ -7,7 +7,7 @@
         "WIPE": "WIPE=true node app.mjs",
         "reparse": "RE_PARSE_BLOCKS=true npm start",
         "repair": "REPAIR_BLOCKS=1 npm start",
-        "dev": "DEBUG_ON=true npm start",
+        "dev": "DEBUG_ON=true nodemon",
         "start": "node app.mjs"
     },
     "author": "jeffwscott",
