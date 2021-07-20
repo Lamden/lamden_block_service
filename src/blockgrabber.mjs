@@ -203,6 +203,7 @@ const runBlockGrabber = (config) => {
     const getLatestBlock_MN = () => {
         return new Promise((resolve, reject) => {
             const returnRes = async(res) => {
+                if (!res) res = res.error = "Unknown Error Getting Latest Block"
                 resolve(res);
             };
 
@@ -239,12 +240,22 @@ const runBlockGrabber = (config) => {
     }
 
     const checkForBlocks = async() => {
+        const recheck = (error, delay) => {
+            console.log(`${runID}: ${error}`);
+            timerId = setTimeout(checkForBlocks, delay);
+        }
         if (stop) return
         lastCheckTime = new Date()
         if (DEBUG_ON) {
             console.log(runID + ": checking")
         }
+
         let response = await getLatestBlock_MN();
+
+        if (!response) {
+            recheck("null response from server, checking again in 10 seconds.", 10000)
+            return
+        }
 
         if (!response.error) {
 
@@ -307,8 +318,7 @@ const runBlockGrabber = (config) => {
                 }
             }
         } else {
-            console.log(runID + ": Could not contact masternode, trying again in 10 seconds");
-            timerId = setTimeout(checkForBlocks, 10000);
+            recheck(`${response.error}. Checking again in 10 seconds.`, 10000)
         }
     };
 

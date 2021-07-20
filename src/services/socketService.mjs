@@ -1,4 +1,4 @@
-import util from 'util'
+import * as utils from '../utils.mjs'
 
 export const socketService = (io) => {
     function emitNewBlock(blockInfo) {
@@ -13,7 +13,7 @@ export const socketService = (io) => {
         const message = {
             ...keyInfo,
             value,
-            state_changes_obj,
+            state_changes_obj: utils.cleanObj(state_changes_obj),
             contractCalled: payload.contract,
             methodCalled: payload.method,
             kwargs: payload.kwargs
@@ -37,6 +37,7 @@ export const socketService = (io) => {
         }));
 
         if (rootKey) {
+            console.log("EMITTING NEW STATE CHANGE")
             io.to(`${contractName}.${variableName}:${rootKey}`).emit(`new-${emitName}`, JSON.stringify({
                 room: `${contractName}.${variableName}:${rootKey}`,
                 message
