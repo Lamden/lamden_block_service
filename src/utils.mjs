@@ -17,14 +17,19 @@ export const deconstructKey = (rawKey) => {
 
 export const keysToObj = (keyInfo, value) => {
     const { contractName, variableName, keys } = keyInfo
+    console.log({ contractName, variableName, keys })
 
     let objString = `{"${contractName}":{"${variableName}":`
     let objStringSuffix = `{"__hash_self__":${JSON.stringify(value)}}}}`
 
     for (let [i, key] of keys.entries()) {
         objString = objString + `{"${key}":`
+        console.log(objString)
         objStringSuffix = objStringSuffix + '}'
+        console.log(objStringSuffix)
     }
+
+    console.log(objString + objStringSuffix)
 
     try {
         return JSON.parse(objString + objStringSuffix)
