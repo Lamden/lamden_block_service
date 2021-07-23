@@ -15,8 +15,16 @@ export const deconstructKey = (rawKey) => {
     }
 }
 
+function replaceSpecialChars(text) {
+    text.split('"').join('\"')
+    text.replace(/(\r\n|\n|\r)/gm, "")
+    return text
+}
+
 export const keysToObj = (keyInfo, value) => {
     const { contractName, variableName, keys } = keyInfo
+
+    keys = keys.map(k => replaceSpecialChars(k))
 
     let objString = `{"${contractName}":{"${variableName}":`
     let objStringSuffix = `{"__hash_self__":${JSON.stringify(value)}}}}`
@@ -26,7 +34,7 @@ export const keysToObj = (keyInfo, value) => {
         objStringSuffix = objStringSuffix + '}'
     }
 
-    let concatStr = `${objString}${objStringSuffix}`.replace(/(\r\n|\n|\r)/gm, "")
+    let concatStr = `${objString}${objStringSuffix}`
 
     try {
         return JSON.parse(concatStr)
@@ -59,4 +67,18 @@ export const cleanObj = (obj) => {
 
 export const mergeObjects = (objectList) => {
     return objectList.reduce((obj1, obj2) => merge(obj1, obj2))
+}
+
+let jeff = {
+    "con_lamden_poo": {
+        "balances": {
+            "6656a5c9dcf37f7eadc2b7d8de1998bb5bc4d69244ce75642dd57274feae93db": {
+                "con_rocketswap_official_v1_1": {
+                    "__hash_self__": {
+                        "__fixed__": "18007686911.0"
+                    }
+                }
+            }
+        }
+    }
 }
