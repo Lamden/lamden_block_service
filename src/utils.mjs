@@ -16,7 +16,7 @@ export const deconstructKey = (rawKey) => {
 }
 
 function replaceSpecialChars(text) {
-    text.split('"').join('\"')
+    text = text.split('"').join('\\"')
     text.replace(/(\r\n|\n|\r)/gm, "")
     return text
 }
