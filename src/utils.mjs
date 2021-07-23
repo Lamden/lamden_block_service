@@ -29,13 +29,13 @@ export const keysToObj = (keyInfo, value) => {
         console.log(objStringSuffix)
     }
 
-    console.log(objString + objStringSuffix)
+    let concatStr = `${objString}${objStringSuffix}`.replace(/(\r\n|\n|\r)/gm, "")
 
     try {
-        return JSON.parse(objString + objStringSuffix)
+        return JSON.parse(concatStr)
     } catch (e) {
         console.log(e)
-        console.log(objString + objStringSuffix)
+        console.log(concatStr)
     }
 }
 
