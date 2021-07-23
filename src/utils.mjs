@@ -22,7 +22,7 @@ function replaceSpecialChars(text) {
 }
 
 export const keysToObj = (keyInfo, value) => {
-    const { contractName, variableName, keys } = keyInfo
+    let { contractName, variableName, keys } = keyInfo
 
     keys = keys.map(k => replaceSpecialChars(k))
 
