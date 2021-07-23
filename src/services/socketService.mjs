@@ -37,7 +37,7 @@ export const socketService = (io) => {
         }));
 
         if (rootKey) {
-            console.log("EMITTING NEW STATE CHANGE")
+            // console.log("EMITTING NEW STATE CHANGE")
             io.to(`${contractName}.${variableName}:${rootKey}`).emit(`new-${emitName}`, JSON.stringify({
                 room: `${contractName}.${variableName}:${rootKey}`,
                 message
