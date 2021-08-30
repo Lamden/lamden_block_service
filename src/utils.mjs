@@ -37,6 +37,7 @@ export const keysToObj = (keyInfo, value) => {
     let concatStr = `${objString}${objStringSuffix}`
 
     try {
+        console.log(util.inspect(concatStr, false, null, true))
         return JSON.parse(concatStr)
     } catch (e) {
         console.log(e)
@@ -49,7 +50,7 @@ export const isObject = (obj) => {
 };
 
 export const cleanObj = (obj) => {
-    //console.log(util.inspect(obj, false, null, true))
+    console.log(util.inspect(obj, false, null, true))
     Object.keys(obj).forEach(key => {
         //console.log(util.inspect({ key, value: obj[key] }, false, null, true))
         if (obj[key]) {
