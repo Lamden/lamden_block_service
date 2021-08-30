@@ -67,7 +67,10 @@ export const cleanObj = (obj) => {
 
 export const mergeObjects = (objectList) => {
     console.log(util.inspect(objectList, false, null, true))
-    return objectList.reduce((obj1, obj2) => merge(obj1, obj2))
+    return objectList.reduce((obj1, obj2) => {
+        console.log(util.inspect({obj1, obj2}, false, null, true))
+        return merge(obj1, obj2)
+    })
 }
 
 let jeff = {
