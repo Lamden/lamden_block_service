@@ -20,6 +20,7 @@ function replaceSpecialChars(text) {
     console.log(util.inspect({text}, false, null, true))
     text = text.split('"').join('\\"')
     text.replace(/(\r\n|\n|\r)/gm, "")
+    console.log(util.inspect({text}, false, null, true))
     return text
 }
 
