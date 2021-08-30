@@ -34,6 +34,7 @@ export const keysToObj = (keyInfo, value) => {
     //console.log(JSON.stringify(replaceSpecialChars(value)))
 
     for (let [i, key] of keys.entries()) {
+        console.log(JSON.stringify(replaceSpecialChars(value)))
         objString = objString + `{"${key}":`
         objStringSuffix = objStringSuffix + '}'
     }
