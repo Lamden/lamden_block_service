@@ -28,12 +28,10 @@ export const keysToObj = (keyInfo, value) => {
 
     keys = keys.map(k => replaceSpecialChars(k))
 
-    
-
     let objString = `{"${contractName}":{"${variableName}":`
     let objStringSuffix = `{"__hash_self__":${JSON.stringify(value)}}}}`
 
-    console.log(JSON.stringify(replaceSpecialChars(value)))
+    //console.log(JSON.stringify(replaceSpecialChars(value)))
 
     for (let [i, key] of keys.entries()) {
         objString = objString + `{"${key}":`
@@ -43,10 +41,14 @@ export const keysToObj = (keyInfo, value) => {
     let concatStr = `${objString}${objStringSuffix}`
 
     try {
-        console.log(util.inspect(concatStr, false, null, true))
+        
         return JSON.parse(concatStr)
     } catch (e) {
         console.log(e)
+        console.log(util.inspect({concatStr}, false, null, true))
+        console.log(util.inspect({objString}, false, null, true))
+        console.log(util.inspect({objStringSuffix}, false, null, true))
+        console.log(util.inspect({value}, false, null, true))
         console.log(concatStr)
     }
 }
