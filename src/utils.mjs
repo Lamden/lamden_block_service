@@ -66,23 +66,9 @@ export const cleanObj = (obj) => {
 }
 
 export const mergeObjects = (objectList) => {
-    console.log(util.inspect(objectList, false, null, true))
     return objectList.reduce((obj1, obj2) => {
-        console.log(util.inspect({obj1, obj2}, false, null, true))
+        if (typeof obj1 === 'undefined') obj1 = {}
+        if (typeof obj2 === 'undefined') obj2 = {}
         return merge(obj1, obj2)
     })
-}
-
-let jeff = {
-    "con_lamden_poo": {
-        "balances": {
-            "6656a5c9dcf37f7eadc2b7d8de1998bb5bc4d69244ce75642dd57274feae93db": {
-                "con_rocketswap_official_v1_1": {
-                    "__hash_self__": {
-                        "__fixed__": "18007686911.0"
-                    }
-                }
-            }
-        }
-    }
 }
