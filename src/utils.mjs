@@ -21,6 +21,11 @@ function replaceSpecialChars(text) {
     return text
 }
 
+function replaceNewLine(text) {
+    text = text.split('\n').join('\\n')
+    return text
+}
+
 export const keysToObj = (keyInfo, value) => {
     let { contractName, variableName, keys } = keyInfo
 
@@ -32,17 +37,13 @@ export const keysToObj = (keyInfo, value) => {
     //console.log(JSON.stringify(replaceSpecialChars(value)))
 
     for (let [i, key] of keys.entries()) {
-        console.log(typeof key)
-        console.log(util.inspect({key}, false, null, true))
-        objString = objString + `{"${key}":`
-        console.log(util.inspect({objString}, false, null, true))
+        objString = objString + `{"${replaceNewLine(key)}":`
         objStringSuffix = objStringSuffix + '}'
     }
 
     let concatStr = `${objString}${objStringSuffix}`
 
     try {
-        
         return JSON.parse(concatStr)
     } catch (e) {
         console.log(e)
@@ -59,7 +60,6 @@ export const isObject = (obj) => {
 };
 
 export const cleanObj = (obj) => {
-    console.log(util.inspect(obj, false, null, true))
     Object.keys(obj).forEach(key => {
         //console.log(util.inspect({ key, value: obj[key] }, false, null, true))
         if (obj[key]) {
