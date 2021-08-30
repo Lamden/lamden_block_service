@@ -16,11 +16,8 @@ export const deconstructKey = (rawKey) => {
 }
 
 function replaceSpecialChars(text) {
-    console.log(typeof text)
-    console.log(util.inspect({text}, false, null, true))
     text = text.split('"').join('\\"')
     text.replace(/(\r\n|\n|\r)/gm, "")
-    console.log(util.inspect({text}, false, null, true))
     return text
 }
 
@@ -35,10 +32,11 @@ export const keysToObj = (keyInfo, value) => {
     //console.log(JSON.stringify(replaceSpecialChars(value)))
 
     for (let [i, key] of keys.entries()) {
-        replaceSpecialChars(key)
+        console.log(typeof key)
+        console.log(util.inspect({key}, false, null, true))
         objString = objString + `{"${key}":`
+        console.log(util.inspect({objString}, false, null, true))
         objStringSuffix = objStringSuffix + '}'
-        replaceSpecialChars(key)
     }
 
     let concatStr = `${objString}${objStringSuffix}`
