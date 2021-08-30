@@ -26,8 +26,12 @@ export const keysToObj = (keyInfo, value) => {
 
     keys = keys.map(k => replaceSpecialChars(k))
 
+    
+
     let objString = `{"${contractName}":{"${variableName}":`
     let objStringSuffix = `{"__hash_self__":${JSON.stringify(value)}}}}`
+
+    console.log(JSON.stringify(replaceSpecialChars(value)))
 
     for (let [i, key] of keys.entries()) {
         objString = objString + `{"${key}":`
