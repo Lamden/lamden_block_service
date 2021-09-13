@@ -11,7 +11,6 @@ export const getStateEndpoints = (db) => {
     }
 
     async function keys(req, res) {
-        console.log("yoyoyoyoyoy")
         try {
             res.send(await Promise.all(req.body.map(info => db.queries.getKeyFromCurrentState(info.contractName, info.variableName, info.key))))
         } catch (e) {
