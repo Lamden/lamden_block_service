@@ -11,7 +11,7 @@ export const getStateQueries = (db) => {
             result = {...result._doc}
         }
         return {
-            result,
+            ...result,
             contractName,
             variableName,
             key
