@@ -4,8 +4,8 @@ export const getStateQueries = (db) => {
         let result = await db.models.CurrentState.findOne({ rawKey: db.utils.makeKey(contractName, variableName, key) }, { '_id': 0, 'keys': 0, '__v': 0 })
         if (!result){
             result = {
-                notFound = true,
-                value = null
+                notFound: true,
+                value: null
             }
         }else{
             result = {...result._doc}
