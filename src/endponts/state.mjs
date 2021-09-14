@@ -11,9 +11,10 @@ export const getStateEndpoints = (db) => {
     }
 
     async function keys(req, res) {
-        console.log("yoyoyoyoyoy")
         try {
-            res.send(await Promise.all(req.body.map(info => db.queries.getKeyFromCurrentState(info.contractName, info.variableName, info.key))))
+            let results = await Promise.all(req.body.map(info => db.queries.getKeyFromCurrentState(info.contractName, info.variableName, info.key)))
+            results = results.filter(result => !result.notFound)
+            res.send(results)
         } catch (e) {
             res.send(e)
         }
