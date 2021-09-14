@@ -24,6 +24,10 @@ export const createServer = (port, db) => {
             console.log(" someone joined room " + room)
             socket.join(room)
         });
+        socket.on('leave', (room) => {
+            console.log(" someone left room " + room)
+            socket.leave(room)
+        });
     });
 
     server.listen(port, () => {
