@@ -24,9 +24,12 @@ export const getStateEndpoints = (db) => {
         const { contractName, variableName, rootkey } = req.params
 
         let stateResults = await db.queries.getAllCurrentState(contractName, variableName, rootkey)
-        let allStateObjects = stateResults.map(result => utils.keysToObj(utils.deconstructKey(result.rawKey), result.value))
-        let merged = utils.mergeObjects(allStateObjects)
-        res.send(utils.cleanObj(merged))
+        if (stateResults.length === 0) res.send({})
+        else{
+            let allStateObjects = stateResults.map(result => utils.keysToObj(utils.deconstructKey(result.rawKey), result.value))
+            let merged = utils.mergeObjects(allStateObjects)
+            res.send(utils.cleanObj(merged))
+        }
     }
 
     return [{
