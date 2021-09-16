@@ -279,13 +279,12 @@ const runBlockGrabber = (config) => {
                     if (malformedBlock(blockRes.blockInfo)) {
                         await db.models.Blocks.deleteOne({ blockNum: i })
                     }else{
-                        await processBlock(blockRes.blockInfo).catch(err => {
+                        await processBlock(blockRes.blockInfo)
+                        .then(() => repaiedFrom = "Database")
+                        .catch(err => {
+                            console.log(err)
                             console.log(`Block ${i}: ERROR PROCESSING from ${repaiedFrom}`)
-                            console.log(util.inspect({blockInfo: blockRes.blockInfo}, false, null, true))
-                            console.log({malformedBlock: malformedBlock(blockRes.blockInfo)})
-                            throw new Error(err)
                         })
-                        repaiedFrom = "Database"
                     }
                 }
             }
@@ -302,11 +301,17 @@ const runBlockGrabber = (config) => {
                             setTimeout(checkMasterNode, 30000)
                         }else{
                             await processBlock(blockData)
-                            repaiedFrom = "Masternode"
-                            resolver(true)
+                            .then(() => {
+                                repaiedFrom = "Masternode"
+                                resolver(true)
+                            })
+                            .catch(err => {
+                                console.log(err)
+                                console.log(`Block ${i}: ERROR PROCESSING from ${repaiedFrom}`)
+                                setTimeout(checkMasterNode, 30000)
+                            })
                         }
                     }
-    
                     checkMasterNode()
                 })
             }
