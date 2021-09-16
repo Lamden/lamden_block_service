@@ -119,12 +119,12 @@ const runBlockGrabber = (config) => {
         const { number, subblocks } = blockInfo
         try{
             validateValue(number, 'number')
-            if (!Array.isArray(subblocks)) {
+            if (Array.isArray(subblocks)) {
                 for (let sb of subblocks){
                     const { transactions, subblock } = sb
                     
                     validateValue(subblock, 'subblock')
-                    if (!Array.isArray(transactions)) {
+                    if (Array.isArray(transactions)) {
                         for (let tx of transactions){
                             const { stamps_used,  status, transaction } = tx
                             const { metadata,  payload } = transaction
