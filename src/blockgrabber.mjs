@@ -384,6 +384,7 @@ const runBlockGrabber = (config) => {
                             if (block.blockInfo){
                                 if (!malformedBlock(block.blockInfo)) blockData = block.blockInfo
                                 else{
+                                    console.log(`Block ${i} is malformed from the database, deleting it!`)
                                     await db.models.Blocks.deleteOne({ blockNum: i })
                                 }
                             }
@@ -409,6 +410,8 @@ const runBlockGrabber = (config) => {
                         
                         for (let blockData of processed) {
                             if (malformedBlock(blockData)) {
+                                console.log({blockData})
+                                console.log(`Malformed Block, trying again in 30 Seconds`)
                                 timerId = setTimeout(checkForBlocks, 30000);
                                 break
                             }else{
