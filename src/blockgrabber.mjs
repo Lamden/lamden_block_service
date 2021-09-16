@@ -269,21 +269,24 @@ const runBlockGrabber = (config) => {
         console.log("Repairing Blocks Database...")
 
         for (let i = start_block; i <= latest_synced_block; i++) {
-            let blockInfo = null
-            let repaiedFrom = ""
+            let repairedFrom = ""
 
             const checkDBBlock = async () => {
                 let blockRes = await db.models.Blocks.findOne({ blockNum: i })
 
                 if (blockRes){
                     if (malformedBlock(blockRes.blockInfo)) {
+                        console.log(`Block ${i}: WAS MALFORMED FROM DATABASE`)
                         await db.models.Blocks.deleteOne({ blockNum: i })
                     }else{
+                        
                         await processBlock(blockRes.blockInfo)
-                        .then(() => repaiedFrom = "Database")
+                        .then(() => {
+                            repairedFrom = "Database"
+                        })
                         .catch(err => {
                             console.log(err)
-                            console.log(`Block ${i}: ERROR PROCESSING from ${repaiedFrom}`)
+                            console.log(`Block ${i}: ERROR PROCESSING from ${repairedFrom}`)
                         })
                     }
                 }
@@ -291,23 +294,24 @@ const runBlockGrabber = (config) => {
 
             await checkDBBlock()
 
-            if (repaiedFrom === ""){
+            if (repairedFrom === ""){
                 await new Promise(async (resolver) => {
                     const checkMasterNode = async () => {
                         let blockData = await getBlock_MN(i, 150)
+                        console.log(util.inspect(blockData, false, null, true))
                         if (malformedBlock(blockData)){
-                            console.log(util.inspect(blockData, false, null, true))
+                            console.log(`Block ${i}: WAS MALFORMED from Masternode`)
                             console.log(`Block ${i}: trying again in 30 seconds`)
                             setTimeout(checkMasterNode, 30000)
                         }else{
                             await processBlock(blockData)
                             .then(() => {
-                                repaiedFrom = "Masternode"
+                                repairedFrom = "Masternode"
                                 resolver(true)
                             })
                             .catch(err => {
                                 console.log(err)
-                                console.log(`Block ${i}: ERROR PROCESSING from ${repaiedFrom}`)
+                                console.log(`Block ${i}: ERROR PROCESSING from ${repairedFrom}`)
                                 setTimeout(checkMasterNode, 30000)
                             })
                         }
@@ -315,7 +319,7 @@ const runBlockGrabber = (config) => {
                     checkMasterNode()
                 })
             }
-            console.log(`Block ${i}: Repaired from ${repaiedFrom}`)
+            console.log(`Block ${i}: Repaired from ${repairedFrom}`)
         }
     }
 
