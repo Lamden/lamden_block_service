@@ -403,7 +403,7 @@ const runBlockGrabber = (config) => {
 
 
                     if (to_fetch.length > 0) {
-                        to_fetch.sort((a, b) => a.i - b.i);
+                        to_fetch.sort((a, b) => a.id - b.id);
                         let processed = await Promise.all(to_fetch.map(b => b.blockData));
                         
                         for (let blockData of processed) {
