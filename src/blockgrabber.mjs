@@ -259,7 +259,7 @@ const runBlockGrabber = (config) => {
         });
     };
 
-    const repairBlocks = async (start_block = 1) => {
+    const repairBlocks = async (start_block) => {
         if (!start_block) return
         repairing = true
 
