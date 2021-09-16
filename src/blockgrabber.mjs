@@ -75,8 +75,8 @@ const runBlockGrabber = (config) => {
     };
 
     const processBlock = async(blockInfo = {}) => {
-        if (typeof blockInfo.number !== "undefined") {
-            let blockNum = blockInfo.number.__fixed__ ? parseInt(blockInfo.number.__fixed__) : blockInfo.number;
+        if (!malformedBlock(blockInfo)) {
+            let blockNum = blockInfo.number;
             let block = await db.models.Blocks.findOne({ blockNum })
             if (!block) {
                 if (blockInfo.error) {
@@ -100,7 +100,7 @@ const runBlockGrabber = (config) => {
             }
 
             if (!block.error) {
-                server.services.sockets.emitNewBlock(block.blockInfo)
+                if (!repairing) server.services.sockets.emitNewBlock(block.blockInfo)
                 await processBlockStateChanges(block.blockInfo)
             }
 
@@ -119,12 +119,12 @@ const runBlockGrabber = (config) => {
         const { number, subblocks } = blockInfo
         try{
             validateValue(number, 'number')
-            if (!Array.isArray(subblocks)) {
+            if (Array.isArray(subblocks)) {
                 for (let sb of subblocks){
                     const { transactions, subblock } = sb
                     
                     validateValue(subblock, 'subblock')
-                    if (!Array.isArray(transactions)) {
+                    if (Array.isArray(transactions)) {
                         for (let tx of transactions){
                             const { stamps_used,  status, transaction } = tx
                             const { metadata,  payload } = transaction
@@ -147,7 +147,6 @@ const runBlockGrabber = (config) => {
     }
 
     const processBlockStateChanges = async(blockInfo) => {
-        if (malformedBlock(blockInfo)) return
 
         blockInfo.subblocks.sort((a, b) => a.subblock > b.subblock ? 1 : -1)
 
@@ -270,43 +269,57 @@ const runBlockGrabber = (config) => {
         console.log("Repairing Blocks Database...")
 
         for (let i = start_block; i <= latest_synced_block; i++) {
-            let blockInfo = null
-            let repaiedFrom = ""
+            let repairedFrom = ""
 
             const checkDBBlock = async () => {
                 let blockRes = await db.models.Blocks.findOne({ blockNum: i })
 
                 if (blockRes){
                     if (malformedBlock(blockRes.blockInfo)) {
+                        console.log(`Block ${i}: WAS MALFORMED FROM DATABASE`)
                         await db.models.Blocks.deleteOne({ blockNum: i })
                     }else{
+                        
                         await processBlock(blockRes.blockInfo)
-                        repaiedFrom = "Database"
+                        .then(() => {
+                            repairedFrom = "Database"
+                        })
+                        .catch(err => {
+                            console.log(err)
+                            console.log(`Block ${i}: ERROR PROCESSING from ${repairedFrom}`)
+                        })
                     }
                 }
             }
 
             await checkDBBlock()
 
-            if (repaiedFrom === ""){
+            if (repairedFrom === ""){
                 await new Promise(async (resolver) => {
                     const checkMasterNode = async () => {
                         let blockData = await getBlock_MN(i, 150)
+                        console.log(util.inspect(blockData, false, null, true))
                         if (malformedBlock(blockData)){
-                            console.log(util.inspect(blockData, false, null, true))
+                            console.log(`Block ${i}: WAS MALFORMED from Masternode`)
                             console.log(`Block ${i}: trying again in 30 seconds`)
                             setTimeout(checkMasterNode, 30000)
                         }else{
                             await processBlock(blockData)
-                            repaiedFrom = "Masternode"
-                            resolver(true)
+                            .then(() => {
+                                repairedFrom = "Masternode"
+                                resolver(true)
+                            })
+                            .catch(err => {
+                                console.log(err)
+                                console.log(`Block ${i}: ERROR PROCESSING from ${repairedFrom}`)
+                                setTimeout(checkMasterNode, 30000)
+                            })
                         }
                     }
-    
                     checkMasterNode()
                 })
             }
-            console.log(`Block ${i}: Repaired from ${repaiedFrom}`)
+            console.log(`Block ${i}: Repaired from ${repairedFrom}`)
         }
     }
 
@@ -371,6 +384,7 @@ const runBlockGrabber = (config) => {
                             if (block.blockInfo){
                                 if (!malformedBlock(block.blockInfo)) blockData = block.blockInfo
                                 else{
+                                    console.log(`Block ${i} is malformed from the database, deleting it!`)
                                     await db.models.Blocks.deleteOne({ blockNum: i })
                                 }
                             }
@@ -396,10 +410,13 @@ const runBlockGrabber = (config) => {
                         
                         for (let blockData of processed) {
                             if (malformedBlock(blockData)) {
+                                console.log({blockData})
+                                console.log(`Malformed Block, trying again in 30 Seconds`)
                                 timerId = setTimeout(checkForBlocks, 30000);
                                 break
+                            }else{
+                                await processBlock(blockData);
                             }
-                            else await processBlock(blockData);
                         }
                     }else{
                         timerId = setTimeout(checkForBlocks, 10000);
