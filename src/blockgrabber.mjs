@@ -281,7 +281,7 @@ const runBlockGrabber = (config) => {
                     }else{
                         await processBlock(blockRes.blockInfo).catch(err => {
                             console.log(`Block ${i}: ERROR PROCESSING from ${repaiedFrom}`)
-                            console.log({blockInfo: blockRes.blockInfo})
+                            console.log(util.inspect({blockInfo: blockRes.blockInfo}, false, null, true))
                             console.log({malformedBlock: malformedBlock(blockRes.blockInfo)})
                             throw new Error(err)
                         })
