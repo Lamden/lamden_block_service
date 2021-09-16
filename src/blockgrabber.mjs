@@ -75,8 +75,8 @@ const runBlockGrabber = (config) => {
     };
 
     const processBlock = async(blockInfo = {}) => {
-        if (typeof blockInfo.number !== "undefined") {
-            let blockNum = blockInfo.number.__fixed__ ? parseInt(blockInfo.number.__fixed__) : blockInfo.number;
+        if (!malformedBlock(blockInfo)) {
+            let blockNum = blockInfo.number;
             let block = await db.models.Blocks.findOne({ blockNum })
             if (!block) {
                 if (blockInfo.error) {
@@ -100,7 +100,7 @@ const runBlockGrabber = (config) => {
             }
 
             if (!block.error) {
-                server.services.sockets.emitNewBlock(block.blockInfo)
+                if (!repairing) server.services.sockets.emitNewBlock(block.blockInfo)
                 await processBlockStateChanges(block.blockInfo)
             }
 
@@ -147,7 +147,6 @@ const runBlockGrabber = (config) => {
     }
 
     const processBlockStateChanges = async(blockInfo) => {
-        if (malformedBlock(blockInfo)) return
 
         blockInfo.subblocks.sort((a, b) => a.subblock > b.subblock ? 1 : -1)
 
@@ -280,7 +279,12 @@ const runBlockGrabber = (config) => {
                     if (malformedBlock(blockRes.blockInfo)) {
                         await db.models.Blocks.deleteOne({ blockNum: i })
                     }else{
-                        await processBlock(blockRes.blockInfo)
+                        await processBlock(blockRes.blockInfo).catch(err => {
+                            console.log(`Block ${i}: ERROR PROCESSING from ${repaiedFrom}`)
+                            console.log({blockInfo: blockRes.blockInfo})
+                            console.log({malformedBlock: malformedBlock(blockRes.blockInfo)})
+                            throw new Error(err)
+                        })
                         repaiedFrom = "Database"
                     }
                 }
@@ -398,8 +402,9 @@ const runBlockGrabber = (config) => {
                             if (malformedBlock(blockData)) {
                                 timerId = setTimeout(checkForBlocks, 30000);
                                 break
+                            }else{
+                                await processBlock(blockData);
                             }
-                            else await processBlock(blockData);
                         }
                     }else{
                         timerId = setTimeout(checkForBlocks, 10000);
