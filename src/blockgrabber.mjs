@@ -358,10 +358,8 @@ const runBlockGrabber = (config) => {
                 wipeOnStartup = false;
                 reParseBlocks = false;
             } else {
-                if (DEBUG_ON) {
-                    console.log("lastestBlockNum: " + lastestBlockNum);
-                    console.log("currBlockNum: " + currBlockNum);
-                }
+                console.log("lastestBlockNum: " + lastestBlockNum);
+                console.log("currBlockNum: " + currBlockNum);
                 if (lastestBlockNum === currBlockNum) {
                     if (alreadyCheckedCount < maxCheckCount)
                         alreadyCheckedCount = alreadyCheckedCount + 1;
