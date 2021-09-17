@@ -172,7 +172,7 @@ const runBlockGrabber = (config) => {
                         let keyOk = true
 
                         if (rootKey){
-                            if (rootKey.charAt(0) !== "$") keyOk = false
+                            if (rootKey.charAt(0) === "$") keyOk = false
                         }
 
                         if (keyOk){
