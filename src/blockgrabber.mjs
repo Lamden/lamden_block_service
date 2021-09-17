@@ -168,39 +168,42 @@ const runBlockGrabber = (config) => {
                         let keyInfo = utils.deconstructKey(s.key)
     
                         const { contractName, variableName, rootKey } = keyInfo
-    
-                        let currentState = await db.models.CurrentState.findOne({ rawKey: s.key })
-                        // console.log(currentState)
-                        if (currentState) {
-                            if (currentState.lastUpdated < timestamp) {
-                                currentState.txHash = txInfo.hash
-                                currentState.value = s.value
-                                currentState.lastUpdated = timestamp
-                                await currentState.save()
-                            }
-                        } else {
-                            await new db.models.CurrentState({
-                                rawKey: s.key,
-                                txHash: txInfo.hash,
-                                value: s.value,
-                                lastUpdated: timestamp
-                            }).save((err) => {
-                                if (err){
-                                    console.log(err)
-                                    recheck(err, 30000)
+
+                        if (rootKey.charAt(0) !== "$"){
+                            let currentState = await db.models.CurrentState.findOne({ rawKey: s.key })
+                            // console.log(currentState)
+                            if (currentState) {
+                                if (currentState.lastUpdated < timestamp) {
+                                    currentState.txHash = txInfo.hash
+                                    currentState.value = s.value
+                                    currentState.lastUpdated = timestamp
+                                    await currentState.save()
                                 }
-                            })
+                            } else {
+                                await new db.models.CurrentState({
+                                    rawKey: s.key,
+                                    txHash: txInfo.hash,
+                                    value: s.value,
+                                    lastUpdated: timestamp
+                                }).save((err) => {
+                                    if (err){
+                                        console.log(err)
+                                        recheck(err, 30000)
+                                    }
+                                })
+                            }
+        
+                            let newStateChangeObj = utils.keysToObj(keyInfo, s.value)
+        
+                            state_changes_obj = utils.mergeObjects([state_changes_obj, newStateChangeObj])
+        
+                            affectedContractsList.add(contractName)
+                            affectedVariablesList.add(`${contractName}.${variableName}`)
+                            if (rootKey) affectedRootKeysList.add(`${contractName}.${variableName}:${rootKey}`)
+        
+                            if (!repairing) server.services.sockets.emitStateChange(keyInfo, s.value, newStateChangeObj, txInfo)
                         }
-    
-                        let newStateChangeObj = utils.keysToObj(keyInfo, s.value)
-    
-                        state_changes_obj = utils.mergeObjects([state_changes_obj, newStateChangeObj])
-    
-                        affectedContractsList.add(contractName)
-                        affectedVariablesList.add(`${contractName}.${variableName}`)
-                        if (rootKey) affectedRootKeysList.add(`${contractName}.${variableName}:${rootKey}`)
-    
-                        if (!repairing) server.services.sockets.emitStateChange(keyInfo, s.value, newStateChangeObj, txInfo)
+
                     }
                 }
 
