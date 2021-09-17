@@ -169,7 +169,13 @@ const runBlockGrabber = (config) => {
     
                         const { contractName, variableName, rootKey } = keyInfo
 
-                        if (rootKey.charAt(0) !== "$"){
+                        let keyOk = true
+
+                        if (rootKey){
+                            if (rootKey.charAt(0) !== "$") keyOk = false
+                        }
+
+                        if (keyOk){
                             let currentState = await db.models.CurrentState.findOne({ rawKey: s.key })
                             // console.log(currentState)
                             if (currentState) {
