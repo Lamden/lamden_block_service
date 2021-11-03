@@ -210,7 +210,15 @@ const runBlockGrabber = (config) => {
                             if (!repairing) server.services.sockets.emitStateChange(keyInfo, s.value, newStateChangeObj, txInfo)
 
                             let foundContractName = await db.models.Contracts.findOne({contractName})
-                            if (!foundContractName) await new db.models.Contracts({contractName}).save()
+                            if (!foundContractName) {
+                                let code = await db.queries.getKeyFromCurrentState(contractName, "__code__")
+                                let lst001 = db.utils.isLst001(code.value)
+                                await new db.models.Contracts({
+                                    contractName,
+                                    lst001
+                                }).save()
+                                server.services.sockets.emitNewContract({contractName, lst001})
+                            }
                         }
                     }
                 }
