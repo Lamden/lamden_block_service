@@ -1,4 +1,18 @@
 export const getHistoryQueries = (db) => {
+
+    async function getAllHistory(last_tx_uid = "000000000000.00000.00000", limit = 10) {
+        limit = parseInt(limit) || 10
+
+        let stateChanges = await db.models.StateChanges.find({
+                tx_uid: { $gt: last_tx_uid }
+            })
+            .sort({ "tx_uid": 1 })
+            .limit(limit)
+
+        if (!stateChanges) return []
+        else return stateChanges
+    }
+
     async function getContractHistory(contractName, last_tx_uid = "000000000000.00000.00000", limit = 10) {
         limit = parseInt(limit) || 10
 
@@ -41,6 +55,7 @@ export const getHistoryQueries = (db) => {
         else return stateChanges
     }
     return {
+        getAllHistory,
         getContractHistory,
         getVariableHistory,
         getRootKeyHistory
