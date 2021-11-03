@@ -52,7 +52,8 @@ var currentState = new mongoose.Schema({
 });
 
 var contracts = new mongoose.Schema({
-    contractName: String
+    contractName: String,
+    lst001: Boolean
 });
 
 export default {
