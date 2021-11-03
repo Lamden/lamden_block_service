@@ -208,8 +208,10 @@ const runBlockGrabber = (config) => {
                             if (rootKey) affectedRootKeysList.add(`${contractName}.${variableName}:${rootKey}`)
         
                             if (!repairing) server.services.sockets.emitStateChange(keyInfo, s.value, newStateChangeObj, txInfo)
-                        }
 
+                            let foundContractName = await db.models.Contracts.findOne({contractName})
+                            if (!foundContractName) await new db.models.Contracts({contractName}).save()
+                        }
                     }
                 }
 
