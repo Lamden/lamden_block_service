@@ -20,10 +20,14 @@ export const getInfoQueries = (db) => {
 
     async function getToken(contractName) {
         let token = await getContract(contractName)
-        delete token[contractName].__code__
-        delete token[contractName].__compiled__
+        token = token[contractName]
 
-        return token[contractName]
+        return {
+            __developer__: token.__developer__,
+            __owner__: token.__owner__,
+            __submitted__: token.__submitted__,
+            metadata: token.metadata
+        }
     }
 
     return {

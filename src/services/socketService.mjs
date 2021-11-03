@@ -95,9 +95,17 @@ export const socketService = (io) => {
         }
     }
 
+    function emitNewContract (contractInfo) {
+        io.to(`contracts`).emit(`new_contract`, JSON.stringify({
+            room: `contracts`,
+            message: contractInfo
+        }));
+    }
+
     return {
         emitNewBlock,
         emitStateChange,
-        emitTxStateChanges
+        emitTxStateChanges,
+        emitNewContract
     }
 }
