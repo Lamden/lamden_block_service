@@ -51,9 +51,14 @@ var currentState = new mongoose.Schema({
     lastUpdated: Date
 });
 
+var contracts = new mongoose.Schema({
+    contractName: String
+});
+
 export default {
     App: mongoose.model('App', app, 'app'),
     StateChanges: mongoose.model('StateChanges', stateChanges, 'stateChanges'),
     CurrentState: mongoose.model('CurrentState', currentState, 'currentState'),
-    Blocks: mongoose.model('Blocks', blocks, 'blocks')
+    Blocks: mongoose.model('Blocks', blocks, 'blocks'),
+    Contracts: mongoose.model('Contracts', contracts, 'contracts')
 };

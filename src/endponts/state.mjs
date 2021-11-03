@@ -4,7 +4,8 @@ export const getStateEndpoints = (db) => {
     async function key(req, res) {
         try {
             const { contractName, variableName, key } = req.params
-            res.send(await db.queries.getKeyFromCurrentState(contractName, variableName, key))
+            let result = await db.queries.getKeyFromCurrentState(contractName, variableName, key)
+            res.send(result)
         } catch (e) {
             res.send(e)
         }
@@ -31,8 +32,13 @@ export const getStateEndpoints = (db) => {
             res.send(utils.cleanObj(merged))
         }
     }
-
-    return [{
+    return [
+        {
+            type: 'get',
+            route: '/current/one/:contractName/:variableName',
+            handler: key
+        },
+        {
             type: 'get',
             route: '/current/one/:contractName/:variableName/:key',
             handler: key
@@ -56,6 +62,6 @@ export const getStateEndpoints = (db) => {
             type: 'get',
             route: '/current/all/:contractName/:variableName/:rootkey',
             handler: all_state
-        }
+        } 
     ]
 }
