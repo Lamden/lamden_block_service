@@ -4,9 +4,10 @@ const loadContracts = async (drop) => {
     let db = await getDatabase()
     let contracts = new Set()
 
-    console.log("\n-> DROPPING CONTRACTS COLLECTION...")
+    
 
     if (drop){
+        console.log("\n-> DROPPING CONTRACTS COLLECTION...")
         let res = await db.models.Contracts.deleteMany()
         console.log(res)
     }
