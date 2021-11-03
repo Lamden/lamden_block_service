@@ -1,4 +1,5 @@
 import { getDatabase } from "../database.mjs";
+import { isLst001 } from "../processors/lst001.mjs"
 
 const loadContracts = async (drop) => {
     let batchSize = 20000
@@ -27,8 +28,14 @@ const loadContracts = async (drop) => {
             for (let contractName of contracts){
                 let found = await db.models.Contracts.findOne({contractName})
                 if (!found) {
-                    await new db.models.Contracts({contractName}).save()
-                    console.log(`    o saved "${contractName}"`)
+                    let code = await db.queries.getKeyFromCurrentState(contractName, "__code__")
+                    let lst001 = isLst001(code.value)
+                    
+                    await new db.models.Contracts({
+                        contractName, 
+                        lst001
+                    }).save()
+                    console.log(`    o saved "${contractName}" ${lst001 ? " found LST001 token": ""}`)
                 }
             }
             let last_tx_uid = batch[batch.length - 1].tx_uid

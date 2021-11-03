@@ -14,8 +14,22 @@ export const getInfoQueries = (db) => {
         return utils.cleanObj(merged)
     }
 
+    async function getTokens() {
+        return await db.models.Contracts.find({lst001: true},{ '_id': 0, '__v': 0 })
+    }
+
+    async function getToken(contractName) {
+        let token = await getContract(contractName)
+        delete token[contractName].__code__
+        delete token[contractName].__compiled__
+
+        return token[contractName]
+    }
+
     return {
         getContracts,
-        getContract
+        getContract,
+        getTokens,
+        getToken
     }
 }
