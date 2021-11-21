@@ -62,13 +62,19 @@ const runBlockGrabber = (config) => {
                             // console.log(data);
                             resolve(JSON.parse(data));
                         } catch (err) {
-                            console.error("Error: " + err);
+                            console.log(new Date())
+                            console.log(err)
+                            console.error("Blockgrabber Error in https resp.on.end: " + err);
+                            console.log(data)
                             resolve({ error: err.message });
                         }
                     });
                 })
                 .on("error", (err) => {
-                    console.error("Error: " + err.message);
+                    console.log(new Date())
+                    console.log(err)
+                    console.error("Blockgrabber Error in https protocol.on.error: " + err);
+                    console.log(data)
                     resolve({ error: err.message });
                 });
         });
