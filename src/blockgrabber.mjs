@@ -81,39 +81,37 @@ const runBlockGrabber = (config) => {
     };
 
     const processBlock = async(blockInfo = {}) => {
-        if (!malformedBlock(blockInfo)) {
-            let blockNum = blockInfo.number;
-            let block = await db.models.Blocks.findOne({ blockNum })
-            if (!block) {
-                if (blockInfo.error) {
-                    block = new db.models.Blocks({
-                        blockInfo: {
-                            hash: 'block-does-not-exist',
-                            number: blockInfo.number,
-                            subblocks: []
-                        },
-                        blockNum: blockInfo.number
-                    })
-                    block.error = true
-                } else {
-                    block = new db.models.Blocks({
-                        blockInfo,
-                        blockNum,
-                        hash: blockInfo.hash
-                    })
-                }
-                await block.save()
+        let blockNum = blockInfo.number || blockInfo.id;
+        let block = await db.models.Blocks.findOne({ blockNum })
+        if (!block) {
+            if (blockInfo.error) {
+                block = new db.models.Blocks({
+                    blockInfo: {
+                        hash: 'block-does-not-exist',
+                        number: blockNum,
+                        subblocks: []
+                    },
+                    blockNum
+                })
+                block.error = true
+            } else {
+                block = new db.models.Blocks({
+                    blockInfo,
+                    blockNum,
+                    hash: blockInfo.hash
+                })
             }
+            await block.save()
+        }
 
-            if (!block.error) {
-                if (!repairing) server.services.sockets.emitNewBlock(block.blockInfo)
-                await processBlockStateChanges(block.blockInfo)
-            }
+        if (!block.error) {
+            if (!repairing) server.services.sockets.emitNewBlock(block.blockInfo)
+            await processBlockStateChanges(block.blockInfo)
+        }
 
-            if (blockNum === currBatchMax) {
-                currBlockNum = currBatchMax;
-                checkForBlocks()
-            }
+        if (blockNum === currBatchMax) {
+            currBlockNum = currBatchMax;
+            checkForBlocks()
         }
     };
 
@@ -263,7 +261,7 @@ const runBlockGrabber = (config) => {
         return new Promise(resolver => {
             setTimeout(async() => {
                 const block_res = await sendBlockRequest(`${MASTERNODE_URL}${route_getBlockNum}${blockNum}`);
-                if (block_res.error) block_res.number = blockNum
+                block_res.id = blockNum
                 resolver(block_res);
             }, timedelay)
         })
@@ -432,14 +430,7 @@ const runBlockGrabber = (config) => {
                         let processed = await Promise.all(to_fetch.map(b => b.blockData));
                         
                         for (let blockData of processed) {
-                            if (malformedBlock(blockData)) {
-                                console.log({blockData})
-                                console.log(`Malformed Block, trying again in 30 Seconds`)
-                                timerId = setTimeout(checkForBlocks, 30000);
-                                break
-                            }else{
-                                await processBlock(blockData);
-                            }
+                            await processBlock(blockData)
                         }
                     }else{
                         timerId = setTimeout(checkForBlocks, 10000);
