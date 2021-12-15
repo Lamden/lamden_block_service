@@ -5,7 +5,8 @@ export const getSyncStatsEndpoints = (db) => {
             let latest_block = await db.queries.getLatestBlock()
             res.send({ latest_block })
         } catch (e) {
-            res.send({ error: e })
+            console.log(e)
+            res.send({ error: e.message })
         }
     };
 
@@ -14,7 +15,8 @@ export const getSyncStatsEndpoints = (db) => {
             let latest_processed_block = await db.queries.getLastestProcessedBlock()
             res.send({ latest_processed_block })
         } catch (e) {
-            res.send({ error: e })
+            console.log(e)
+            res.send({ error: e.message })
         }
     };
 
@@ -23,7 +25,8 @@ export const getSyncStatsEndpoints = (db) => {
             let latest_synced_block = await db.queries.getLatestSyncedBlock()
             res.send({ latest_synced_block })
         } catch (e) {
-            res.send({ error: e })
+            console.log(e)
+            res.send({ error: e.message })
         }
     };
 
@@ -40,7 +43,8 @@ export const getSyncStatsEndpoints = (db) => {
                 latest_block
             })
         } catch (e) {
-            res.send({ error: e })
+            console.log(e)
+            res.send({ error: e.message })
         }
     };
 

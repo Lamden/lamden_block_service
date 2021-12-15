@@ -1,18 +1,20 @@
 export const getTransactionEndpoints = (db) => {
 
-    async function get_tx_hash(req, res) {
+    async function get_tx(req, res) {
 
-        const { hash } = req.query
+        let { hash, uid } = req.query
 
-        console.log({hash})
+        if (hash && uid) uid = null
+
+        let result = null
 
         try {
-            let result = await db.queries.getTransactionByHash(hash)
-            console.log({result})
+            if (hash) result = await db.queries.getTransactionByHash(hash)
+            if (uid) result = await db.queries.getTransactionByUID(uid)
             res.send(result)
         } catch (e) {
             console.log(e)
-            res.send({ error: e })
+            res.send({ error: e.message })
         }
     }
 
@@ -20,7 +22,7 @@ export const getTransactionEndpoints = (db) => {
         {
             type: 'get',
             route: '/tx',
-            handler: get_tx_hash
+            handler: get_tx
         }
     ]
 }

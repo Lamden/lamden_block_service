@@ -6,7 +6,8 @@ export const getHistoryEndpoints = (db) => {
             let history = await db.queries.getAllHistory(last_tx_uid, limit)
             res.send({ history })
         } catch (e) {
-            res.send({ error: e })
+            console.log(e)
+            res.send({ error: e.message })
         }
 
     }
@@ -18,7 +19,8 @@ export const getHistoryEndpoints = (db) => {
             let history = await db.queries.getContractHistory(contract, last_tx_uid, limit)
             res.send({ history })
         } catch (e) {
-            res.send({ error: e })
+            console.log(e)
+            res.send({ error: e.message })
         }
 
     }
@@ -30,7 +32,8 @@ export const getHistoryEndpoints = (db) => {
             let history = await db.queries.getVariableHistory(contract, variable, last_tx_uid, limit)
             res.send({ history })
         } catch (e) {
-            res.send({ error: e })
+            console.log(e)
+            res.send({ error: e.message })
         }
     }
 
@@ -41,7 +44,8 @@ export const getHistoryEndpoints = (db) => {
             let history = await db.queries.getRootKeyHistory(contract, variable, root_key, last_tx_uid, limit)
             res.send({ history })
         } catch (e) {
-            res.send({ error: e })
+            console.log(e)
+            res.send({ error: e.message })
         }
     };
     return [

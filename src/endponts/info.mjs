@@ -6,7 +6,8 @@ export const getInfoEndpoints = (db) => {
             console.log(result)
             res.send(result)
         } catch (e) {
-            res.send({ error: e })
+            console.log(e)
+            res.send({ error: e.message })
         }
     }
 
@@ -17,7 +18,7 @@ export const getInfoEndpoints = (db) => {
             res.send(result)
         } catch (e) {
             console.log(e)
-            res.send({ error: e })
+            res.send({ error: e.message })
         }
     }
 
@@ -27,7 +28,8 @@ export const getInfoEndpoints = (db) => {
             console.log(result)
             res.send(result)
         } catch (e) {
-            res.send({ error: e })
+            console.log(e)
+            res.send({ error: e.message })
         }
     }
 
@@ -38,7 +40,7 @@ export const getInfoEndpoints = (db) => {
             res.send(result)
         } catch (e) {
             console.log(e)
-            res.send({ error: e })
+            res.send({ error: e.message })
         }
     }
 
