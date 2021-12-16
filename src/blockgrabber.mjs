@@ -166,6 +166,7 @@ const runBlockGrabber = (config) => {
                 let affectedContractsList = new Set()
                 let affectedVariablesList = new Set()
                 let affectedRootKeysList = new Set()
+                let tx_uid = utils.make_tx_uid(blockInfo.number, subBlockNum, tx_index)
 
                 if (Array.isArray(state)){
                     for (const s of state) {
@@ -180,19 +181,26 @@ const runBlockGrabber = (config) => {
                         }
 
                         if (keyOk){
+                            
                             let currentState = await db.models.CurrentState.findOne({ rawKey: s.key })
                             // console.log(currentState)
                             if (currentState) {
                                 if (currentState.lastUpdated < timestamp) {
                                     currentState.txHash = txInfo.hash
+                                    currentState.prev_value = currentState.value
+                                    currentState.prev_tx_uid = currentState.tx_uid
                                     currentState.value = s.value
                                     currentState.lastUpdated = timestamp
+                                    currentState.tx_uid = tx_uid
                                     await currentState.save()
                                 }
                             } else {
                                 await new db.models.CurrentState({
                                     rawKey: s.key,
                                     txHash: txInfo.hash,
+                                    tx_uid,
+                                    prev_value: null,
+                                    prev_tx_uid: null,
                                     value: s.value,
                                     lastUpdated: timestamp
                                 }).save((err) => {
@@ -227,15 +235,6 @@ const runBlockGrabber = (config) => {
                     }
                 }
 
-                let blockPadding = "000000000000"
-                let regPadding = "00000"
-
-                let blockWithPadding = `${blockPadding.substring(0, blockPadding.length - blockInfo.number.toString().length)}${blockInfo.number}`
-                let subBlockWithPadding = `${regPadding.substring(0, regPadding.length - subBlockNum.toString().length)}${subBlockNum}`
-                let txIndexPadding = `${regPadding.substring(0, regPadding.length - tx_index.toString().length)}${tx_index}`
-
-                let tx_uid = `${blockWithPadding}.${subBlockWithPadding}.${txIndexPadding}`
-
                 let stateChangesModel = {
                     tx_uid,
                     blockNum: blockInfo.number,
@@ -245,6 +244,7 @@ const runBlockGrabber = (config) => {
                     affectedContractsList: Array.from(affectedContractsList),
                     affectedVariablesList: Array.from(affectedVariablesList),
                     affectedRootKeysList: Array.from(affectedRootKeysList),
+                    affectedRawKeysList: txInfo.state.map(change => change.key),
                     state_changes_obj: utils.cleanObj(state_changes_obj),
                     txHash: txInfo.hash,
                     txInfo

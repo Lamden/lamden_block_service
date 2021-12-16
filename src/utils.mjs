@@ -82,3 +82,14 @@ export const mergeObjects = (objectList) => {
         return merge(obj1, obj2)
     })
 }
+
+export function make_tx_uid (blockNumber, subBlockNum, tx_index){
+    let blockPadding = "000000000000"
+    let regPadding = "00000"
+
+    let blockWithPadding = `${blockPadding.substring(0, blockPadding.length - blockNumber.toString().length)}${blockNumber}`
+    let subBlockWithPadding = `${regPadding.substring(0, regPadding.length - subBlockNum.toString().length)}${subBlockNum}`
+    let txIndexPadding = `${regPadding.substring(0, regPadding.length - tx_index.toString().length)}${tx_index}`
+
+    return `${blockWithPadding}.${subBlockWithPadding}.${txIndexPadding}`
+}
