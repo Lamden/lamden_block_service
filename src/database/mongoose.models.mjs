@@ -29,6 +29,7 @@ var stateChanges = new mongoose.Schema({
     affectedContractsList: Array,
     affectedVariablesList: Array,
     affectedRootKeysList: Array,
+    affectedRawKeysList: Array,
     txHash: String,
     state_changes_obj: Object,
     txInfo: Object
@@ -40,9 +41,11 @@ var currentState = new mongoose.Schema({
         required: true,
         index: true
     },
-    state_change_uid: String,
+    tx_uid: String,
+    prev_tx_uid: String,
     txHash: String,
     value: mongoose.Schema.Types.Mixed,
+    prev_value: mongoose.Schema.Types.Mixed,
     contractName: String,
     variableName: String,
     keys: Array,

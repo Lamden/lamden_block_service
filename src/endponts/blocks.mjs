@@ -9,7 +9,8 @@ export const getBlockEndpoints = (db) => {
             let result = await db.queries.getBlockNumber(number)
             res.send(result)
         } catch (e) {
-            res.send({ error: e })
+            console.log(e)
+            res.send({ error: e.message })
         }
     }
 
@@ -22,7 +23,7 @@ export const getBlockEndpoints = (db) => {
             res.send(results)
         } catch (e) {
             console.log(e)
-            res.send({ error: e })
+            res.send({ error: e.message })
         }
     }
 
