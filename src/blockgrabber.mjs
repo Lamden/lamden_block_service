@@ -234,6 +234,8 @@ const runBlockGrabber = (config) => {
                     }
                 }
 
+                console.log({txInfo})
+
                 let stateChangesModel = {
                     tx_uid,
                     blockNum: blockInfo.number,
