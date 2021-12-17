@@ -234,7 +234,7 @@ const runBlockGrabber = (config) => {
                     }
                 }
 
-                console.log({txInfo})
+                const { state } = txInfo
 
                 let stateChangesModel = {
                     tx_uid,
@@ -245,7 +245,7 @@ const runBlockGrabber = (config) => {
                     affectedContractsList: Array.from(affectedContractsList),
                     affectedVariablesList: Array.from(affectedVariablesList),
                     affectedRootKeysList: Array.from(affectedRootKeysList),
-                    affectedRawKeysList: txInfo.state.map(change => change.key),
+                    affectedRawKeysList: Array.isArray(state) ? txInfo.state.map(change => change.key) : [],
                     state_changes_obj: utils.cleanObj(state_changes_obj),
                     txHash: txInfo.hash,
                     txInfo
