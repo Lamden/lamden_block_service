@@ -74,7 +74,6 @@ const runBlockGrabber = (config) => {
                     console.log(new Date())
                     console.log(err)
                     console.error("Blockgrabber Error in https protocol.on.error: " + err);
-                    console.log(data)
                     resolve({ error: err.message });
                 });
         });
