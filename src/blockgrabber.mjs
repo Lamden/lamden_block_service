@@ -310,7 +310,6 @@ const runBlockGrabber = (config) => {
                         console.log(`Block ${i}: WAS MALFORMED FROM DATABASE`)
                         await db.models.Blocks.deleteOne({ blockNum: i })
                     }else{
-                        
                         await processBlock(blockRes.blockInfo)
                         .then(() => {
                             repairedFrom = "Database"
