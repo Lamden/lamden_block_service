@@ -34,6 +34,13 @@ export const getDatabase = () => new Promise(resolver => {
                 db.queries = getQueries(db)
                 db.models = mongoose_models
                 db.utils = dbUtils
+                db.config = {
+                    NETWORK,
+                    DBNAME,
+                    DBURL,
+                    DBPORT
+                }
+                console.log(db.config)
                 resolver(db);
             }
         }

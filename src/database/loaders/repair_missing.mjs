@@ -5,9 +5,6 @@
 // Instructions
 // node repair_missing.mjs
 
-import { config } from 'dotenv'
-config({path: '../../../.env'})
-
 import https from 'https';
 import http from 'http';
 import util from 'util'
@@ -16,28 +13,8 @@ import readline from 'readline'
 import * as utils from '../../utils.mjs'
 import { getDatabase } from "../database.mjs";
 
-const MASTERNODE_URLS = {
-    'testnet': "https://testnet-master-1.lamden.io",
-    'mainnet': "https://masternode-01.lamden.io"
-}
 
-const NETWORK = process.env.NETWORK || 'testnet'
-const MASTERNODE_URL = process.env.MASTERNODE_URL || MASTERNODE_URLS[NETWORK]
-
-console.log(MASTERNODE_URL)
-
-const input = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-})
-
-input.question(`Is this the correct masternode? (y/n) `, answer => {
-    if (answer.toLocaleLowerCase() === 'y') repairMissingBlocks()
-    input.close()
-})
-
-
-const repairMissingBlocks = async () => {
+const repairMissingBlocks = (async () => {
     let db = await getDatabase()
 
     let startTime = new Date()
@@ -88,13 +65,30 @@ const repairMissingBlocks = async () => {
 
     let [ start_block, just_one ] = process.argv.slice(2)
 
-    try {
-        get_batch(parseInt(start_block || 0), just_one === "true")
-    }catch(e){
-        throw new Error(`Invalid start block of ${start_block} provided`)
+    const MASTERNODE_URLS = {
+        'testnet': "https://testnet-master-1.lamden.io",
+        'mainnet': "https://masternode-01.lamden.io"
     }
     
-}
+    const MASTERNODE_URL = MASTERNODE_URLS[db.config.NETWORK]
+    
+    const input = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    })
+    
+    input.question(`Is this the correct masternode? (y/n) `, answer => {
+        if (answer.toLocaleLowerCase() === 'y') {
+            try {
+                get_batch(parseInt(start_block || 0), just_one === "true")
+            }catch(e){
+                throw new Error(`Invalid start block of ${start_block} provided`)
+            }
+        }
+        input.close()
+        process.exit()
+    })
+})()
 
 async function processBlock(db, blockInfo = {}){
     let blockNum = blockInfo.id
