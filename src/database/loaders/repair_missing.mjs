@@ -13,7 +13,6 @@ import readline from 'readline'
 import * as utils from '../../utils.mjs'
 import { getDatabase } from "../database.mjs";
 
-
 const repairMissingBlocks = (async () => {
     let db = await getDatabase()
 
@@ -87,7 +86,6 @@ const repairMissingBlocks = (async () => {
             }
         }
         input.close()
-        process.exit()
     })
 })()
 
