@@ -3,7 +3,9 @@
 // 2: just_one (true, optional, default false) - enter true to only get one block
 
 // Instructions
-// node repair_missing.mjs
+// 1) Run from project root!
+//    node src/database/loaders/repair_missing.mjs
+// 2) when prompted verify the masternode
 
 import https from 'https';
 import http from 'http';
