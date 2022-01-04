@@ -31,7 +31,7 @@ var stateChanges = new mongoose.Schema({
     affectedRootKeysList: Array,
     affectedRawKeysList: Array,
     txHash: String,
-    state_changes_obj: Object,
+    state_changes_obj: mongoose.Schema.Types.Mixed,
     txInfo: Object
 });
 

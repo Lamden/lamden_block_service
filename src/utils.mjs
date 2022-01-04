@@ -32,6 +32,7 @@ export const keysToObj = (keyInfo, value) => {
     keys = keys.map(k => replaceSpecialChars(k))
 
     let objString = `{"${contractName}":{"${variableName}":`
+    if (typeof value === 'undefined') value = null
     let objStringSuffix = `{"__hash_self__":${JSON.stringify(value)}}}}`
 
     //console.log(JSON.stringify(replaceSpecialChars(value)))
@@ -47,6 +48,8 @@ export const keysToObj = (keyInfo, value) => {
         return JSON.parse(concatStr)
     } catch (e) {
         console.log(e)
+        console.log(util.inspect({keyInfo}, false, null, true))
+        console.log(util.inspect({keys}, false, null, true))
         console.log(util.inspect({concatStr}, false, null, true))
         console.log(util.inspect({objString}, false, null, true))
         console.log(util.inspect({objStringSuffix}, false, null, true))
@@ -92,4 +95,13 @@ export function make_tx_uid (blockNumber, subBlockNum, tx_index){
     let txIndexPadding = `${regPadding.substring(0, regPadding.length - tx_index.toString().length)}${tx_index}`
 
     return `${blockWithPadding}.${subBlockWithPadding}.${txIndexPadding}`
+}
+
+export function stringify(obj){
+    try{
+        return JSON.stringify(obj)
+    }catch(e){
+        console.log(e)
+        console.log(util.inspect(obj, false, null, true))
+    }
 }

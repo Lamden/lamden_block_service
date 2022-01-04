@@ -16,7 +16,7 @@ export const getHistoryQueries = (db) => {
             .limit(limit)
 
         if (!stateChanges) return []
-        else return stateChanges
+        else return db.utils.hydrate_state_changes_obj(stateChanges)
     }
 
     async function getContractHistory(contractName, last_tx_uid = "000000000000.00000.00000", limit = 10) {
@@ -30,7 +30,7 @@ export const getHistoryQueries = (db) => {
             .limit(limit)
 
         if (!stateChanges) return []
-        else return stateChanges
+        else return db.utils.hydrate_state_changes_obj(stateChanges)
     }
 
     async function getVariableHistory(contractName, variableName, last_tx_uid = "000000000000.00000.00000", limit = 10) {
@@ -44,7 +44,7 @@ export const getHistoryQueries = (db) => {
             .limit(limit)
 
         if (!stateChanges) return []
-        else return stateChanges
+        else return db.utils.hydrate_state_changes_obj(stateChanges)
     }
 
     async function getRootKeyHistory(contractName, variableName, rootKey, last_tx_uid = "000000000000.00000.00000", limit = 10) {
@@ -58,7 +58,7 @@ export const getHistoryQueries = (db) => {
             .limit(limit)
 
         if (!stateChanges) return []
-        else return stateChanges
+        else return db.utils.hydrate_state_changes_obj(stateChanges)
     }
 
     async function getPreviousKeyValue(contractName, variableName, keys, tx_uid){
@@ -77,6 +77,9 @@ export const getHistoryQueries = (db) => {
                 tx_uid: null
             }
         }
+
+        if(!result.state_changes_obj) result.state_changes_obj = {}
+        if (typeof result.state_changes_obj === "string") result.state_changes_obj = JSON.parse(result.state_changes_obj)
 
         let value = result.state_changes_obj[contractName][variableName]
 
