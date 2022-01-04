@@ -77,6 +77,7 @@ const repairMissingBlocks = (async () => {
         output: process.stdout
     })
     
+    console.log(`MASTERNODE_URL: ${MASTERNODE_URL}`)
     input.question(`Is this the correct masternode? (y/n) `, answer => {
         if (answer.toLocaleLowerCase() === 'y') {
             try {
