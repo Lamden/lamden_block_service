@@ -1,3 +1,5 @@
+import util from 'util'
+
 export { isLst001 } from './processors/lst001.mjs'
 
 export function makeKey(contractName, variableName, key) {
@@ -39,3 +41,18 @@ export function secondsToString(seconds, fixed = 1){
     }
 }
 
+export function hydrate_state_changes_obj(stateChanges){
+    return stateChanges.map(change => {
+        if (typeof change.state_changes_obj === "string"){
+            try{
+                change = change.toObject()
+                change.state_changes_obj = JSON.parse(change.state_changes_obj)
+            }catch(e){
+                console.log(e)
+                console.log(util.inspect({change}, false, null, true))
+                change.state_changes_obj = {}
+            }
+        }
+        return change
+    })
+}

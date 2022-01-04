@@ -11,6 +11,7 @@ export const getTransactionEndpoints = (db) => {
         try {
             if (hash) result = await db.queries.getTransactionByHash(hash)
             if (uid) result = await db.queries.getTransactionByUID(uid)
+            if (typeof result.state_changes_obj === "string") result.state_changes_obj = JSON.parse(result.state_changes_obj)
             res.send(result)
         } catch (e) {
             console.log(e)

@@ -205,6 +205,7 @@ const runBlockGrabber = (config) => {
                                 }).save((err) => {
                                     if (err){
                                         console.log(err)
+                                        console.log(util.inspect({blockInfo, txInfo}, false, null, true))
                                         recheck(err, 30000)
                                     }
                                 })
@@ -227,31 +228,39 @@ const runBlockGrabber = (config) => {
                                 await new db.models.Contracts({
                                     contractName,
                                     lst001
-                                }).save()
+                                }).save((err) => {
+                                    console.log(err)                                    
+                                })
                                 server.services.sockets.emitNewContract({contractName, lst001})
                             }
                         }
                     }
                 }
 
-                let stateChangesModel = {
-                    tx_uid,
-                    blockNum: blockInfo.number,
-                    subBlockNum,
-                    txIndex: tx_index,
-                    timestamp,
-                    affectedContractsList: Array.from(affectedContractsList),
-                    affectedVariablesList: Array.from(affectedVariablesList),
-                    affectedRootKeysList: Array.from(affectedRootKeysList),
-                    affectedRawKeysList: Array.isArray(state) ? txInfo.state.map(change => change.key) : [],
-                    state_changes_obj: utils.cleanObj(state_changes_obj),
-                    txHash: txInfo.hash,
-                    txInfo
+                try{
+                    let stateChangesModel = {
+                        tx_uid,
+                        blockNum: blockInfo.number,
+                        subBlockNum,
+                        txIndex: tx_index,
+                        timestamp,
+                        affectedContractsList: Array.from(affectedContractsList),
+                        affectedVariablesList: Array.from(affectedVariablesList),
+                        affectedRootKeysList: Array.from(affectedRootKeysList),
+                        affectedRawKeysList: Array.isArray(state) ? txInfo.state.map(change => change.key) : [],
+                        state_changes_obj: utils.stringify(utils.cleanObj(state_changes_obj)),
+                        txHash: txInfo.hash,
+                        txInfo
+                    }
+
+                    await db.models.StateChanges.updateOne({ tx_uid }, stateChangesModel, { upsert: true });
+
+                    if (!repairing) server.services.sockets.emitTxStateChanges(stateChangesModel)
+                }catch(e){
+                    console.log(e)
+                    console.log(util.inspect({blockInfo}, false, null, true))
+                    recheck(e, 30000)
                 }
-
-                await db.models.StateChanges.updateOne({ tx_uid }, stateChangesModel, { upsert: true });
-
-                if (!repairing) server.services.sockets.emitTxStateChanges(stateChangesModel)
             }
         }
     }
