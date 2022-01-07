@@ -10,9 +10,23 @@ export const getTransactionQueries = (db) => {
         return await db.models.StateChanges.findOne({tx_uid},{ '_id': 0, '__v': 0 })
     }
 
+    async function getTxHistory(vk, last_tx_uid = "999999999999.00000.00000", limit=10){
+        limit = parseInt(limit) || 10
+
+        let stateChanges = await db.models.StateChanges.find({
+                "txInfo.transaction.payload.sender": vk,
+                tx_uid: { $lt: last_tx_uid }
+            })
+            .sort({ "tx_uid": -1 })
+            .limit(limit)
+
+        if (!stateChanges) return []
+        else return db.utils.hydrate_state_changes_obj(stateChanges)
+    }
 
     return {
         getTransactionByHash,
-        getTransactionByUID
+        getTransactionByUID,
+        getTxHistory
     }
 }
