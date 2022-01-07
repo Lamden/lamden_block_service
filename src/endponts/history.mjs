@@ -48,6 +48,19 @@ export const getHistoryEndpoints = (db) => {
             res.send({ error: e.message })
         }
     };
+
+    async function tx_history(req, res){
+        const { vk } = req.params
+        const { max_tx_uid, limit } = req.query
+
+        try {
+            let history = await db.queries.getTxHistory(vk, max_tx_uid, limit)
+            res.send({ history })
+        } catch (e) {
+            console.log(e)
+            res.send({ error: e.message })
+        }
+    }
     return [
         {
             type: 'get',
@@ -68,6 +81,12 @@ export const getHistoryEndpoints = (db) => {
             type: 'get',
             route: '/rootkey_history',
             handler: rootkey_history
-        }
+        },
+        {
+            type: 'get',
+            route: '/tx_history/:vk',
+            handler: tx_history
+        },
+
     ]
 }
