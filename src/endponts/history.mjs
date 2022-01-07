@@ -51,10 +51,10 @@ export const getHistoryEndpoints = (db) => {
 
     async function tx_history(req, res){
         const { vk } = req.params
-        const { last_tx_uid, limit } = req.query
+        const { max_tx_uid, limit } = req.query
 
         try {
-            let history = await db.queries.getTxHistory(vk, last_tx_uid, limit)
+            let history = await db.queries.getTxHistory(vk, max_tx_uid, limit)
             res.send({ history })
         } catch (e) {
             console.log(e)
