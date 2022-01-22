@@ -1,8 +1,11 @@
 import { config } from 'dotenv'
 config()
 import { getDatabase } from "./src/database/database.mjs";
-//import { runBlockGrabber } from './blockgrabber.mjs'
+
 import { runBlockGrabber } from './src/blockgrabber.mjs'
+import { blockProcessingQueue } from './src/blockProcessingQueue.mjs'
+import { eventWebsockets } from './src/services/eventsWebsocket.mjs'
+
 import { createServer } from './src/server.mjs'
 
 const MASTERNODE_URLS = {
@@ -34,8 +37,12 @@ let grabberConfig = {
 const start = async() => {
     grabberConfig.db = await getDatabase()
     grabberConfig.server = await createServer(BLOCKSERVICE_PORT, grabberConfig.db)
+    grabberConfig.blockchainEvents = eventWebsockets(grabberConfig.MASTERNODE_URL)
+    grabberConfig.blockProcessingQueue = blockProcessingQueue(grabberConfig.db)
 
     let blockGrabber = runBlockGrabber(grabberConfig)
+    blockGrabber.start()
+    /*
     let nextCheck = 15000
     setInterval(async() => {
         console.log(blockGrabber.lastCheckedTime())
@@ -56,6 +63,7 @@ const start = async() => {
             }
         }
     }, nextCheck)
+    */
 }
 
 start()
