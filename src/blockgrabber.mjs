@@ -352,10 +352,10 @@ const runBlockGrabber = (config) => {
 
         if (!block){
             blockProcessingQueue.addBlock(data)
-            let lastRepairedBlock = await db.queries.getLastRepaired()
-    
-            await syncBlocks(lastRepairedBlock + 1, data.number)
         }
+        
+        let lastRepairedBlock = await db.queries.getLastRepaired()
+        await syncBlocks(lastRepairedBlock + 1, data.number)
     };
 
     async function processBlockFromWebsocket(blockData){
