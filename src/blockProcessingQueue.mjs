@@ -2,14 +2,20 @@ export const blockProcessingQueue = (db) => {
     let blockQueue = {}
     let blockProcessor = null
     let timer = null
+    let processing = false
 
     function start(){
-        timer = setInterval(processNext, 100)
+        timer = setInterval(tryProcessing, 100)
     }
 
     function stop(){
         clearInterval(timer)
         timer = null
+    }
+
+    function tryProcessing(){
+        if (processing) return
+        processNext()
     }
 
     async function addBlock(blockInfo){
@@ -57,16 +63,25 @@ export const blockProcessingQueue = (db) => {
             throw new Error("No block processsor setup. Call 'setupBlockProcessor'.")
         }
 
+        processing = true
+
         let blockNumbers =  Object.keys(blockQueue).sort((a,b) => a > b)
 
-        if (blockNumbers.length === 0) return
+        if (blockNumbers.length === 0) {
+            processing = false
+            return
+        }
 
         let lowestBlockNumber = blockNumbers[0]
 
         let blockInfo = blockQueue[lowestBlockNumber]
+        console.log({blockNumbers})
+        console.log({blockQueueCount: Object.keys(blockQueue).length})
         console.log(`Processing block ${lowestBlockNumber} from queue.`)
         await blockProcessor(blockInfo)
         delete blockQueue[lowestBlockNumber]  
+
+        processing = false
     }
 
     return {

@@ -353,8 +353,12 @@ const runBlockGrabber = (config) => {
         if (!block){
             blockProcessingQueue.addBlock(data)
         }
-        
-        let lastRepairedBlock = await db.queries.getLastRepaired()
+
+        let lastRepairedBlock = 0
+        lastRepairedBlock = await db.queries.getLastRepaired()
+        if (!lastRepairedBlock){
+            lastRepairedBlock = await db.queries.getLastestProcessedBlock()
+        }
         await syncBlocks(lastRepairedBlock + 1, data.number)
     };
 
