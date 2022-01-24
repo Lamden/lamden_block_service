@@ -15,10 +15,6 @@ const MASTERNODE_URLS = {
 
 /******* MONGO DB CONNECTION INFO **/
 const NETWORK = process.env.NETWORK || 'testnet'
-const START_AT_BLOCK_NUMBER = parseInt(process.env.START_AT_BLOCK_NUMBER) || 0
-const RE_PARSE_BLOCKS = process.env.RE_PARSE_BLOCKS || false
-const RE_PARSE_BLOCK = process.env.RE_PARSE_BLOCK || false
-const WIPE = process.env.WIPE || false
 const MASTERNODE_URL = process.env.MASTERNODE_URL || MASTERNODE_URLS[NETWORK]
 
 /******* SERVER CONNECTION INFO **/
@@ -26,12 +22,7 @@ const BLOCKSERVICE_PORT = process.env.BLOCKSERVICE_PORT || 3535
 
 let grabberConfig = {
     DEBUG_ON: process.env.DEBUG_ON || false,
-    REPAIR_BLOCKS: process.env.REPAIR_BLOCKS || undefined,
-    START_AT_BLOCK_NUMBER,
-    MASTERNODE_URL,
-    WIPE,
-    RE_PARSE_BLOCKS,
-    RE_PARSE_BLOCK
+    MASTERNODE_URL
 }
 
 const start = async() => {
@@ -42,28 +33,6 @@ const start = async() => {
 
     let blockGrabber = runBlockGrabber(grabberConfig)
     blockGrabber.start()
-    /*
-    let nextCheck = 15000
-    setInterval(async() => {
-        console.log(blockGrabber.lastCheckedTime())
-        console.log(new Date() - blockGrabber.lastCheckedTime())
-
-        if (blockGrabber.isRepairing()) {
-            nextCheck = 60000
-        } else {
-            if ((new Date() - blockGrabber.lastCheckedTime()) > 30000) {
-                console.log('restarting blockgrabber')
-                if (grabberConfig.WIPE === 'yes') grabberConfig.WIPE = undefined
-                if (grabberConfig.RE_PARSE_BLOCKS === 'yes') grabberConfig.RE_PARSE_BLOCKS = undefined
-                blockGrabber.stop()
-                blockGrabber = runBlockGrabber(grabberConfig)
-                nextCheck = 30000
-            } else {
-                nextCheck = 15000
-            }
-        }
-    }, nextCheck)
-    */
 }
 
 start()

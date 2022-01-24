@@ -5,45 +5,14 @@ import util from 'util'
 
 const runBlockGrabber = (config) => {
     const { 
-        WIPE, 
-        RE_PARSE_BLOCKS, 
         MASTERNODE_URL, 
-        START_AT_BLOCK_NUMBER, 
-        DEBUG_ON, 
-        REPAIR_BLOCKS, 
-        RE_PARSE_BLOCK, 
         db, 
         server, 
         blockchainEvents,
         blockProcessingQueue
      } = config
 
-    var wipeOnStartup = WIPE;
-    let currBlockNum = START_AT_BLOCK_NUMBER;
     const route_getBlockNum = "/blocks?num=";
-    let timerId;
-
-    const wipeDB = async(force = false) => {
-        console.log("-----WIPING DATABASE-----");
-        const toWipe = ['StateChanges', 'App', 'CurrentState']
-
-        if (wipeOnStartup || force) {
-            await db.models.Blocks.deleteMany({}).then((res) => {
-                console.log("Blocks DB wiped")
-                console.log(res)
-            });
-        }
-        toWipe.map(model => {
-                return db.models[model].deleteMany({}).then((res) => {
-                    console.log(`${model} DB wiped`);
-                    console.log(res)
-                });
-            })
-            // currBlockNum = 3100;
-        currBlockNum = START_AT_BLOCK_NUMBER
-        console.log(`Set currBlockNum = ${START_AT_BLOCK_NUMBER}`);
-        timerId = setTimeout(checkForBlocks, 500);
-    };
 
     const processBlock = async(blockInfo = {}) => {
         let blockNum = blockInfo.number || blockInfo.id;
