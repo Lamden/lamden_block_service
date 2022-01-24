@@ -3,32 +3,61 @@ import util from 'util'
 
 import WebSocket from 'websocket'
 
-
-
 const eventWebsockets = (MASTERNODE_URL) => {
-    const wsClient = new WebSocket.client
-
+    let wsClient = null
     let eventProcessors = {}
+    let url = createURL()
+    let initialized = false
+    let connected = false
+    let timer = null
 
     function start(){
-        if (!MASTERNODE_URL) throw new Error("No MASTERNODE_URL provided for websocket connection")
+        if (!url) throw new Error("No MASTERNODE_URL provided for websocket connection")
 
-        console.log(`- Connecting to ${MASTERNODE_URL} masternode websocket.`)
+        console.log(`- Connecting to ${url} masternode websocket.`)
+        connect()
+    }
 
+    function connect(){
+        wsClient = new WebSocket.client
         wsClient.on('connect', onConnect)
-        // wsClient.connect(MASTERNODE_URL, 'echo-protocol')
-        // testnet-master-1.lamden.io/
-        wsClient.connect('wss://testnet-master-1.lamden.io')
+        wsClient.connect(`${url}`)
+    }
+
+    function reconnect(){
+        if (connected) {
+            clearInterval(timer)
+            timer = null
+        }
+
+        console.log(`- Reconnecting to ${url} masternode websocket.`)
+        wsClient.connect(`${url}`)
     }
 
     function onConnect(connection){
-        console.log('WebSocket Client Connected');
+        connected = true
+
+        console.log(new Date())
+
+        clearInterval(timer)
+        timer = null
+
         connection.on('error', onError);
         connection.on('close', onClose);
         connection.on('message', onMessage);
+    
+
+        if (initialized) {
+            console.log('WebSocket Client Reconnected');
+        }else{
+            console.log('WebSocket Client Connected');
+            initialized = true
+        }
+
     }
 
     function onMessage(message){
+        console.log(new Date())
         console.log({message})
         if (message.type === 'utf8') {
             console.log("Received: '" + message.utf8Data + "'");
@@ -46,15 +75,30 @@ const eventWebsockets = (MASTERNODE_URL) => {
 
     function onError(error){
         console.log("Connection Error: " + error.toString());
-
+        connected = false
+        if (!timer) timer = setInterval(reconnect, 1000)
     }
 
     function onClose(){
         console.log('echo-protocol Connection Closed');
+        connected = false
+        if (!timer) timer = setInterval(reconnect, 1000)
     }
 
     function setupEventProcessor(eventName, EventProcessor){
         eventProcessors[eventName] = EventProcessor
+    }
+
+    function createURL(){
+        if (MASTERNODE_URL.includes('ws://') || MASTERNODE_URL.includes('wss://')) return
+
+        if (MASTERNODE_URL.includes('https://')){
+            return 'wss://' + MASTERNODE_URL.split('https://')[1]
+        }
+        if (MASTERNODE_URL.includes('http://')){
+            return 'ws://' + MASTERNODE_URL.split('http://')[1]
+        }
+        return 'ws://' + MASTERNODE_URL
     }
 
     return {

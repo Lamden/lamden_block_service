@@ -1,5 +1,4 @@
-import https from 'https';
-import http from 'http';
+import axios from 'axios'
 
 import * as utils from './utils.mjs'
 import util from 'util'
@@ -47,38 +46,6 @@ const runBlockGrabber = (config) => {
         currBlockNum = START_AT_BLOCK_NUMBER
         console.log(`Set currBlockNum = ${START_AT_BLOCK_NUMBER}`);
         timerId = setTimeout(checkForBlocks, 500);
-    };
-
-    const sendBlockRequest = (url) => {
-        return new Promise((resolve) => {
-            let protocol = http;
-            if (url.includes("https://")) protocol = https;
-            protocol
-                .get(url, (resp) => {
-                    let data = "";
-                    resp.on("data", (chunk) => {
-                        data += chunk;
-                    });
-                    resp.on("end", () => {
-                        try {
-                            // console.log(data);
-                            resolve(JSON.parse(data));
-                        } catch (err) {
-                            console.log(new Date())
-                            console.log(err)
-                            console.error("Blockgrabber Error in https resp.on.end: " + err);
-                            console.log(data)
-                            resolve({ error: err.message });
-                        }
-                    });
-                })
-                .on("error", (err) => {
-                    console.log(new Date())
-                    console.log(err)
-                    console.error("Blockgrabber Error in https protocol.on.error: " + err);
-                    resolve({ error: err.message });
-                });
-        });
     };
 
     const processBlock = async(blockInfo = {}) => {
@@ -271,9 +238,20 @@ const runBlockGrabber = (config) => {
     const getBlock_MN = (blockNum, timedelay = 0) => {
         return new Promise(resolver => {
             setTimeout(async() => {
-                const block_res = await sendBlockRequest(`${MASTERNODE_URL}${route_getBlockNum}${blockNum}`);
-                block_res.id = blockNum
-                resolver(block_res);
+                await axios(`${MASTERNODE_URL}${route_getBlockNum}${blockNum}`)
+                    .then(res => {
+                        let block_res = res.data
+                        block_res.id = blockNum
+                        resolver(block_res);
+                    })
+                    .catch(err => {
+                        console.error(new Date())
+                        console.error(err)
+                        resolver({
+                            error: "Error: Error contacting maternode.",
+                            id: blockNum
+                        })
+                    })
             }, timedelay)
         })
     };
@@ -367,12 +345,14 @@ const runBlockGrabber = (config) => {
     }
 
     async function start() {
+        blockProcessingQueue.setupBlockProcessor(processBlock)
+        blockProcessingQueue.start()
+
         blockchainEvents.setupEventProcessor('new_block', processBlockFromWebsocket)
         blockchainEvents.setupEventProcessor('latest_block', processLatestBlockFromWebsocket)
         blockchainEvents.start()
 
-        blockProcessingQueue.setupBlockProcessor(processBlock)
-        blockProcessingQueue.start()
+
     }
 
     return {
