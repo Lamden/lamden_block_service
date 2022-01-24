@@ -21,10 +21,7 @@ const runBlockGrabber = (config) => {
     var wipeOnStartup = WIPE;
     let currBlockNum = START_AT_BLOCK_NUMBER;
     const route_getBlockNum = "/blocks?num=";
-    let lastestBlockNum = 0;
     let timerId;
-
-    let runID = Math.floor(Math.random() * 1000)
 
     const wipeDB = async(force = false) => {
         console.log("-----WIPING DATABASE-----");
@@ -299,7 +296,7 @@ const runBlockGrabber = (config) => {
             if (repairedFrom === ""){
                 await new Promise(async (resolver) => {
                     const checkMasterNode = async () => {
-                        let blockData = await getBlock_MN(i, 100)
+                        let blockData = await getBlock_MN(i, 250)
                         blockData.id = i
                         console.log(util.inspect(blockData, false, null, true))
 
@@ -344,6 +341,35 @@ const runBlockGrabber = (config) => {
         blockProcessingQueue.addBlock(blockData)
     }
 
+    async function checkForMissingBlocks(){
+        let lastRepairedBlock = await db.queries.getLastRepaired() - 1000
+        if (lastRepairedBlock < 0 ) lastRepairedBlock = 0
+
+        console.log(`-> Repairing missing blocks from block ${lastRepairedBlock}.`)
+
+        let batch = await db.models.Blocks.find({"blockInfo.hash": "block-does-not-exist", "blockNum":{ $gte: lastRepairedBlock}})
+
+        console.log(`-> ${batch.length} missing blocks found.`)
+
+        for (let block of batch){
+            const { blockNum, blockInfo } = block
+
+            let blockToGet = blockNum || blockInfo.number
+
+            try{
+                if (isNaN(parseInt(blockToGet))) throw new Error(`Block has no number.`)
+                await syncBlocks(blockToGet, blockToGet)
+            }catch(e){
+                console.error({ blockNum, blockInfo })
+                console.error({ block })
+                console.error(e)
+            }
+        }
+
+        // recheck in 5 minutes
+        setTimeout(checkForMissingBlocks, 300000)
+    }
+
     async function start() {
         blockProcessingQueue.setupBlockProcessor(processBlock)
         blockProcessingQueue.start()
@@ -352,7 +378,8 @@ const runBlockGrabber = (config) => {
         blockchainEvents.setupEventProcessor('latest_block', processLatestBlockFromWebsocket)
         blockchainEvents.start()
 
-
+        // Every 5 minutes
+        checkForMissingBlocks()
     }
 
     return {
