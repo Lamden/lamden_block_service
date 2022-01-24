@@ -30,7 +30,7 @@ export const getDatabase = () => new Promise(resolver => {
                 console.log(error)
                 throw new Error(error)
             } else {
-                console.log("connection successful");
+                console.log(" - DB Connection Successful");
                 db.queries = getQueries(db)
                 db.models = mongoose_models
                 db.utils = dbUtils

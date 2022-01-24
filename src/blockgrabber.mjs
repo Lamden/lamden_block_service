@@ -1,89 +1,24 @@
-import https from 'https';
-import http from 'http';
+import axios from 'axios'
 
 import * as utils from './utils.mjs'
 import util from 'util'
 
 const runBlockGrabber = (config) => {
-    const { WIPE, RE_PARSE_BLOCKS, MASTERNODE_URL, START_AT_BLOCK_NUMBER, DEBUG_ON, REPAIR_BLOCKS, RE_PARSE_BLOCK, db, server } = config
+    const { 
+        MASTERNODE_URL, 
+        db, 
+        server, 
+        blockchainEvents,
+        blockProcessingQueue
+     } = config
 
-    var wipeOnStartup = WIPE;
-    var reParseBlocks = RE_PARSE_BLOCKS;
-
-    let stop = false;
-    let repairing = false
-    let currBlockNum = START_AT_BLOCK_NUMBER;
-    let checkNextIn = 0;
-    let maxCheckCount = 10;
-    let alreadyCheckedCount = 0;
     const route_getBlockNum = "/blocks?num=";
-    const route_getLastestBlock = "/latest_block";
-    let lastestBlockNum = 0;
-    let currBatchMax = 0;
-    let batchAmount = 49;
-    let timerId;
-    let lastCheckTime = new Date();
-    let runID = Math.floor(Math.random() * 1000)
-
-    const wipeDB = async(force = false) => {
-        console.log("-----WIPING DATABASE-----");
-        const toWipe = ['StateChanges', 'App', 'CurrentState']
-
-        if (wipeOnStartup || force) {
-            await db.models.Blocks.deleteMany({}).then((res) => {
-                console.log("Blocks DB wiped")
-                console.log(res)
-            });
-        }
-        toWipe.map(model => {
-                return db.models[model].deleteMany({}).then((res) => {
-                    console.log(`${model} DB wiped`);
-                    console.log(res)
-                });
-            })
-            // currBlockNum = 3100;
-        currBlockNum = START_AT_BLOCK_NUMBER
-        console.log(`Set currBlockNum = ${START_AT_BLOCK_NUMBER}`);
-        timerId = setTimeout(checkForBlocks, 500);
-    };
-
-    const sendBlockRequest = (url) => {
-        return new Promise((resolve) => {
-            let protocol = http;
-            if (url.includes("https://")) protocol = https;
-            protocol
-                .get(url, (resp) => {
-                    let data = "";
-                    resp.on("data", (chunk) => {
-                        data += chunk;
-                    });
-                    resp.on("end", () => {
-                        try {
-                            // console.log(data);
-                            resolve(JSON.parse(data));
-                        } catch (err) {
-                            console.log(new Date())
-                            console.log(err)
-                            console.error("Blockgrabber Error in https resp.on.end: " + err);
-                            console.log(data)
-                            resolve({ error: err.message });
-                        }
-                    });
-                })
-                .on("error", (err) => {
-                    console.log(new Date())
-                    console.log(err)
-                    console.error("Blockgrabber Error in https protocol.on.error: " + err);
-                    resolve({ error: err.message });
-                });
-        });
-    };
 
     const processBlock = async(blockInfo = {}) => {
         let blockNum = blockInfo.number || blockInfo.id;
         let block = await db.models.Blocks.findOne({ blockNum })
         if (!block) {
-            if (blockInfo.error) {
+            if (blockInfo.error || malformedBlock(blockInfo)) {
                 block = new db.models.Blocks({
                     blockInfo: {
                         hash: 'block-does-not-exist',
@@ -104,13 +39,14 @@ const runBlockGrabber = (config) => {
         }
 
         if (!block.error) {
-            if (!repairing) server.services.sockets.emitNewBlock(block.blockInfo)
-            await processBlockStateChanges(block.blockInfo)
-        }
+            let repairing = false
+            let has_processed = await db.models.CurrentState.countDocuments({ blockNum })
 
-        if (blockNum === currBatchMax) {
-            currBlockNum = currBatchMax;
-            checkForBlocks()
+            if (has_processed > 0) repairing = true
+
+            if (!repairing) server.services.sockets.emitNewBlock(block.blockInfo)
+            await processBlockStateChanges(block.blockInfo, repairing)
+            
         }
     };
 
@@ -149,7 +85,7 @@ const runBlockGrabber = (config) => {
         return false
     }
 
-    const processBlockStateChanges = async(blockInfo) => {
+    const processBlockStateChanges = async(blockInfo, repairing = false) => {
 
         blockInfo.subblocks.sort((a, b) => a.subblock > b.subblock ? 1 : -1)
 
@@ -268,46 +204,48 @@ const runBlockGrabber = (config) => {
     const getBlock_MN = (blockNum, timedelay = 0) => {
         return new Promise(resolver => {
             setTimeout(async() => {
-                const block_res = await sendBlockRequest(`${MASTERNODE_URL}${route_getBlockNum}${blockNum}`);
-                block_res.id = blockNum
-                resolver(block_res);
+                await axios(`${MASTERNODE_URL}${route_getBlockNum}${blockNum}`)
+                    .then(res => {
+                        let block_res = res.data
+                        block_res.id = blockNum
+                        resolver(block_res);
+                    })
+                    .catch(err => {
+                        console.error(new Date())
+                        console.error(err)
+                        resolver({
+                            error: "Error: Error contacting maternode.",
+                            id: blockNum
+                        })
+                    })
             }, timedelay)
         })
     };
 
-    const getLatestBlock_MN = () => {
-        return new Promise((resolve, reject) => {
-            const returnRes = async(res) => {
-                if (!res) res = res.error = "Unknown Error Getting Latest Block"
-                resolve(res);
-            };
-
-            const res = sendBlockRequest(
-                `${MASTERNODE_URL}${route_getLastestBlock}`
-            );
-            returnRes(res);
-        });
-    };
-
-    const repairBlocks = async (start_block) => {
+    const syncBlocks = async (start_block, end_block) => {
         if (!start_block) return
-        repairing = true
 
         let latest_synced_block = await db.queries.getLatestSyncedBlock()
 
         if (!latest_synced_block) return
 
-        console.log("Repairing Blocks Database...")
+        console.log(`Syncing Blocks Database starting at block ${start_block} to block ${end_block}`)
 
-        for (let i = start_block; i <= latest_synced_block; i++) {
+        for (let i = start_block; i < end_block; i++) {
             let repairedFrom = ""
 
             const checkDBBlock = async () => {
                 let blockRes = await db.models.Blocks.findOne({ blockNum: i })
 
                 if (blockRes){
-                    if (malformedBlock(blockRes.blockInfo)) {
-                        console.log(`Block ${i}: WAS MALFORMED FROM DATABASE`)
+                    let didNotExist = false
+
+                    try{
+                        if (blockRes.blockInfo.hash === "block-does-not-exist") didNotExist = true
+                    }catch(e){}
+
+                    if (malformedBlock(blockRes.blockInfo) || didNotExist) {
+                        console.log(`Block ${i}: WAS MALFORMED FROM DATABASE OR DID NOT EXIST`)
                         await db.models.Blocks.deleteOne({ blockNum: i })
                     }else{
                         await processBlock(blockRes.blockInfo)
@@ -327,165 +265,94 @@ const runBlockGrabber = (config) => {
             if (repairedFrom === ""){
                 await new Promise(async (resolver) => {
                     const checkMasterNode = async () => {
-                        let blockData = await getBlock_MN(i, 150)
+                        let blockData = await getBlock_MN(i, 250)
+                        blockData.id = i
                         console.log(util.inspect(blockData, false, null, true))
-                        if (malformedBlock(blockData)){
-                            console.log(`Block ${i}: WAS MALFORMED from Masternode`)
-                            console.log(`Block ${i}: trying again in 30 seconds`)
+
+                        await processBlock(blockData)
+                        .then(() => {
+                            repairedFrom = "Masternode"
+                            resolver(true)
+                        })
+                        .catch(err => {
+                            console.log(err)
+                            console.log(`Block ${i}: ERROR PROCESSING from ${repairedFrom}`)
                             setTimeout(checkMasterNode, 30000)
-                        }else{
-                            await processBlock(blockData)
-                            .then(() => {
-                                repairedFrom = "Masternode"
-                                resolver(true)
-                            })
-                            .catch(err => {
-                                console.log(err)
-                                console.log(`Block ${i}: ERROR PROCESSING from ${repairedFrom}`)
-                                setTimeout(checkMasterNode, 30000)
-                            })
-                        }
+                        })
                     }
                     checkMasterNode()
                 })
             }
-            console.log(`Block ${i}: Repaired from ${repairedFrom}`)
+            console.log(`Block ${i}: synced and processed from ${repairedFrom}`)
+
+            await db.queries.setLastRepaired(i)
         }
     }
 
-    const recheck = (error, delay) => {
-        console.log(`${runID}: ${error}`);
-        timerId = setTimeout(checkForBlocks, delay);
-    }
 
-    const checkForBlocks = async() => {
-        if (stop) return
-        lastCheckTime = new Date()
-        if (DEBUG_ON) {
-            console.log(runID + ": checking")
+    async function processLatestBlockFromWebsocket(data) {
+        await db.queries.setLatestBlock(data.number)
+        let block = await db.models.Blocks.findOne({ blockNum: data.number })
+
+        if (!block){
+            blockProcessingQueue.addBlock(data)
         }
 
-        let response = await getLatestBlock_MN();
-
-        if (!response) {
-            recheck("null response from server, checking again in 10 seconds.", 10000)
-            return
+        let lastRepairedBlock = 0
+        lastRepairedBlock = await db.queries.getLastRepaired()
+        if (!lastRepairedBlock){
+            lastRepairedBlock = await db.queries.getLastestProcessedBlock()
         }
-
-        if (!response.error) {
-
-            lastestBlockNum = response.number;
-
-            if (lastestBlockNum.__fixed__) lastestBlockNum = parseInt(lastestBlockNum.__fixed__)
-
-            await db.models.App.updateOne({ key: "latest_block" }, {
-                key: "latest_block",
-                value: lastestBlockNum
-            }, { upsert: true })
-
-            if (lastestBlockNum < currBlockNum || wipeOnStartup || reParseBlocks) {
-                await wipeDB();
-                wipeOnStartup = false;
-                reParseBlocks = false;
-            } else {
-                console.log("lastestBlockNum: " + lastestBlockNum);
-                console.log("currBlockNum: " + currBlockNum);
-                if (lastestBlockNum === currBlockNum) {
-                    if (alreadyCheckedCount < maxCheckCount)
-                        alreadyCheckedCount = alreadyCheckedCount + 1;
-                    checkNextIn = 200 * alreadyCheckedCount;
-                    timerId = setTimeout(checkForBlocks, checkNextIn);
-                }
-
-                let to_fetch = [];
-                if (lastestBlockNum > currBlockNum) {
-                    currBatchMax = currBlockNum + batchAmount;
-                    if (currBatchMax > lastestBlockNum)
-                        currBatchMax = lastestBlockNum;
-                    if (currBatchMax > batchAmount) currBatchMax + batchAmount;
-                    let blocksToGetCount = 1
-                    for (let i = currBlockNum + 1; i <= currBatchMax; i++) {
-                        let block = await db.models.Blocks.findOne({ blockNum: i })
-                        let blockData = null;
-                        
-                        if (block){
-                            if (block.blockInfo){
-                                if (!malformedBlock(block.blockInfo)) blockData = block.blockInfo
-                                else{
-                                    console.log(`Block ${i} is malformed from the database, deleting it!`)
-                                    await db.models.Blocks.deleteOne({ blockNum: i })
-                                }
-                            }
-                        }
-
-                        if (blockData === null){
-                            const timedelay = blocksToGetCount * 100;
-                            if (DEBUG_ON) {
-                                //console.log("getting block: " + i + " with delay of " + timedelay + "ms");
-                            }
-
-                            blockData = getBlock_MN(i, timedelay)
-
-                            blocksToGetCount = blocksToGetCount + 1
-                        }
-                        to_fetch.push({id: i, blockData});
-                    }
-
-
-                    if (to_fetch.length > 0) {
-                        to_fetch.sort((a, b) => a.id - b.id);
-                        let processed = await Promise.all(to_fetch.map(b => b.blockData));
-                        
-                        for (let blockData of processed) {
-                            await processBlock(blockData)
-                        }
-                    }else{
-                        timerId = setTimeout(checkForBlocks, 10000);
-                    }
-                    
-                }
-
-                if (lastestBlockNum < currBlockNum) {
-                    await wipeDB(true);
-                    timerId = setTimeout(checkForBlocks, 10000);
-                }
-            }
-        } else {
-            recheck(`${response.error}. Checking again in 10 seconds.`, 10000)
-        }
+        await syncBlocks(lastRepairedBlock + 1, data.number)
     };
 
-    async function start() {
-        await repairBlocks(REPAIR_BLOCKS)
-        console.log("DONE REPAIRING BLOCKS")
-        repairing = false
-
-        if (RE_PARSE_BLOCK) {
-            let blockNum = parseInt(RE_PARSE_BLOCK)
-            let blockData = await db.models.Blocks.findOne({ blockNum })
-
-            await processBlock(blockData.blockInfo)
-        }
-
-        db.queries.getLastestProcessedBlock()
-            .then((res) => {
-                currBlockNum = res
-                console.log("Starting to check for new blocks...")
-                timerId = setTimeout(checkForBlocks, 0);
-            });
-
+    async function processBlockFromWebsocket(blockData){
+        blockProcessingQueue.addBlock(blockData)
     }
 
-    start()
+    async function checkForMissingBlocks(){
+        let lastRepairedBlock = await db.queries.getLastRepaired() - 1000
+        if (lastRepairedBlock < 0 ) lastRepairedBlock = 0
+
+        console.log(`-> Repairing missing blocks from block ${lastRepairedBlock}.`)
+
+        let batch = await db.models.Blocks.find({"blockInfo.hash": "block-does-not-exist", "blockNum":{ $gte: lastRepairedBlock}})
+
+        console.log(`-> ${batch.length} missing blocks found.`)
+
+        for (let block of batch){
+            const { blockNum, blockInfo } = block
+
+            let blockToGet = blockNum || blockInfo.number
+
+            try{
+                if (isNaN(parseInt(blockToGet))) throw new Error(`Block has no number.`)
+                await syncBlocks(blockToGet, blockToGet)
+            }catch(e){
+                console.error({ blockNum, blockInfo })
+                console.error({ block })
+                console.error(e)
+            }
+        }
+
+        // recheck in 5 minutes
+        setTimeout(checkForMissingBlocks, 300000)
+    }
+
+    async function start() {
+        blockProcessingQueue.setupBlockProcessor(processBlock)
+        blockProcessingQueue.start()
+
+        blockchainEvents.setupEventProcessor('new_block', processBlockFromWebsocket)
+        blockchainEvents.setupEventProcessor('latest_block', processLatestBlockFromWebsocket)
+        blockchainEvents.start()
+
+        // Every 5 minutes
+        checkForMissingBlocks()
+    }
 
     return {
-        lastCheckedTime: () => lastCheckTime,
-        stop: () => {
-            clearInterval(timerId)
-            timerId = null
-            stop = true
-        },
-        isRepairing: () => repairing
+        start
     }
 };
 
