@@ -58,7 +58,6 @@ const eventWebsockets = (MASTERNODE_URL) => {
 
     function onMessage(message){
         console.log(new Date())
-        console.log({message})
         if (message.type === 'utf8') {
             console.log("Received: '" + message.utf8Data + "'");
             try{
