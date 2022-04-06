@@ -1,5 +1,27 @@
 export const getTransactionEndpoints = (db) => {
-
+    /**
+    * @openapi
+    * /tx:
+    *   get:
+    *     summary: Returns a transaction info.
+    *     description: Get Transaction Info by txhash/uid.
+    *     parameters:
+    *       - in: query
+    *         name: hash
+    *         schema: 
+    *           type: string
+    *         required: false
+    *         description: Transaction hash value.
+    *       - in: query
+    *         name: uid
+    *         schema: 
+    *           type: string
+    *         required: false
+    *         description: Transaction unique id.
+    *     responses:
+    *       200:
+    *         description: Success
+    */
     async function get_tx(req, res) {
 
         let { hash, uid } = req.query
