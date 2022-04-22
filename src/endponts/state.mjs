@@ -1,6 +1,65 @@
 import * as utils from '../utils.mjs'
 
 export const getStateEndpoints = (db) => {
+
+    /**
+    * @openapi
+    * /current/one/:contractName/:variableName:
+    *   get:
+    *     tags: ["State"]
+    *     summary: Returns current state value of variable.
+    *     parameters:
+    *       - in: params
+    *         name: contractName
+    *         schema: 
+    *           type: string
+    *         required: true
+    *         description: Contract name.
+    *         example: con_survival_test
+    *       - in: params
+    *         name: variableName
+    *         schema: 
+    *           type: string
+    *         required: true
+    *         description: variable name.
+    *         example: game
+    *     responses:
+    *       200:
+    *         description: Success
+    */
+
+    /**
+    * @openapi
+    * /current/one/:contractName/:variableName/:key:
+    *   get:
+    *     tags: ["State"]
+    *     summary: Returns current state value of key.
+    *     parameters:
+    *       - in: params
+    *         name: contractName
+    *         schema: 
+    *           type: string
+    *         required: true
+    *         description: Contract name.
+    *         example: con_survival_test
+    *       - in: params
+    *         name: variableName
+    *         schema: 
+    *           type: string
+    *         required: true
+    *         description: variable name.
+    *         example: game
+    *       - in: params
+    *         name: key
+    *         schema: 
+    *           type: string
+    *         required: true
+    *         description: Key.
+    *         example: boss_enabled
+    *     responses:
+    *       200:
+    *         description: Success
+    */
     async function key(req, res) {
         try {
             const { contractName, variableName, key } = req.params
@@ -10,6 +69,41 @@ export const getStateEndpoints = (db) => {
             res.send(e)
         }
     }
+
+    /**
+    * @openapi
+    * /current/keys:
+    *   post:
+    *     tags: ["State"]
+    *     summary: Returns current states value.
+    *     requestBody:
+    *       description: Payload
+    *       content: 
+    *           'application/json':
+    *               schema:
+    *                   type: array
+    *                   items: 
+    *                       type: object
+    *                       properties: 
+    *                           contractName: 
+    *                               description: Contract name
+    *                               type: string
+    *                               example: con_survival_test
+    *                               required: true      
+    *                           variableName: 
+    *                               description: Variable name
+    *                               type: string
+    *                               example: operator
+    *                               required: true       
+    *                           key: 
+    *                               description: Variable name
+    *                               type: string
+    *                               example: 757c03fef2a1c041ea0173081e19c4e908b77b7e0bbd87f7bb06402cdc7983ae
+    *                               required: false  
+    *     responses:
+    *       200:
+    *         description: Success
+    */
 
     async function keys(req, res) {
         try {
@@ -21,12 +115,90 @@ export const getStateEndpoints = (db) => {
         }
     }
 
+    /**
+    * @openapi
+    * /current/all/:contractName:
+    *   get:
+    *     tags: ["State"]
+    *     summary: Returns all states by contract name.
+    *     parameters:
+    *       - in: params
+    *         name: contractName
+    *         schema: 
+    *           type: string
+    *         required: true
+    *         description: Contract name.
+    *         example: con_survival_test
+    *     responses:
+    *       200:
+    *         description: Success
+    */
+
+    /**
+    * @openapi
+    * /current/all/:contractName/:variableName:
+    *   get:
+    *     tags: ["State"]
+    *     summary: Returns all states by contract name and variable name.
+    *     parameters:
+    *       - in: params
+    *         name: contractName
+    *         schema: 
+    *           type: string
+    *         required: true
+    *         description: Contract name.
+    *         example: con_survival_test
+    *       - in: params
+    *         name: variableName
+    *         schema: 
+    *           type: string
+    *         required: true
+    *         description: Variable name.
+    *         example: game
+    *     responses:
+    *       200:
+    *         description: Success
+    */
+
+    /**
+    * @openapi
+    * /current/all/:contractName/:variableName/:key:
+    *   get:
+    *     tags: ["State"]
+    *     summary: Returns all states by contract name ,variable name and key.
+    *     parameters:
+    *       - in: params
+    *         name: contractName
+    *         schema: 
+    *           type: string
+    *         required: true
+    *         description: Contract name.
+    *         example: con_survival_test
+    *       - in: params
+    *         name: variableName
+    *         schema: 
+    *           type: string
+    *         required: true
+    *         description: Variable name.
+    *         example: game
+    *       - in: params
+    *         name: rootkey
+    *         schema: 
+    *           type: string
+    *         required: true
+    *         description: key name.
+    *         example: boss_enabled
+    *     responses:
+    *       200:
+    *         description: Success
+    */
+
     async function all_state(req, res) {
         const { contractName, variableName, rootkey } = req.params
 
         let stateResults = await db.queries.getAllCurrentState(contractName, variableName, rootkey)
         if (stateResults.length === 0) res.send({})
-        else{
+        else {
             let allStateObjects = stateResults.map(result => utils.keysToObj(utils.deconstructKey(result.rawKey), result.value))
             let merged = utils.mergeObjects(allStateObjects)
             res.send(utils.cleanObj(merged))
@@ -62,6 +234,6 @@ export const getStateEndpoints = (db) => {
             type: 'get',
             route: '/current/all/:contractName/:variableName/:rootkey',
             handler: all_state
-        } 
+        }
     ]
 }

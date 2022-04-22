@@ -1,3 +1,6 @@
+import { createLogger } from '../../logger.mjs'
+
+const logger = createLogger('Database');
 export const getSyncStatsQueries = (db) => {
     async function getLatestBlock() {
         let res = await db.models.App.findOne({ key: "latest_block" })
@@ -8,8 +11,8 @@ export const getSyncStatsQueries = (db) => {
     async function setLatestBlock(blockNum) {
         let latest_block = await getLatestBlock()
 
-        console.log({latest_block, blockNum})
-        console.log(`Should update? ${blockNum > latest_block}`)
+        logger.log({ latest_block, blockNum })
+        logger.log(`Should update? ${blockNum > latest_block}`)
 
         if (latest_block >= blockNum) return
 

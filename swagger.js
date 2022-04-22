@@ -1,17 +1,25 @@
 const express = require('express');
 const app = express();
 const swaggerUi = require('swagger-ui-express');
-const swaggerJsdoc = require('swagger-jsdoc')
+const swaggerJsdoc = require('swagger-jsdoc');
+const { config } = require('dotenv');
+
+config()
 
 const options = {
-    definition: {
-      openapi: '3.0.0',
-      info: {
-        title: 'Lamden Block Service Api',
-        version: '1.0.0',
-      },
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Lamden Block Service Api',
+      version: '1.0.0',
     },
-    apis: ['src/endponts/*.mjs'], // files containing annotations as above
+    servers: [{
+      url: "http://119.29.130.37:3535",
+      description: "Development"
+    }
+    ]
+  },
+  apis: ['src/endponts/*.mjs'], // files containing annotations as above
 };
 
 const openapiSpecification = swaggerJsdoc(options);
@@ -26,8 +34,9 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 //    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 //}
 
-let port = process.env.APIDOC_PORT || 8888
+let host = process.env.BLOCKSERVICE_HOST || 'localhost'
+let port = process.env.APIDOC_PORT || 8999
 
-app.listen(port, () => {
-    console.log(`Api docs app listening on port ${port}\nUrl: localhost:${port}/api-docs`)
+app.listen(port, host, () => {
+  console.log(`Api docs app listening on port ${port}\nUrl: ${host}:${port}/api-docs`)
 })

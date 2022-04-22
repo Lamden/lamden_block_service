@@ -1,10 +1,15 @@
+import { createLogger } from '../logger.mjs'
+
+const logger = createLogger('tx');
+
 export const getTransactionEndpoints = (db) => {
     /**
     * @openapi
     * /tx:
     *   get:
+    *     tags: ["State"]
     *     summary: Returns a transaction info.
-    *     description: Get Transaction Info by txhash/uid.
+    *     description: Get Transaction Info by txhash/uid. If both tx hash and tx uid are provided, it will return the tx info by tx hash.
     *     parameters:
     *       - in: query
     *         name: hash
@@ -33,12 +38,12 @@ export const getTransactionEndpoints = (db) => {
         try {
             if (hash) result = await db.queries.getTransactionByHash(hash)
             if (uid) result = await db.queries.getTransactionByUID(uid)
-            if (result){
+            if (result) {
                 if (typeof result.state_changes_obj === "string") result.state_changes_obj = JSON.parse(result.state_changes_obj)
             }
             res.send(result)
         } catch (e) {
-            console.log(e)
+            logger.error(e)
             res.send({ error: e.message })
         }
     }

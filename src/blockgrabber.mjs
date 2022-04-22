@@ -2,19 +2,22 @@ import axios from 'axios'
 
 import * as utils from './utils.mjs'
 import util from 'util'
+import { createLogger } from './logger.mjs'
+
+const logger = createLogger('Blocks');
 
 const runBlockGrabber = (config) => {
-    const { 
-        MASTERNODE_URL, 
-        db, 
-        server, 
+    const {
+        MASTERNODE_URL,
+        db,
+        server,
         blockchainEvents,
         blockProcessingQueue
-     } = config
+    } = config
 
     const route_getBlockNum = "/blocks?num=";
 
-    const processBlock = async(blockInfo = {}) => {
+    const processBlock = async (blockInfo = {}) => {
         let blockNum = blockInfo.number || blockInfo.id;
         let block = await db.models.Blocks.findOne({ blockNum })
         if (!block) {
@@ -46,7 +49,7 @@ const runBlockGrabber = (config) => {
 
             if (!repairing) server.services.sockets.emitNewBlock(block.blockInfo)
             await processBlockStateChanges(block.blockInfo, repairing)
-            
+
         }
     };
 
@@ -56,17 +59,17 @@ const runBlockGrabber = (config) => {
         }
 
         const { number, subblocks } = blockInfo
-        try{
+        try {
             validateValue(number, 'number')
             if (Array.isArray(subblocks)) {
-                for (let sb of subblocks){
+                for (let sb of subblocks) {
                     const { transactions, subblock } = sb
-                    
+
                     validateValue(subblock, 'subblock')
                     if (Array.isArray(transactions)) {
-                        for (let tx of transactions){
-                            const { stamps_used,  status, transaction } = tx
-                            const { metadata,  payload } = transaction
+                        for (let tx of transactions) {
+                            const { stamps_used, status, transaction } = tx
+                            const { metadata, payload } = transaction
                             const { timestamp } = metadata
                             const { nonce, stamps_supplied } = payload
                             validateValue(stamps_used, 'stamps_used')
@@ -78,14 +81,14 @@ const runBlockGrabber = (config) => {
                     }
                 }
             }
-        }catch(e){
-            console.log({"Malformed Block":e})
+        } catch (e) {
+            logger.error({ "Malformed Block": e })
             return true
         }
         return false
     }
 
-    const processBlockStateChanges = async(blockInfo, repairing = false) => {
+    const processBlockStateChanges = async (blockInfo, repairing = false) => {
 
         blockInfo.subblocks.sort((a, b) => a.subblock > b.subblock ? 1 : -1)
 
@@ -103,22 +106,21 @@ const runBlockGrabber = (config) => {
                 let affectedRootKeysList = new Set()
                 let tx_uid = utils.make_tx_uid(blockInfo.number, subBlockNum, tx_index)
 
-                if (Array.isArray(state)){
+                if (Array.isArray(state)) {
                     for (const s of state) {
                         let keyInfo = utils.deconstructKey(s.key)
-    
+
                         const { contractName, variableName, rootKey } = keyInfo
 
                         let keyOk = true
 
-                        if (rootKey){
+                        if (rootKey) {
                             if (rootKey.charAt(0) === "$") keyOk = false
                         }
 
-                        if (keyOk){
-                            
+                        if (keyOk) {
+
                             let currentState = await db.models.CurrentState.findOne({ rawKey: s.key })
-                            // console.log(currentState)
                             if (currentState) {
                                 if (currentState.lastUpdated < timestamp) {
                                     currentState.txHash = txInfo.hash
@@ -139,25 +141,25 @@ const runBlockGrabber = (config) => {
                                     value: s.value,
                                     lastUpdated: timestamp
                                 }).save((err) => {
-                                    if (err){
-                                        console.log(err)
-                                        console.log(util.inspect({blockInfo, txInfo}, false, null, true))
+                                    if (err) {
+                                        logger.error(err)
+                                        logger.debug(util.inspect({ blockInfo, txInfo }, false, null, true))
                                         recheck(err, 30000)
                                     }
                                 })
                             }
-        
+
                             let newStateChangeObj = utils.keysToObj(keyInfo, s.value)
-        
+
                             state_changes_obj = utils.mergeObjects([state_changes_obj, newStateChangeObj])
-        
+
                             affectedContractsList.add(contractName)
                             affectedVariablesList.add(`${contractName}.${variableName}`)
                             if (rootKey) affectedRootKeysList.add(`${contractName}.${variableName}:${rootKey}`)
-        
+
                             if (!repairing) server.services.sockets.emitStateChange(keyInfo, s.value, newStateChangeObj, txInfo)
 
-                            let foundContractName = await db.models.Contracts.findOne({contractName})
+                            let foundContractName = await db.models.Contracts.findOne({ contractName })
                             if (!foundContractName) {
                                 let code = await db.queries.getKeyFromCurrentState(contractName, "__code__")
                                 let lst001 = db.utils.isLst001(code.value)
@@ -165,15 +167,15 @@ const runBlockGrabber = (config) => {
                                     contractName,
                                     lst001
                                 }).save((err) => {
-                                    console.log(err)                                    
+                                    logger.error(err)
                                 })
-                                server.services.sockets.emitNewContract({contractName, lst001})
+                                server.services.sockets.emitNewContract({ contractName, lst001 })
                             }
                         }
                     }
                 }
 
-                try{
+                try {
                     let stateChangesModel = {
                         tx_uid,
                         blockNum: blockInfo.number,
@@ -192,9 +194,9 @@ const runBlockGrabber = (config) => {
                     await db.models.StateChanges.updateOne({ tx_uid }, stateChangesModel, { upsert: true });
 
                     if (!repairing) server.services.sockets.emitTxStateChanges(stateChangesModel)
-                }catch(e){
-                    console.log(e)
-                    console.log(util.inspect({blockInfo}, false, null, true))
+                } catch (e) {
+                    logger.error(e)
+                    logger.debug(util.inspect({ blockInfo }, false, null, true))
                     recheck(e, 30000)
                 }
             }
@@ -203,7 +205,7 @@ const runBlockGrabber = (config) => {
 
     const getBlock_MN = (blockNum, timedelay = 0) => {
         return new Promise(resolver => {
-            setTimeout(async() => {
+            setTimeout(async () => {
                 await axios(`${MASTERNODE_URL}${route_getBlockNum}${blockNum}`)
                     .then(res => {
                         let block_res = res.data
@@ -211,8 +213,7 @@ const runBlockGrabber = (config) => {
                         resolver(block_res);
                     })
                     .catch(err => {
-                        console.error(new Date())
-                        console.error(err)
+                        logger.error(err)
                         resolver({
                             error: "Error: Error contacting maternode.",
                             id: blockNum
@@ -229,7 +230,7 @@ const runBlockGrabber = (config) => {
 
         if (!latest_synced_block) return
 
-        console.log(`Syncing Blocks Database starting at block ${start_block} to block ${end_block}`)
+        logger.log(`Syncing Blocks Database starting at block ${start_block} to block ${end_block}`)
 
         for (let i = start_block; i < end_block; i++) {
             let repairedFrom = ""
@@ -237,53 +238,53 @@ const runBlockGrabber = (config) => {
             const checkDBBlock = async () => {
                 let blockRes = await db.models.Blocks.findOne({ blockNum: i })
 
-                if (blockRes){
+                if (blockRes) {
                     let didNotExist = false
 
-                    try{
+                    try {
                         if (blockRes.blockInfo.hash === "block-does-not-exist") didNotExist = true
-                    }catch(e){}
+                    } catch (e) { }
 
                     if (malformedBlock(blockRes.blockInfo) || didNotExist) {
-                        console.log(`Block ${i}: WAS MALFORMED FROM DATABASE OR DID NOT EXIST`)
+                        logger.log(`Block ${i}: WAS MALFORMED FROM DATABASE OR DID NOT EXIST`)
                         await db.models.Blocks.deleteOne({ blockNum: i })
-                    }else{
+                    } else {
                         await processBlock(blockRes.blockInfo)
-                        .then(() => {
-                            repairedFrom = "Database"
-                        })
-                        .catch(err => {
-                            console.log(err)
-                            console.log(`Block ${i}: ERROR PROCESSING from ${repairedFrom}`)
-                        })
+                            .then(() => {
+                                repairedFrom = "Database"
+                            })
+                            .catch(err => {
+                                logger.error(err)
+                                logger.error(`Block ${i}: ERROR PROCESSING from ${repairedFrom}`)
+                            })
                     }
                 }
             }
 
             await checkDBBlock()
 
-            if (repairedFrom === ""){
+            if (repairedFrom === "") {
                 await new Promise(async (resolver) => {
                     const checkMasterNode = async () => {
                         let blockData = await getBlock_MN(i, 250)
                         blockData.id = i
-                        console.log(util.inspect(blockData, false, null, true))
+                        logger.debug(util.inspect(blockData, false, null, true))
 
                         await processBlock(blockData)
-                        .then(() => {
-                            repairedFrom = "Masternode"
-                            resolver(true)
-                        })
-                        .catch(err => {
-                            console.log(err)
-                            console.log(`Block ${i}: ERROR PROCESSING from ${repairedFrom}`)
-                            setTimeout(checkMasterNode, 30000)
-                        })
+                            .then(() => {
+                                repairedFrom = "Masternode"
+                                resolver(true)
+                            })
+                            .catch(err => {
+                                logger.error(err)
+                                logger.error(`Block ${i}: ERROR PROCESSING from ${repairedFrom}`)
+                                setTimeout(checkMasterNode, 30000)
+                            })
                     }
                     checkMasterNode()
                 })
             }
-            console.log(`Block ${i}: synced and processed from ${repairedFrom}`)
+            logger.log(`Block ${i}: synced and processed from ${repairedFrom}`)
 
             await db.queries.setLastRepaired(i)
         }
@@ -294,46 +295,47 @@ const runBlockGrabber = (config) => {
         await db.queries.setLatestBlock(data.number)
         let block = await db.models.Blocks.findOne({ blockNum: data.number })
 
-        if (!block){
+        if (!block) {
             blockProcessingQueue.addBlock(data)
         }
 
         let lastRepairedBlock = 0
         lastRepairedBlock = await db.queries.getLastRepaired()
-        if (!lastRepairedBlock){
+        if (!lastRepairedBlock) {
             lastRepairedBlock = await db.queries.getLastestProcessedBlock()
         }
         await syncBlocks(lastRepairedBlock + 1, data.number)
     };
 
-    async function processBlockFromWebsocket(blockData){
+    async function processBlockFromWebsocket(blockData) {
         blockProcessingQueue.addBlock(blockData)
     }
 
-    async function checkForMissingBlocks(){
+    async function checkForMissingBlocks() {
         let lastRepairedBlock = await db.queries.getLastRepaired() - 1000
-        if (lastRepairedBlock < 0 ) lastRepairedBlock = 0
+        if (lastRepairedBlock < 0) lastRepairedBlock = 0
 
-        console.log(`-> Repairing missing blocks from block ${lastRepairedBlock}.`)
+        logger.start(`Repairing missing blocks from block ${lastRepairedBlock}.`)
 
-        let batch = await db.models.Blocks.find({"blockInfo.hash": "block-does-not-exist", "blockNum":{ $gte: lastRepairedBlock}})
+        let batch = await db.models.Blocks.find({ "blockInfo.hash": "block-does-not-exist", "blockNum": { $gte: lastRepairedBlock } })
 
-        console.log(`-> ${batch.length} missing blocks found.`)
+        logger.success(`${batch.length} missing blocks found.`)
 
-        for (let block of batch){
+        for (let block of batch) {
             const { blockNum, blockInfo } = block
 
             let blockToGet = blockNum || blockInfo.number
 
-            try{
+            try {
                 if (isNaN(parseInt(blockToGet))) throw new Error(`Block has no number.`)
                 await syncBlocks(blockToGet, blockToGet)
-            }catch(e){
-                console.error({ blockNum, blockInfo })
-                console.error({ block })
-                console.error(e)
+            } catch (e) {
+                logger.debug({ block })
+                logger.error(e)
             }
         }
+
+        logger.complete(`Repair missing blocks completed.`)
 
         // recheck in 5 minutes
         setTimeout(checkForMissingBlocks, 300000)
