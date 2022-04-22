@@ -19,15 +19,16 @@ const MASTERNODE_URL = process.env.MASTERNODE_URL || MASTERNODE_URLS[NETWORK]
 
 /******* SERVER CONNECTION INFO **/
 const BLOCKSERVICE_PORT = process.env.BLOCKSERVICE_PORT || 3535
+const BLOCKSERVICE_HOST = process.env.BLOCKSERVICE_HOST || 'localhost'
 
 let grabberConfig = {
     DEBUG_ON: process.env.DEBUG_ON || false,
     MASTERNODE_URL
 }
 
-const start = async() => {
+const start = async () => {
     grabberConfig.db = await getDatabase()
-    grabberConfig.server = await createServer(BLOCKSERVICE_PORT, grabberConfig.db)
+    grabberConfig.server = createServer(BLOCKSERVICE_HOST, BLOCKSERVICE_PORT, grabberConfig.db)
     grabberConfig.blockchainEvents = eventWebsockets(grabberConfig.MASTERNODE_URL)
     grabberConfig.blockProcessingQueue = blockProcessingQueue(grabberConfig.db)
 

@@ -1,25 +1,27 @@
 import util from 'util'
+import { createLogger } from '../logger.mjs'
 
+const logger = createLogger('Database');
 export { isLst001 } from './processors/lst001.mjs'
 
 export function makeKey(contractName, variableName, key) {
-    return `${contractName}${variableName ? "."+variableName:""}${key ? ":"+key:""}`
+    return `${contractName}${variableName ? "." + variableName : ""}${key ? ":" + key : ""}`
 }
 
 
-export function estimateTimeLeft(startTime, progress, totalBatchSize){
+export function estimateTimeLeft(startTime, progress, totalBatchSize) {
     let timeTaken = new Date() - startTime
-    let secondsTaken =  timeTaken / 1000
+    let secondsTaken = timeTaken / 1000
 
-    let percentageDone = progress/totalBatchSize
+    let percentageDone = progress / totalBatchSize
     let percentLeft = 1 - percentageDone
-    
-    let secondsLeft =  (percentLeft / percentageDone * secondsTaken)
+
+    let secondsLeft = (percentLeft / percentageDone * secondsTaken)
 
     return `Elapsed ${secondsToString(secondsTaken).string}, Estimated time left ${secondsToString(secondsLeft).string}.`
 }
 
-export function secondsToString(seconds, fixed = 1){
+export function secondsToString(seconds, fixed = 1) {
     seconds = parseInt(seconds)
     let minutes = seconds > 60 ? seconds / 60 : 0
     let hours = minutes > 60 ? minutes / 60 : 0
@@ -41,15 +43,15 @@ export function secondsToString(seconds, fixed = 1){
     }
 }
 
-export function hydrate_state_changes_obj(stateChanges){
+export function hydrate_state_changes_obj(stateChanges) {
     return stateChanges.map(change => {
-        if (typeof change.state_changes_obj === "string"){
-            try{
+        if (typeof change.state_changes_obj === "string") {
+            try {
                 change = change.toObject()
                 change.state_changes_obj = JSON.parse(change.state_changes_obj)
-            }catch(e){
-                console.log(e)
-                console.log(util.inspect({change}, false, null, true))
+            } catch (e) {
+                logger.error(e)
+                logger.debug(util.inspect({ change }, false, null, true))
                 change.state_changes_obj = {}
             }
         }

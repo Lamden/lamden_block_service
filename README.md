@@ -22,7 +22,10 @@ Features:
 2. `npm install`
 
 ## Run
-1. `npm start`
+1. `npm run start`
+
+## Run api doc server
+`npm run docs`
 
 ## Configure
 All configuration is done by an `.env` file which you need to create in the root of the application folder.
@@ -51,6 +54,17 @@ Restart the app for these setting to take effect.
 
 
 ### Server options
-BLOCKSERVICE_PORT `3535`: The port used for the webserver and websockets
+- BLOCKSERVICE_PORT `3535`: The port used for the webserver and websockets
+- BLOCKSERVICE_HOST `localhost`: Api bind host
+
+### Misc options
+- APIDOC_PORT `8999`: Api document port.
+- SCRIPT_SOCKET_CONN `http://localhost:3232`: Estimation script socket server connection.
+- LOG_LEVEL  `info`: Log level. 
+    - 'info' - Displays all messages from all loggers.
+    - 'timer' - Displays messages only from the time, timeEnd, debug, warn, error & fatal loggers.
+    - 'debug' - Displays messages only from the debug, warn, error & fatal loggers.
+    - 'warn' - Displays messages only from the warn, error & fatal loggers.
+    - 'error' - Displays messages only from the error & fatal loggers.
 
 ## USE

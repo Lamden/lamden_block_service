@@ -3,6 +3,10 @@ import util from 'util'
 
 import WebSocket from 'websocket'
 
+import { createLogger } from '../logger.mjs'
+
+const logger = createLogger('Service', 'Websocket');
+
 const eventWebsockets = (MASTERNODE_URL) => {
     let wsClient = null
     let eventProcessors = {}
@@ -11,33 +15,31 @@ const eventWebsockets = (MASTERNODE_URL) => {
     let connected = false
     let timer = null
 
-    function start(){
+    function start() {
         if (!url) throw new Error("No MASTERNODE_URL provided for websocket connection")
 
-        console.log(`- Connecting to ${url} masternode websocket.`)
+        logger.start(`Connecting to ${url} masternode websocket.`)
         connect()
     }
 
-    function connect(){
+    function connect() {
         wsClient = new WebSocket.client
         wsClient.on('connect', onConnect)
         wsClient.connect(`${url}`)
     }
 
-    function reconnect(){
+    function reconnect() {
         if (connected) {
             clearInterval(timer)
             timer = null
         }
 
-        console.log(`- Reconnecting to ${url} masternode websocket.`)
+        logger.pending(`Reconnecting to ${url} masternode websocket.`)
         wsClient.connect(`${url}`)
     }
 
-    function onConnect(connection){
+    function onConnect(connection) {
         connected = true
-
-        console.log(new Date())
 
         clearInterval(timer)
         timer = null
@@ -45,56 +47,54 @@ const eventWebsockets = (MASTERNODE_URL) => {
         connection.on('error', onError);
         connection.on('close', onClose);
         connection.on('message', onMessage);
-    
+
 
         if (initialized) {
-            console.log('WebSocket Client Reconnected');
-        }else{
-            console.log('WebSocket Client Connected');
+            logger.success('WebSocket Client Reconnected');
+        } else {
+            logger.success('WebSocket Client Connected');
             initialized = true
         }
 
     }
 
-    function onMessage(message){
-        console.log(new Date())
+    function onMessage(message) {
         if (message.type === 'utf8') {
-            console.log("Received: '" + message.utf8Data + "'");
-            try{
+            logger.log("Received: '" + message.utf8Data + "'");
+            try {
                 let eventData = JSON.parse(message.utf8Data)
                 eventProcessors[eventData.event](eventData.data)
-            }catch (e){
-                console.error(`\n${new Date()}`)
-                console.error("Error processing event off websocket.")
-                console.error(e)
+            } catch (e) {
+                logger.error("Error processing event off websocket.")
+                logger.error(e)
             }
-            
+
         }
     }
 
-    function onError(error){
-        console.log("Connection Error: " + error.toString());
+    function onError(error) {
+        logger.error("Connection Error: " + error.toString());
         connected = false
         if (!timer) timer = setInterval(reconnect, 1000)
     }
 
-    function onClose(){
-        console.log('echo-protocol Connection Closed');
+    function onClose() {
+        logger.log('echo-protocol Connection Closed');
         connected = false
         if (!timer) timer = setInterval(reconnect, 1000)
     }
 
-    function setupEventProcessor(eventName, EventProcessor){
+    function setupEventProcessor(eventName, EventProcessor) {
         eventProcessors[eventName] = EventProcessor
     }
 
-    function createURL(){
+    function createURL() {
         if (MASTERNODE_URL.includes('ws://') || MASTERNODE_URL.includes('wss://')) return
 
-        if (MASTERNODE_URL.includes('https://')){
+        if (MASTERNODE_URL.includes('https://')) {
             return 'wss://' + MASTERNODE_URL.split('https://')[1]
         }
-        if (MASTERNODE_URL.includes('http://')){
+        if (MASTERNODE_URL.includes('http://')) {
             return 'ws://' + MASTERNODE_URL.split('http://')[1]
         }
         return 'ws://' + MASTERNODE_URL

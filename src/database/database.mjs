@@ -4,6 +4,9 @@ import mongoose_models from './mongoose.models.mjs'
 import { getQueries } from './queries.mjs'
 import * as dbUtils from './db_utils.mjs'
 import mongoose from 'mongoose';
+import { createLogger } from '../logger.mjs'
+
+const logger = createLogger('Database');
 
 let db = mongoose;
 
@@ -27,10 +30,10 @@ export const getDatabase = () => new Promise(resolver => {
         connectionString, { useNewUrlParser: true, useUnifiedTopology: true },
         (error) => {
             if (error) {
-                console.log(error)
+                logger.error(error)
                 throw new Error(error)
             } else {
-                console.log(" - DB Connection Successful");
+                logger.success("DB Connection Successful.");
                 db.queries = getQueries(db)
                 db.models = mongoose_models
                 db.utils = dbUtils
@@ -40,7 +43,7 @@ export const getDatabase = () => new Promise(resolver => {
                     DBURL,
                     DBPORT
                 }
-                console.log(db.config)
+                logger.log(db.config)
                 resolver(db);
             }
         }

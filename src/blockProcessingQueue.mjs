@@ -1,25 +1,29 @@
+import { createLogger } from './logger.mjs'
+
+const logger = createLogger('Blocks');
+
 export const blockProcessingQueue = (db) => {
     let blockQueue = {}
     let blockProcessor = null
     let timer = null
     let processing = false
 
-    function start(){
+    function start() {
         timer = setInterval(tryProcessing, 100)
     }
 
-    function stop(){
+    function stop() {
         clearInterval(timer)
         timer = null
     }
 
-    function tryProcessing(){
+    function tryProcessing() {
         if (processing) return
         processNext()
     }
 
-    async function addBlock(blockInfo){
-        try{
+    async function addBlock(blockInfo) {
+        try {
             let blockNum = blockInfo.number || blockInfo.id;
             if (!blockNum) throw new Error("Adding block without block number!")
 
@@ -47,17 +51,16 @@ export const blockProcessingQueue = (db) => {
             if (!blockInfo.error) {
                 await db.queries.setLatestBlock(blockInfo.number)
                 blockQueue[blockInfo.number] = blockInfo
-                console.log(`Added block ${blockInfo.number} to processing queue.`)
+                logger.success(`Added block ${blockInfo.number} to processing queue.`)
             }
-        }catch (e){
-            console.log(new Date())
-            console.log(`Error Procesing block in addBlock`)
-            console.log(e)
-            console.log({blockInfo})
+        } catch (e) {
+            logger.error(`Error Procesing block in addBlock`)
+            logger.error(e)
+            logger.error({ blockInfo })
         }
     }
 
-    async function processNext(){
+    async function processNext() {
         if (!blockProcessor) {
             stop()
             throw new Error("No block processsor setup. Call 'setupBlockProcessor'.")
@@ -65,7 +68,7 @@ export const blockProcessingQueue = (db) => {
 
         processing = true
 
-        let blockNumbers =  Object.keys(blockQueue).sort((a,b) => a > b)
+        let blockNumbers = Object.keys(blockQueue).sort((a, b) => a > b)
 
         if (blockNumbers.length === 0) {
             processing = false
@@ -75,11 +78,13 @@ export const blockProcessingQueue = (db) => {
         let lowestBlockNumber = blockNumbers[0]
 
         let blockInfo = blockQueue[lowestBlockNumber]
-        console.log({blockNumbers})
-        console.log({blockQueueCount: Object.keys(blockQueue).length})
-        console.log(`Processing block ${lowestBlockNumber} from queue.`)
+        logger.success("dedededede")
+        //logger.success(blockNumbers, Object.keys(blockQueue).length)
+        // logger.log({ blockNumbers })
+        // logger.log({ blockQueueCount: Object.keys(blockQueue).length })
+        logger.log(`Processing block ${lowestBlockNumber} from queue.`)
         await blockProcessor(blockInfo)
-        delete blockQueue[lowestBlockNumber]  
+        delete blockQueue[lowestBlockNumber]
 
         processing = false
     }

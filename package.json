@@ -5,7 +5,10 @@
     "main": "app.mjs",
     "scripts": {
         "dev": "DEBUG_ON=true nodemon",
-        "start": "node app.mjs"
+        "start": "node app.mjs",
+        "docs": "DEBUG_ON=true nodemon swagger.js",
+        "test": "jest --verbose",
+        "test:watch": "jest --watch --verbose"
     },
     "author": "jeffwscott",
     "license": "ISC",
@@ -17,7 +20,23 @@
         "lodash.merge": "^4.6.2",
         "mongoose": "^5.13.1",
         "nodemon": "^2.0.9",
-        "socket.io": "^4.1.2",
+        "signale": "^1.4.0",
+        "socket.io": "^4.4.1",
+        "socket.io-client": "^4.4.1",
+        "swagger-jsdoc": "^6.1.0",
+        "swagger-ui-express": "^4.3.0",
         "websocket": "^1.0.34"
+    },
+    "signale": {
+        "displayFilename": true,
+        "displayDate": true,
+        "displayTimestamp": true
+    },
+    "devDependencies": {
+        "@babel/core": "^7.17.9",
+        "@babel/preset-env": "^7.16.11",
+        "babel-jest": "^27.5.1",
+        "jest": "^27.5.1",
+        "supertest": "^6.2.2"
     }
 }
