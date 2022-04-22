@@ -6,7 +6,8 @@
     "scripts": {
         "dev": "DEBUG_ON=true nodemon",
         "start": "node app.mjs",
-        "docs": "DEBUG_ON=true nodemon swagger.js",
+        "docs:dev": "DEBUG_ON=true nodemon swagger.js",
+        "docs": "node swagger.js",
         "test": "jest --verbose",
         "test:watch": "jest --watch --verbose"
     },
