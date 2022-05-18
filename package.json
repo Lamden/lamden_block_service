@@ -19,6 +19,7 @@
         "dotenv": "^10.0.0",
         "express": "^4.17.1",
         "lodash.merge": "^4.6.2",
+        "mongodb-memory-server": "^8.5.2",
         "mongoose": "^5.13.1",
         "nodemon": "^2.0.9",
         "signale": "^1.4.0",

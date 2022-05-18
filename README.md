@@ -27,6 +27,11 @@ Features:
 ## Run api doc server
 `npm run docs`
 
+## Sync Blocks (Optional)
+The first time you run the block service, it will take long time to sync blocks data. In order to avoid waiting for so long, you can use
+[mongodump](https://www.mongodb.com/docs/database-tools/mongodump/#mongodb-binary-bin.mongodump) to export data from another block service to you own block service.
+
+
 ## Configure
 All configuration is done by an `.env` file which you need to create in the root of the application folder.
 Add these variables to the `.env` to set the following options, `defaults are highlighed`.  

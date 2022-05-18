@@ -18,10 +18,11 @@ const validHistory = (item) => {
 }
 
 beforeAll(async () => {
-    db = await getDatabase();
+    db = getDatabase();
     pysocket = createPythonSocketClient();
     app = createExpressApp(db, pysocket);
     request = supertest(app);
+    await new Promise(resolve => setTimeout(resolve, 1000));
 });
 
 afterAll(async () => {
