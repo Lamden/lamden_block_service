@@ -27,7 +27,7 @@ Features:
 ## Run api doc server
 `npm run docs`
 
-## Sync Blocks (Optional)
+## Sync Chaindata (Optional)
 The first time you run the block service, it will take long time to sync blocks data. In order to avoid waiting for so long, you can use
 [mongodump](https://www.mongodb.com/docs/database-tools/mongodump/#mongodb-binary-bin.mongodump) to export data from another block service to you own block service.
 
@@ -52,10 +52,6 @@ Restart the app for these setting to take effect.
 
 ### Runtime options
 - DEBUG_ON `false`: outputs some logs while grabbing blocks
-- REPAIR_BLOCKS `undefined`: Use this if you are missing blocks. The app will start at whatever value you pass in and iterate up in blocks to see if it's missing any. Any missing will be processed.
-- RE_PARSE_BLOCKS `false`: Reload the CurrentState and StateChanges tables using the Blockinfo stored inthe `Blocks` database. This drops both tables before hand but `DOES NOT DROP BLOCKS TABLE`!
-- START_AT_BLOCK_NUMBER `0`: Used in conjunction with `RE_PARSE_BLOCKS` to set a starting block.  Could be useful if you're app has no state below a certain block.
-- WIPE `false`: `USE AT OWN RISK!` This will drop the entire database which means you will need to start syncing all blocks from the masternode (which is slow).  If you want to just reload the CurrentState and StateChanges tables then use `RE_PARSE_BLOCKS` instead!
 
 
 ### Server options
@@ -71,5 +67,3 @@ Restart the app for these setting to take effect.
     - 'debug' - Displays messages only from the debug, warn, error & fatal loggers.
     - 'warn' - Displays messages only from the warn, error & fatal loggers.
     - 'error' - Displays messages only from the error & fatal loggers.
-
-## USE

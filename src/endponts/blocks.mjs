@@ -6,12 +6,12 @@ export const getBlockEndpoints = (db) => {
 
     /**
     * @openapi
-    * /blocks/:number:
+    * /blocks/{number}:
     *   get:
     *     tags: ["Blocks"]
-    *     summary: Returns a specified block info by block number.
+    *     summary: Returns block info from a specified block number.
     *     parameters:
-    *       - in: params
+    *       - in: path
     *         name: number
     *         schema: 
     *           type: integer
