@@ -55,8 +55,22 @@ var currentState = new mongoose.Schema({
 });
 
 var contracts = new mongoose.Schema({
-    contractName: String,
+    contractName: {
+        type: String,
+        unique: true,
+        required: true,
+        index: true
+    },
     lst001: Boolean
+});
+
+var missingBlocks = new mongoose.Schema({
+    blockNum: {
+        type: Number,
+        unique: true,
+        required: true,
+        index: true
+    }
 });
 
 export default {
@@ -64,5 +78,6 @@ export default {
     StateChanges: mongoose.model('StateChanges', stateChanges, 'stateChanges'),
     CurrentState: mongoose.model('CurrentState', currentState, 'currentState'),
     Blocks: mongoose.model('Blocks', blocks, 'blocks'),
-    Contracts: mongoose.model('Contracts', contracts, 'contracts')
+    Contracts: mongoose.model('Contracts', contracts, 'contracts'),
+    MissingBlocks: mongoose.model('MissingBlocks', missingBlocks, 'missingBlocks')
 };

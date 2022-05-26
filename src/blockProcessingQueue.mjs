@@ -1,98 +1,137 @@
 import { createLogger } from './logger.mjs'
 
-const logger = createLogger('Blocks');
+const logger = createLogger('Blocks Queue');
 
-export const blockProcessingQueue = (db) => {
-    let blockQueue = {}
-    let blockProcessor = null
-    let timer = null
-    let processing = false
-
-    function start() {
-        timer = setInterval(tryProcessing, 100)
+// First Input First Output
+class Queue {
+    constructor() {
+        this._queue = []
     }
 
-    function stop() {
-        clearInterval(timer)
-        timer = null
+    push(value) {
+        return this._queue.push(value)
     }
 
-    function tryProcessing() {
-        if (processing) return
-        processNext()
+    shift() {
+        return this._queue.shift()
     }
 
-    async function addBlock(blockInfo) {
-        try {
-            let blockNum = blockInfo.number || blockInfo.id;
-            if (!blockNum) throw new Error("Adding block without block number!")
+    isEmpty() {
+        return this._queue.length === 0
+    }
+}
 
-            let block = await db.models.Blocks.findOne({ blockNum })
+// Task Pool
+export class TaskPool {
+    constructor(size = 3) {
+        // The amount of concurrency
+        this.size = size
+        this.queue = new Queue()
+    }
 
-            if (!block) {
-                if (blockInfo.error) {
-                    block = new db.models.Blocks({
-                        blockInfo: {
-                            hash: 'block-does-not-exist',
-                            number: blockNum,
-                            subblocks: []
-                        },
-                        blockNum
-                    })
-                } else {
-                    block = new db.models.Blocks({
-                        blockInfo,
-                        blockNum,
-                        hash: blockInfo.hash
-                    })
-                }
-                await block.save()
-            }
-            if (!blockInfo.error) {
-                await db.queries.setLatestBlock(blockInfo.number)
-                blockQueue[blockInfo.number] = blockInfo
-                logger.success(`Added block ${blockInfo.number} to processing queue.`)
-            }
-        } catch (e) {
-            logger.error(`Error Procesing block in addBlock`)
-            logger.error(e)
-            logger.error({ blockInfo })
+    addTask(fn, ...args) {
+        this.queue.push({ fn, args })
+        this.consumer()
+    }
+
+    consumer() {
+        // Do nothing when task queue is empty
+        if (this.queue.isEmpty()) {
+            return
         }
-    }
-
-    async function processNext() {
-        if (!blockProcessor) {
-            stop()
-            throw new Error("No block processsor setup. Call 'setupBlockProcessor'.")
-        }
-
-        processing = true
-
-        let blockNumbers = Object.keys(blockQueue).sort((a, b) => a > b)
-
-        if (blockNumbers.length === 0) {
-            processing = false
+        // Do nothing when the amount of concurrency is zero
+        if (this.size === 0) {
             return
         }
 
-        let lowestBlockNumber = blockNumbers[0]
-
-        let blockInfo = blockQueue[lowestBlockNumber]
-        logger.success("dedededede")
-        //logger.success(blockNumbers, Object.keys(blockQueue).length)
-        // logger.log({ blockNumbers })
-        // logger.log({ blockQueueCount: Object.keys(blockQueue).length })
-        logger.log(`Processing block ${lowestBlockNumber} from queue.`)
-        await blockProcessor(blockInfo)
-        delete blockQueue[lowestBlockNumber]
-
-        processing = false
-    }
-
-    return {
-        start,
-        stop,
-        addBlock,
-        setupBlockProcessor: (processor) => blockProcessor = processor
+        this.size--
+        const { fn, args } = this.queue.shift()
+        Promise.resolve(fn(...args)).catch((e) => {
+            console.log(e)
+        }).finally(() => {
+            this.size++
+            this.consumer()
+        })
     }
 }
+
+export class BlockProcessingQueue extends TaskPool {
+    constructor(size = 3) {
+        super(size)
+        this.blockProcessor = null
+    }
+
+    addBlock(blockInfo) {
+        if (!this.blockProcessor) {
+            throw new Error("No block processsor setup. Call 'setupBlockProcessor'.")
+        }
+        if (!blockInfo.error) {
+            this.addTask(this.blockProcessor, blockInfo)
+            logger.success(`Added block ${blockInfo.number} to processing queue.`)
+        }
+    }
+
+    setupBlockProcessor(processor) {
+        this.blockProcessor = processor
+    }
+}
+
+// export const blockProcessingQueue = () => {
+//     let blockQueue = {}
+//     let blockProcessor = null
+//     let timer = null
+//     let processing = false
+
+//     function start() {
+//         timer = setInterval(tryProcessing, 100)
+//     }
+
+//     function stop() {
+//         clearInterval(timer)
+//         timer = null
+//     }
+
+//     function tryProcessing() {
+//         if (processing) return
+//         processNext()
+//     }
+
+//     function addBlock(blockInfo) {
+//         if (!blockInfo.error) {
+//             blockQueue[blockInfo.number] = blockInfo
+//             logger.success(`Added block ${blockInfo.number} to processing queue.`)
+//         }
+//     }
+
+//     async function processNext() {
+//         if (!blockProcessor) {
+//             stop()
+//             throw new Error("No block processsor setup. Call 'setupBlockProcessor'.")
+//         }
+
+//         processing = true
+
+//         let blockNumbers = Object.keys(blockQueue).sort((a, b) => a - b)
+
+//         if (blockNumbers.length === 0) {
+//             processing = false
+//             return
+//         }
+
+//         let lowestBlockNumber = blockNumbers[0]
+
+//         let blockInfo = blockQueue[lowestBlockNumber]
+//         logger.log(`Processing block ${lowestBlockNumber} from queue.`)
+//         await blockProcessor(blockInfo)
+//         delete blockQueue[lowestBlockNumber]
+
+//         processing = false
+//     }
+
+//     return {
+//         start,
+//         stop,
+//         addBlock,
+//         setupBlockProcessor: (processor) => blockProcessor = processor
+//     }
+// }

@@ -25,27 +25,27 @@ if (DBUSER) {
     connectionString = `mongodb://${DBUSER}:${DBPWD}@${DBURL}:${DBPORT}/${DBNAME}?authSource=${AUTHSOURCE}`;
 }
 
-export const getDatabase = () => new Promise(resolver => {
-    db.connect(
-        connectionString, { useNewUrlParser: true, useUnifiedTopology: true },
-        (error) => {
-            if (error) {
-                logger.error(error)
-                throw new Error(error)
-            } else {
-                logger.success("DB Connection Successful.");
-                db.queries = getQueries(db)
-                db.models = mongoose_models
-                db.utils = dbUtils
-                db.config = {
-                    NETWORK,
-                    DBNAME,
-                    DBURL,
-                    DBPORT
-                }
-                logger.log(db.config)
-                resolver(db);
+
+db.connect(
+    connectionString, { useNewUrlParser: true, useUnifiedTopology: true },
+    (error) => {
+        if (error) {
+            logger.error(error)
+            throw new Error(error)
+        } else {
+            logger.success("DB Connection Successful.");
+            db.queries = getQueries(db)
+            db.models = mongoose_models
+            db.utils = dbUtils
+            db.config = {
+                NETWORK,
+                DBNAME,
+                DBURL,
+                DBPORT
             }
+            logger.log(db.config)
         }
-    );
-})
+    }
+);
+
+export const getDatabase = () => db

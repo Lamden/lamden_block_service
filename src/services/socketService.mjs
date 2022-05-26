@@ -67,13 +67,13 @@ export const socketService = (io) => {
 
         io.to(`all-${emitName}`).emit(`new-${emitName}`, JSON.stringify({
             room: `all-${emitName}`,
-            message: {...messageBasic, affectedContractsList, affectedVariablesList, affectedRootKeysList, state_changes_obj }
+            message: { ...messageBasic, affectedContractsList, affectedVariablesList, affectedRootKeysList, state_changes_obj }
         }));
 
         for (const contractName of affectedContractsList) {
             io.to(contractName).emit(`new-${emitName}`, {
                 room: contractName,
-                message: {...messageBasic, contractName, state_changes_obj }
+                message: { ...messageBasic, contractName, state_changes_obj }
             });
         }
 
@@ -81,7 +81,7 @@ export const socketService = (io) => {
             let [contractName, variableName] = variableKeyString.split(".")
             io.to(variableKeyString).emit(`new-${emitName}`, {
                 room: variableKeyString,
-                message: {...messageBasic, contractName, variableName, state_changes_obj }
+                message: { ...messageBasic, contractName, variableName, state_changes_obj }
             });
         }
 
@@ -90,12 +90,12 @@ export const socketService = (io) => {
             let [variableName, rootKey] = other.split(":")
             io.to(rootKeyString).emit(`new-${emitName}`, {
                 room: rootKeyString,
-                message: {...messageBasic, contractName, variableName, rootKey, state_changes_obj }
+                message: { ...messageBasic, contractName, variableName, rootKey, state_changes_obj }
             });
         }
     }
 
-    function emitNewContract (contractInfo) {
+    function emitNewContract(contractInfo) {
         io.to(`new-contracts`).emit(`new_contract`, JSON.stringify({
             room: `new-contracts`,
             message: contractInfo

@@ -46,14 +46,15 @@ export const getHistoryEndpoints = (db) => {
     * /contract_history:
     *   get:
     *     tags: ["History"]
-    *     summary: Returns history info by contract name.
+    *     summary: Returns history info of state changes of contract.
     *     parameters:
     *       - in: query
-    *         name: contact
+    *         name: contract
     *         schema: 
     *           type: string
     *         required: true
     *         description: Contract name.
+    *         example: currency
     *       - in: query
     *         name: limit
     *         schema: 
@@ -90,20 +91,22 @@ export const getHistoryEndpoints = (db) => {
     * /variable_history:
     *   get:
     *     tags: ["History"]
-    *     summary: Returns history info by variable.
+    *     summary: Returns history info of state changes of variable.
     *     parameters:
     *       - in: query
-    *         name: contact
+    *         name: contract
     *         schema: 
     *           type: string
     *         required: true
     *         description: Contract name.
+    *         example: currency
     *       - in: query
     *         name: variable
     *         schema: 
-    *           type: integer
+    *           type: string
     *         required: true
-    *         description: Contract name.
+    *         description: variable name.
+    *         example: balances
     *       - in: query
     *         name: limit
     *         schema: 
@@ -139,26 +142,29 @@ export const getHistoryEndpoints = (db) => {
     * /rootkey_history:
     *   get:
     *     tags: ["History"]
-    *     summary: Returns history info by rootkey.
+    *     summary: Returns history info of state changes of rootkey.
     *     parameters:
     *       - in: query
-    *         name: contact
+    *         name: contract
     *         schema: 
     *           type: string
     *         required: true
     *         description: Contract name.
+    *         example: currency
     *       - in: query
     *         name: variable
     *         schema: 
-    *           type: integer
+    *           type: string
     *         required: true
-    *         description: Contract name.
+    *         description: variable name.
+    *         example: balances
     *       - in: query
     *         name: root_key
     *         schema: 
     *           type: string
     *         required: true
-    *         description: Contract name.
+    *         description: Root key.
+    *         example: 2341d744f11658d7f1ca1c514a1b76ff07898435c46402b1e4f8b00d4a13f5f9
     *       - in: query
     *         name: limit
     *         schema: 
@@ -191,17 +197,18 @@ export const getHistoryEndpoints = (db) => {
 
     /**
     * @openapi
-    * /tx_history/:vk:
+    * /tx_history/{vk}:
     *   get:
     *     tags: ["History"]
     *     summary: Returns tx history info by account vk.
     *     parameters:
-    *       - in: params
+    *       - in: path
     *         name: vk
     *         schema: 
     *           type: string
     *         required: true
     *         description: User account vk.
+    *         example: 2341d744f11658d7f1ca1c514a1b76ff07898435c46402b1e4f8b00d4a13f5f9
     *       - in: query
     *         name: limit
     *         schema: 

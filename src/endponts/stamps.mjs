@@ -48,7 +48,7 @@ const logger = createLogger('Stamps');
 *                                   required: true 
 *                                   example: 
 *                                       amount: 
-*                                           __fixed__: '10000000000000000000000000000000000000.5'
+*                                           __fixed__: '10.5'
 *                                       to: 183533f55e67a1a6e0c3d13ef3a69f4b1b1bcf7c64ef4e0cef6fbf4b6e0eaf95
 *                               nonce:
 *                                   type: integer

@@ -4,25 +4,25 @@ export const getStateEndpoints = (db) => {
 
     /**
     * @openapi
-    * /current/one/:contractName/:variableName:
+    * /current/one/{contractName}/{variableName}:
     *   get:
     *     tags: ["State"]
     *     summary: Returns current state value of variable.
     *     parameters:
-    *       - in: params
+    *       - in: path
     *         name: contractName
     *         schema: 
     *           type: string
     *         required: true
     *         description: Contract name.
     *         example: con_survival_test
-    *       - in: params
+    *       - in: path
     *         name: variableName
     *         schema: 
     *           type: string
     *         required: true
     *         description: variable name.
-    *         example: game
+    *         example: operator
     *     responses:
     *       200:
     *         description: Success
@@ -30,26 +30,26 @@ export const getStateEndpoints = (db) => {
 
     /**
     * @openapi
-    * /current/one/:contractName/:variableName/:key:
+    * /current/one/{contractName}/{variableName}/{key}:
     *   get:
     *     tags: ["State"]
     *     summary: Returns current state value of key.
     *     parameters:
-    *       - in: params
+    *       - in: path
     *         name: contractName
     *         schema: 
     *           type: string
     *         required: true
     *         description: Contract name.
     *         example: con_survival_test
-    *       - in: params
+    *       - in: path
     *         name: variableName
     *         schema: 
     *           type: string
     *         required: true
     *         description: variable name.
     *         example: game
-    *       - in: params
+    *       - in: path
     *         name: key
     *         schema: 
     *           type: string
@@ -93,12 +93,12 @@ export const getStateEndpoints = (db) => {
     *                           variableName: 
     *                               description: Variable name
     *                               type: string
-    *                               example: operator
+    *                               example: game
     *                               required: true       
     *                           key: 
     *                               description: Variable name
     *                               type: string
-    *                               example: 757c03fef2a1c041ea0173081e19c4e908b77b7e0bbd87f7bb06402cdc7983ae
+    *                               example: amount_boss
     *                               required: false  
     *     responses:
     *       200:
@@ -117,12 +117,12 @@ export const getStateEndpoints = (db) => {
 
     /**
     * @openapi
-    * /current/all/:contractName:
+    * /current/all/{contractName}:
     *   get:
     *     tags: ["State"]
-    *     summary: Returns all states by contract name.
+    *     summary: Returns all states of contract.
     *     parameters:
-    *       - in: params
+    *       - in: path
     *         name: contractName
     *         schema: 
     *           type: string
@@ -136,19 +136,19 @@ export const getStateEndpoints = (db) => {
 
     /**
     * @openapi
-    * /current/all/:contractName/:variableName:
+    * /current/all/{contractName}/{variableName}:
     *   get:
     *     tags: ["State"]
-    *     summary: Returns all states by contract name and variable name.
+    *     summary: Returns all states of variable of contract.
     *     parameters:
-    *       - in: params
+    *       - in: path
     *         name: contractName
     *         schema: 
     *           type: string
     *         required: true
     *         description: Contract name.
     *         example: con_survival_test
-    *       - in: params
+    *       - in: path
     *         name: variableName
     *         schema: 
     *           type: string
@@ -162,26 +162,26 @@ export const getStateEndpoints = (db) => {
 
     /**
     * @openapi
-    * /current/all/:contractName/:variableName/:key:
+    * /current/all/{contractName}/{variableName}/{rootkey}:
     *   get:
     *     tags: ["State"]
-    *     summary: Returns all states by contract name ,variable name and key.
+    *     summary: Returns all states of key of variable of contract.
     *     parameters:
-    *       - in: params
+    *       - in: path
     *         name: contractName
     *         schema: 
     *           type: string
     *         required: true
     *         description: Contract name.
     *         example: con_survival_test
-    *       - in: params
+    *       - in: path
     *         name: variableName
     *         schema: 
     *           type: string
     *         required: true
     *         description: Variable name.
     *         example: game
-    *       - in: params
+    *       - in: path
     *         name: rootkey
     *         schema: 
     *           type: string

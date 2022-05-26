@@ -6,16 +6,16 @@ const { getType } = require('jest-get-type');
 let db, pysocket, app, request;
 
 const validContract = (item) => {
-    // valid the block info
     expect(getType(item.contractName)).toBe('string');
     expect(getType(item.lst001)).toBe('boolean');
 }
 
 beforeAll(async () => {
-    db = await getDatabase();
+    db = getDatabase();
     pysocket = createPythonSocketClient();
     app = createExpressApp(db, pysocket);
     request = supertest(app);
+    await new Promise(resolve => setTimeout(resolve, 1000));
 });
 
 afterAll(async () => {
@@ -39,7 +39,7 @@ describe('Test Info Endpoints', () => {
     describe('/contracts/:contractName: It should response the GET with contract detail by contract name', () => {
 
         test('Returns contract info by contract name.', async () => {
-            const contractName = 'con_survival_1';
+            const contractName = 'currency';
             const response = await request.get(`/contracts/${contractName}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
@@ -66,7 +66,7 @@ describe('Test Info Endpoints', () => {
     describe('/tokens/:contractName: It should response the GET with contract detail by contract name', () => {
 
         test('Returns contract info by contract name.', async () => {
-            const contractName = 'con_survival_1';
+            const contractName = 'con_days';
             const response = await request.get(`/tokens/${contractName}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
