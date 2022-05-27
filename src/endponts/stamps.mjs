@@ -73,6 +73,10 @@ const logger = createLogger('Stamps');
 */
 export const getStampsEndpoints = (socketClient) => {
     async function get_stamps_estimation(req, res) {
+        if (!socketClient || !socketClient.connected) {
+            res.sendStatus(404)
+            return
+        }
         let payload = req.body
         try {
             socketClient.emit("stamps_estimation", payload, (response) => {
