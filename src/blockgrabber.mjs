@@ -29,6 +29,7 @@ const runBlockGrabber = (config) => {
     };
 
     async function processBlockFromWebsocket(blockData) {
+        await db.queries.setLatestBlock(blockData.number)
         blockProcessingQueue.addBlock(blockData)
         await blockRepair.run()
     }
