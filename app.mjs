@@ -1,12 +1,12 @@
 import { config } from 'dotenv'
 config()
-import { getDatabase } from "./src/database/database.mjs";
 
 import { runBlockGrabber } from './src/blockgrabber.mjs'
-import { blockProcessingQueue } from './src/blockProcessingQueue.mjs'
 import { eventWebsockets } from './src/services/eventsWebsocket.mjs'
 
 import { createServer } from './src/server.mjs'
+
+import { getDatabase } from './src/database/database.mjs'
 
 const MASTERNODE_URLS = {
     'testnet': "https://testnet-master-1.lamden.io",
@@ -26,14 +26,17 @@ let grabberConfig = {
     MASTERNODE_URL
 }
 
-const start = async () => {
-    grabberConfig.db = await getDatabase()
-    grabberConfig.server = createServer(BLOCKSERVICE_HOST, BLOCKSERVICE_PORT, grabberConfig.db)
+export const start = async () => {
+    const db = getDatabase()
+    // ensure backward compatibility 
+    await db.models.Blocks.deleteMany({ hash: "block-does-not-exist" })
+
+    grabberConfig.server = createServer(BLOCKSERVICE_HOST, BLOCKSERVICE_PORT, db)
     grabberConfig.blockchainEvents = eventWebsockets(grabberConfig.MASTERNODE_URL)
-    grabberConfig.blockProcessingQueue = blockProcessingQueue(grabberConfig.db)
 
     let blockGrabber = runBlockGrabber(grabberConfig)
     blockGrabber.start()
+    return grabberConfig
 }
 
 start()

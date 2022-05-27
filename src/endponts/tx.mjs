@@ -7,7 +7,7 @@ export const getTransactionEndpoints = (db) => {
     * @openapi
     * /tx:
     *   get:
-    *     tags: ["State"]
+    *     tags: ["Tx"]
     *     summary: Returns a transaction info.
     *     description: Get Transaction Info by txhash/uid. If both tx hash and tx uid are provided, it will return the tx info by tx hash.
     *     parameters:

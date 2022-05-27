@@ -62,6 +62,7 @@ export const createServer = (host, port, db) => {
         server,
         services: {
             sockets: socketService(io)
-        }
+        },
+        socketClient
     }
 }

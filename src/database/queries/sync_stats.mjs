@@ -47,12 +47,27 @@ export const getSyncStatsQueries = (db) => {
         }, { upsert: true })
     }
 
+    async function getLastQueryHeight() {
+        let res = await db.models.App.findOne({ key: "last_query_height" })
+        if (!res) return 0
+        else return res.value
+    }
+
+    async function setLastQueryHeight() {
+        await db.models.App.updateOne({ key: "last_query_height" }, {
+            key: "last_query_height",
+            value: blockNum
+        }, { upsert: true })
+    }
+
     return {
         getLatestBlock,
         setLatestBlock,
         getLatestSyncedBlock,
         getLastestProcessedBlock,
         getLastRepaired,
-        setLastRepaired
+        setLastRepaired,
+        getLastQueryHeight,
+        setLastQueryHeight
     }
 }

@@ -26,18 +26,19 @@ export const getInfoEndpoints = (db) => {
 
     /**
     * @openapi
-    * /contracts/:contractName:
+    * /contracts/{contractName}:
     *   get:
     *     tags: ["Contract"]
     *     summary: Returns a contract info.
     *     description: Get Contract Info by contractName.
     *     parameters:
-    *       - in: query
+    *       - in: path
     *         name: contractName
     *         schema: 
     *           type: string
     *         required: true
     *         description: Contract Name.
+    *         example: currency
     *     responses:
     *       200:
     *         description: Success
@@ -58,8 +59,8 @@ export const getInfoEndpoints = (db) => {
     * /tokens:
     *   get:
     *     tags: ["Token"]
-    *     summary: Returns all contracts info which have token.
-    *     description: Get all contracts info which have token.
+    *     summary: Returns all token contracts infomation.
+    *     description: Get all token contracts infomation.
     *     responses:
     *       200:
     *         description: Success
@@ -77,18 +78,19 @@ export const getInfoEndpoints = (db) => {
 
     /**
     * @openapi
-    * /tokens/:contractName:
+    * /tokens/{contractName}:
     *   get:
     *     tags: ["Token"]
     *     summary: Returns a token info.
-    *     description: Get the Token Info by contractName.
+    *     description: Get a token contract info.
     *     parameters:
-    *       - in: query
+    *       - in: path
     *         name: contractName
     *         schema: 
     *           type: string
     *         required: true
     *         description: Contract Name.
+    *         example: con_diego2
     *     responses:
     *       200:
     *         description: Success

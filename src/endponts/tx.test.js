@@ -6,10 +6,11 @@ const { getType } = require('jest-get-type');
 let db, pysocket, app, request;
 
 beforeAll(async () => {
-    db = await getDatabase();
+    db = getDatabase();
     pysocket = createPythonSocketClient();
     app = createExpressApp(db, pysocket);
     request = supertest(app);
+    await new Promise(resolve => setTimeout(resolve, 1000));
 });
 
 afterAll(async () => {
@@ -19,7 +20,7 @@ afterAll(async () => {
 
 describe('Test Tx Endpoints', () => {
     test('/tx: Returns Transaction Info when tx hash is provided.', async () => {
-        const hash = "df9c0af0b607c3a94a5c597d597594a4ae3e8636af74a5b0e62964a36e4dccd4"
+        const hash = "f0b137b2435e46a660cd7179538d722387c417074c378fe38515f91f470c2821"
         const response = await request.get(`/tx?hash=${hash}`);
         expect(response.headers['content-type']).toMatch(/json/);
         expect(response.statusCode).toBe(200);
@@ -28,7 +29,7 @@ describe('Test Tx Endpoints', () => {
     })
 
     test('/tx: Returns Transaction Info when tx uid is provided.', async () => {
-        const tx_uid = "000000065445.00000.00000"
+        const tx_uid = "000000000001.00000.00000"
         const response = await request.get(`/tx?uid=${tx_uid}`);
         expect(response.headers['content-type']).toMatch(/json/);
         expect(response.statusCode).toBe(200);
@@ -38,7 +39,7 @@ describe('Test Tx Endpoints', () => {
 
     test('/tx: Returns Transaction Info when both tx uid and tx hash are provided.', async () => {
         // If both txhash and tx_uid are provided, it will return the tx info by tx hash
-        const hash = "df9c0af0b607c3a94a5c597d597594a4ae3e8636af74a5b0e62964a36e4dccd4"
+        const hash = "f0b137b2435e46a660cd7179538d722387c417074c378fe38515f91f470c2821"
         const tx_uid = "000000000015.00000.00000"
         const response = await request.get(`/tx?hash=${hash}&uid=${tx_uid}`);
         expect(response.headers['content-type']).toMatch(/json/);
