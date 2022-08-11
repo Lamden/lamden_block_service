@@ -47,7 +47,7 @@ describe('Test Info Endpoints', () => {
 
             const item = response.body;
             expect(getType(item[contractName])).toBe('object');
-        })
+        }, 15000)
     })
 
     describe('/tokens: It should response the GET with all contracts info which have token.', () => {

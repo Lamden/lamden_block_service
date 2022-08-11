@@ -49,12 +49,7 @@ class BlockRepair {
             logger.error(`Repair block ${blockData.number} failed. Error: ${blockData.error}`)
             return
         }
-        // try repair MalformedBlock. ex: {__fix__: '100'} => 100
-        blockData = utils.repairMalformedBlock(blockData)
-        if (utils.isMalformedBlock(blockData)) {
-            logger.error(`Repair block ${blockData.number} failed. Because this is a malformed block`)
-            return
-        }
+        
         try {
             await this.processor(blockData)
             logger.success(`Repair block ${blockData.number} success.`)

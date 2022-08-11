@@ -23,8 +23,6 @@ var stateChanges = new mongoose.Schema({
         index: true
     },
     blockNum: Number,
-    subBlockNum: Number,
-    txIndex: Number,
     timestamp: Number,
     affectedContractsList: Array,
     affectedVariablesList: Array,

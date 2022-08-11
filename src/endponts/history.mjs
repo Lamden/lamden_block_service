@@ -23,7 +23,7 @@ export const getHistoryEndpoints = (db) => {
     *           type: string
     *         required: false
     *         description: Last transaction uid.
-    *         default: 000000000000.00000.00000
+    *         default: 000000000000
     *     responses:
     *       200:
     *         description: Success
@@ -68,7 +68,7 @@ export const getHistoryEndpoints = (db) => {
     *           type: string
     *         required: false
     *         description: Last transaction uid.
-    *         default: 000000000000.00000.00000
+    *         default: 000000000000
     *     responses:
     *       200:
     *         description: Success
@@ -120,7 +120,7 @@ export const getHistoryEndpoints = (db) => {
     *           type: string
     *         required: false
     *         description: Last transaction uid.
-    *         default: 000000000000.00000.00000
+    *         default: 000000000000
     *     responses:
     *       200:
     *         description: Success
@@ -178,7 +178,7 @@ export const getHistoryEndpoints = (db) => {
     *           type: string
     *         required: false
     *         description: Last transaction uid.
-    *         default: 000000000000.00000.00000
+    *         default: 000000000000
     *     responses:
     *       200:
     *         description: Success

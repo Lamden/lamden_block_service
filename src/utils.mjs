@@ -86,15 +86,12 @@ export const mergeObjects = (objectList) => {
     })
 }
 
-export function make_tx_uid(blockNumber, subBlockNum, tx_index) {
+export function make_tx_uid(blockNumber) {
     let blockPadding = "000000000000"
-    let regPadding = "00000"
 
     let blockWithPadding = `${blockPadding.substring(0, blockPadding.length - blockNumber.toString().length)}${blockNumber}`
-    let subBlockWithPadding = `${regPadding.substring(0, regPadding.length - subBlockNum.toString().length)}${subBlockNum}`
-    let txIndexPadding = `${regPadding.substring(0, regPadding.length - tx_index.toString().length)}${tx_index}`
 
-    return `${blockWithPadding}.${subBlockWithPadding}.${txIndexPadding}`
+    return blockWithPadding
 }
 
 export function stringify(obj) {
@@ -103,81 +100,5 @@ export function stringify(obj) {
     } catch (e) {
         console.log(e)
         console.log(util.inspect(obj, false, null, true))
-    }
-}
-
-export const isMalformedBlock = (blockInfo) => {
-    const validateValue = (value, name) => {
-        if (isNaN(parseInt(value))) throw new Error(`'${name}' has malformed value ${JSON.stringify(value)}`)
-    }
-
-    const { number, subblocks } = blockInfo
-    try {
-        validateValue(number, 'number')
-        if (Array.isArray(subblocks)) {
-            for (let sb of subblocks) {
-                const { transactions, subblock } = sb
-
-                validateValue(subblock, 'subblock')
-                if (Array.isArray(transactions)) {
-                    for (let tx of transactions) {
-                        const { stamps_used, status, transaction } = tx
-                        const { metadata, payload } = transaction
-                        const { timestamp } = metadata
-                        const { nonce, stamps_supplied } = payload
-                        validateValue(stamps_used, 'stamps_used')
-                        validateValue(status, 'status')
-                        validateValue(timestamp, 'timestamp')
-                        validateValue(nonce, 'nonce')
-                        validateValue(stamps_supplied, 'stamps_supplied')
-                    }
-                }
-            }
-        }
-    } catch (e) {
-        console.error({ "Malformed Block": e })
-        return true
-    }
-    return false
-}
-
-// repair MalformedBlock. ex: {__fix__: 100} => 100
-export const repairMalformedBlock = (blockInfo) => {
-    const getValue = (value) => {
-        if (!value && value != 0) return null;
-        if (value.__fixed__) return parseInt(value.__fixed__)
-        return value
-    }
-
-    try {
-        const { number, subblocks } = blockInfo
-        blockInfo.number = getValue(number)
-        if (Array.isArray(subblocks)) {
-            let i = 0
-            for (let sb of subblocks) {
-                const { transactions, subblock } = sb
-                blockInfo.subblocks[i].subblock = getValue(subblock)
-                if (Array.isArray(transactions)) {
-                    let j = 0
-                    for (let tx of transactions) {
-                        const { stamps_used, status, transaction } = tx
-                        const { metadata, payload } = transaction
-                        const { timestamp } = metadata
-                        const { nonce, stamps_supplied } = payload
-                        blockInfo.subblocks[i]['transactions'][j]['stamps_used'] = getValue(stamps_used)
-                        blockInfo.subblocks[i]['transactions'][j]['status'] = getValue(status)
-                        blockInfo.subblocks[i]['transactions'][j]['transaction']['metadata']['timestamp'] = getValue(timestamp)
-                        blockInfo.subblocks[i]['transactions'][j]['transaction']['payload']['nonce'] = getValue(nonce)
-                        blockInfo.subblocks[i]['transactions'][j]['transaction']['payload']['stamps_supplied'] = getValue(stamps_supplied)
-                        j++
-                    }
-                }
-                i++
-            }
-        }
-        return blockInfo
-    } catch (e) {
-        console.log(e)
-        return null
     }
 }
