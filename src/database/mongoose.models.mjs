@@ -68,7 +68,7 @@ var contracts = new mongoose.Schema({
 
 var missingBlocks = new mongoose.Schema({
     hash: {
-        type: string,
+        type: String,
         unique: true,
         required: true,
         index: true

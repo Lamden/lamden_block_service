@@ -24,7 +24,7 @@ export const getBlockProcessor = (services, db) => {
     };
 
     const processBlockStateChanges = async (blockInfo) => {
-        const txInfo = blockInfo.number === 0 ? {} : blockInfo.processed
+        const txInfo = blockInfo.number === 0 ? {transaction: {payload: {}}} : blockInfo.processed
         const state = blockInfo.number === 0 ? blockInfo.genesis : txInfo.state
 
         let timestamp = blockInfo.number === 0 ? 0 : txInfo.transaction.metadata.timestamp * 1000

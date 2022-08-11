@@ -8,7 +8,7 @@ export const socketService = (io) => {
     function emitStateChange(keyInfo, value, state_changes_obj, txInfo) {
         const { contractName, variableName, rootKey } = keyInfo
         const { transaction } = txInfo
-        const { payload } = transaction
+        const { payload } = transaction 
 
         const message = {
             ...keyInfo,
