@@ -17,16 +17,17 @@ export const getBlockProcessor = (services, db) => {
                 })
                 await block.save()
                 services.sockets.emitNewBlock(block.blockInfo)
+                
                 await processBlockStateChanges(block.blockInfo)
             }
         }
     };
 
     const processBlockStateChanges = async (blockInfo) => {
-        const txInfo = blockInfo.processed
-        const { state } = txInfo
+        const txInfo = blockInfo.number === 0 ? {} : blockInfo.processed
+        const state = blockInfo.number === 0 ? blockInfo.genesis : txInfo.state
 
-        let timestamp = txInfo.transaction.metadata.timestamp * 1000
+        let timestamp = blockInfo.number === 0 ? 0 : txInfo.transaction.metadata.timestamp * 1000
         let state_changes_obj = {}
         let affectedContractsList = new Set()
         let affectedVariablesList = new Set()
@@ -110,7 +111,7 @@ export const getBlockProcessor = (services, db) => {
                 affectedContractsList: Array.from(affectedContractsList),
                 affectedVariablesList: Array.from(affectedVariablesList),
                 affectedRootKeysList: Array.from(affectedRootKeysList),
-                affectedRawKeysList: Array.isArray(state) ? txInfo.state.map(change => change.key) : [],
+                affectedRawKeysList: Array.isArray(state) ? state.map(change => change.key) : [],
                 state_changes_obj: utils.stringify(utils.cleanObj(state_changes_obj)),
                 txHash: txInfo.hash,
                 txInfo
