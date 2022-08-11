@@ -13,7 +13,11 @@ var blocks = new mongoose.Schema({
         required: true,
         index: true
     },
-    blockInfo: Object
+    blockInfo: Object,
+    previousExist: {
+        type: Boolean,
+        required: false
+    }
 });
 
 var stateChanges = new mongoose.Schema({
@@ -63,8 +67,8 @@ var contracts = new mongoose.Schema({
 });
 
 var missingBlocks = new mongoose.Schema({
-    blockNum: {
-        type: Number,
+    hash: {
+        type: string,
         unique: true,
         required: true,
         index: true

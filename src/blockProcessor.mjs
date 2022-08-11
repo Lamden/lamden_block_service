@@ -6,7 +6,7 @@ const logger = createLogger('Block Processor');
 
 export const getBlockProcessor = (services, db) => {
     const processBlock = async (blockInfo = {}) => {
-        let blockNum = blockInfo.number || blockInfo.id;
+        let blockNum = blockInfo.number;
         let block = await db.models.Blocks.findOne({ blockNum })
         if (!block) {
             if (!blockInfo.error) {
