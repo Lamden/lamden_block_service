@@ -57,7 +57,7 @@ describe("Testing websocket server.", () => {
   test("Should parse genesis block correctly", (done) => {
       let data = {
         'hash': '2bb4e112aca11805538842bd993470f18f337797ec3f2f6ab02c47385caf088e',
-        'number': 0,
+        'number': '0',
         'hlc_timestamp': '0000-00-00T00:00:00.000000000Z_0',
         'previous': '0000000000000000000000000000000000000000000000000000000000000000',
         'genesis': [

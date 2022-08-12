@@ -6,6 +6,12 @@ const logger = createLogger('Block Processor');
 
 export const getBlockProcessor = (services, db) => {
     const processBlock = async (blockInfo = {}) => {
+        try {
+            blockInfo.number = parseInt(blockInfo.number)
+        } catch(err) {
+            logger.error("Parse block number from string to number failed.")
+            return
+        }
         let blockNum = blockInfo.number;
         let block = await db.models.Blocks.findOne({ blockNum })
         if (!block) {
