@@ -73,7 +73,7 @@ export const getBlockQueries = (db) => {
     async function getBlockNumber(blockNum) {
         try {
             blockNum = parseInt(blockNum)
-            let result = await db.models.Blocks.findOne({ blockNum }, { '_id': 0, 'keys': 0, '__v': 0 })
+            let result = await db.models.Blocks.findOne({ blockNum }, { '_id': 0, 'keys': 0, '__v': 0, "blockInfo.processed.transaction.metadata.timestamp": 0 })
             if (!result) return { error: `block number ${blockNum} does not exist.` }
             if (!result.blockInfo) return { error: `block number ${blockNum} does not exist.` }
             return result.blockInfo
@@ -97,7 +97,9 @@ export const getBlockQueries = (db) => {
         // console.log({start_block, limit})
 
         try {
-            let blocks = await db.models.Blocks.find({ blockNum: { "$gte": start_block } })
+            let blocks = await db.models.Blocks.find({ blockNum: { "$gte": start_block } }, {
+                "blockInfo.processed.transaction.metadata.timestamp": 0
+            })
                 .sort({ "blockNum": 1 })
                 .limit(limit)
 
