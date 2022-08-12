@@ -26,13 +26,17 @@ var stateChanges = new mongoose.Schema({
         required: true,
         index: true
     },
+    txHash: {
+        type: String,
+        required: false,
+        index: true
+    },
     blockNum: Number,
     timestamp: Number,
     affectedContractsList: Array,
     affectedVariablesList: Array,
     affectedRootKeysList: Array,
     affectedRawKeysList: Array,
-    txHash: String,
     state_changes_obj: mongoose.Schema.Types.Mixed,
     txInfo: Object
 });
@@ -43,7 +47,11 @@ var currentState = new mongoose.Schema({
         required: true,
         index: true
     },
-    tx_uid: String,
+    tx_uid: {
+        type: String,
+        required: true,
+        index: true
+    },
     prev_tx_uid: String,
     txHash: String,
     value: mongoose.Schema.Types.Mixed,
