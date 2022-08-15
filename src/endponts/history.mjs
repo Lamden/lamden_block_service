@@ -222,8 +222,8 @@ export const getHistoryEndpoints = (db) => {
     *           type: string
     *         required: false
     *         description: Max transaction unique ID.
-    *         default: 999999999999.00000.00000
-    *         example: 999999999999.00000.00000
+    *         default: 999999999999
+    *         example: 999999999999
     *     responses:
     *       200:
     *         description: Success

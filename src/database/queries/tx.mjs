@@ -10,7 +10,7 @@ export const getTransactionQueries = (db) => {
         return await db.models.StateChanges.findOne({tx_uid},{ '_id': 0, '__v': 0 })
     }
 
-    async function getTxHistory(vk, max_tx_uid = "999999999999.00000.00000", limit=10){
+    async function getTxHistory(vk, max_tx_uid = "999999999999", limit=10){
         limit = parseInt(limit) || 10
 
         let stateChanges = await db.models.StateChanges.find({
