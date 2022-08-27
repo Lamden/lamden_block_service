@@ -8,6 +8,10 @@ import { createServer } from './src/server.mjs'
 
 import { getDatabase } from './src/database/database.mjs'
 
+import { createLogger } from './src/logger.mjs'
+
+const logger = createLogger('App');
+
 const MASTERNODE_URLS = {
     'testnet': "https://testnet-master-1.lamden.io",
     'mainnet': "https://masternode-01.lamden.io"
@@ -31,6 +35,14 @@ export const start = async () => {
     // ensure backward compatibility 
     await db.models.Blocks.deleteMany({ hash: "block-does-not-exist" })
 
+    logger.info("Syncing Indexes...");
+    //console.log( db.models)
+    for (let model_name of Object.keys(db.models)){
+        await db.models[model_name].syncIndexes()
+            .catch(err => logger.error(err))
+            .then(() => logger.success(`DONE Syncing Indexes for ${db.models[model_name].collection.collectionName}...`))
+    }
+    
     grabberConfig.server = createServer(BLOCKSERVICE_HOST, BLOCKSERVICE_PORT, db)
     grabberConfig.blockchainEvents = eventWebsockets(grabberConfig.MASTERNODE_URL)
 
