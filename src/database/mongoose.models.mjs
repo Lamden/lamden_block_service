@@ -30,7 +30,11 @@ var stateChanges = new mongoose.Schema({
     affectedVariablesList: Array,
     affectedRootKeysList: Array,
     affectedRawKeysList: Array,
-    txHash: String,
+    txHash: {
+        type: String,
+        required: false,
+        index: true
+    },
     state_changes_obj: mongoose.Schema.Types.Mixed,
     txInfo: Object
 });
@@ -41,7 +45,11 @@ var currentState = new mongoose.Schema({
         required: true,
         index: true
     },
-    tx_uid: String,
+    tx_uid: {
+        type: String,
+        required: true,
+        index: true
+    },
     prev_tx_uid: String,
     txHash: String,
     value: mongoose.Schema.Types.Mixed,
