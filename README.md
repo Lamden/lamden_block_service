@@ -1,3 +1,5 @@
+## VERSION 2.0 will not work with a version 1 Lamden network.  Use the previuous version to v2 for an old Lamden network.
+
 # Lamden Block Service
 A nodejs application for syncing and serving the Lamden Blockchain to a local app.
 This application serves as starting point to be able to build an app on Lamden that requires easy access to current state and realtime updates.

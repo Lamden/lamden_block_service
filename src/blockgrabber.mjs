@@ -18,13 +18,15 @@ const runBlockGrabber = (config) => {
     const blockRepair = GetBlockRepair(MASTERNODE_URL, server.services)
 
     async function processLatestBlockFromWebsocket(data) {
+        if (!data) return
+        
         await db.queries.setLatestBlock(data.number)
         let block = await db.models.Blocks.findOne({ blockNum: data.number })
 
         if (!block) {
             blockProcessingQueue.addBlock(data)
         }
-
+ss
         await blockRepair.run()
     };
 
