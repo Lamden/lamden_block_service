@@ -57,7 +57,7 @@ const loadContracts = async (drop) => {
         logger.complete(res)
     }
 
-    get_batch("000000000000.00000.00000")
+    get_batch("000000000000")
 
 }
 

@@ -1,0 +1,142 @@
+{
+    "hash": "accad90068e248f9c1df68095c491af389b18cde26402fd01cd602c5238663ce",
+    "number": "1658163894967101696",
+    "hlc_timestamp": "2022-07-18T17:04:54.967101696Z_0",
+    "previous": "15707bfc75f0140a66dd1303fc5a9101006193e0278da880f2db483d3f21d646",
+    "proofs": [
+      {
+        "signature": "32192497c0332b60f30ab7264a304dbd26a98851455b129c73f11ed9345c6eb78ea1673ed715706f1955fbd8a11c3e00e7506d1b2fa464481d2bca36a40c0701",
+        "signer": "3cc7090dab1cc57df4d75be68d9f9cdbdbff639095488b68b0f90014f5cd20bc"
+      },
+      {
+        "signature": "f1366e72f7c6179ba4bd6330fc11173e992b4ae77088a32d873edfa332faf90e8843f707eae5fc5735236780cc809cb442fdf1392bc097c7b26f5823fe84ec0d",
+        "signer": "1c37fa8be2f0d029cd2c66d53fa2797c4697e127af556f123f662302cb0670c4"
+      },
+      {
+        "signature": "eef303a975c3e28af5941d7746ca40e2a07b989603686ff0a2967a6ead04c7a2cc8392a9ed2023f0306e5c5001deea4ff757219fec8443a1d070ab7a3bd1810d",
+        "signer": "a9d0cbe69b7217c85bbf685c94ed00e0eb0960ae7742cf789422f92da6ba1c86"
+      },
+      {
+        "signature": "3ddf2a6b3026219bccd1a5e9970a814014626fd4643dc1883f8d058705cc3c82a94eb1752b9e882471a44d737178220e3e2b7321d7f5f74c6038be1fb4ebdc03",
+        "signer": "41f48cd73574e6cbb5c5329eac7a5404eb12ee5a964d034044727fa3f4acbc9f"
+      }
+    ],
+    "processed": {
+        "hash": "bedbf2872cf337c40408d3b17f1ed649af173e812156d7066ccabc8cda26ad4a",
+        "result": "None",
+        "stamps_used": 1,
+        "state": [
+          {
+            "key": "currency.balances:3515aa7b15d7b97855a0266935bf26c44ad8d8198b2dc81ce035ba1b86b0f340",
+            "value": {
+              "__fixed__": "50"
+            }
+          },
+          {
+            "key": "currency.balances:c0006724aa6fc81619b7e27816e69ab824ad04d39640bb87fb86720f452a1ed5",
+            "value": {
+              "__fixed__": "499900"
+            }
+          }
+        ],
+        "status": 0,
+        "transaction": {
+            "metadata": {
+              "signature": "e832a8bfd4ba9598bdf380547342a8f8cd431a77d1d1f080fbe665e43bfcd20a3a4c67e6aa4ed0fad2504b7b399fc04617b5597d4bae7350a0babf93e2439c07",
+              "timestamp": 1658163894
+            },
+            "payload": {
+              "contract": "currency",
+              "function": "transfer",
+              "kwargs": {
+                "amount": {
+                  "__fixed__": "499900"
+                },
+                "to": "c0006724aa6fc81619b7e27816e69ab824ad04d39640bb87fb86720f452a1ed5"
+              },
+              "nonce": 0,
+              "processor": "92e45fb91c8f76fbfdc1ff2a58c2e901f3f56ec38d2f10f94ac52fcfa56fce2e",
+              "sender": "3515aa7b15d7b97855a0266935bf26c44ad8d8198b2dc81ce035ba1b86b0f340",
+              "stamps_supplied": 100
+            }
+          }
+      },
+    "rewards": [
+      {
+        "key": "currency.balances:92e45fb91c8f76fbfdc1ff2a58c2e901f3f56ec38d2f10f94ac52fcfa56fce2e",
+        "value": {
+          "__fixed__": "0.021999999"
+        },
+        "reward": {
+          "__fixed__": "0.007333333"
+        }
+      },
+      {
+        "key": "currency.balances:01dcfdde08d22e837b0bdda38d2096cc23f05008c3253251ae70fe5477dd24b2",
+        "value": {
+          "__fixed__": "0.021999999"
+        },
+        "reward": {
+          "__fixed__": "0.007333333"
+        }
+      },
+      {
+        "key": "currency.balances:a9d0cbe69b7217c85bbf685c94ed00e0eb0960ae7742cf789422f92da6ba1c86",
+        "value": {
+          "__fixed__": "0.021999999"
+        },
+        "reward": {
+          "__fixed__": "0.007333333"
+        }
+      },
+      {
+        "key": "currency.balances:3cc7090dab1cc57df4d75be68d9f9cdbdbff639095488b68b0f90014f5cd20bc",
+        "value": {
+          "__fixed__": "0.021999999"
+        },
+        "reward": {
+          "__fixed__": "0.007333333"
+        }
+      },
+      {
+        "key": "currency.balances:1c37fa8be2f0d029cd2c66d53fa2797c4697e127af556f123f662302cb0670c4",
+        "value": {
+          "__fixed__": "0.021999999"
+        },
+        "reward": {
+          "__fixed__": "0.007333333"
+        }
+      },
+      {
+        "key": "currency.balances:41f48cd73574e6cbb5c5329eac7a5404eb12ee5a964d034044727fa3f4acbc9f",
+        "value": {
+          "__fixed__": "0.021999999"
+        },
+        "reward": {
+          "__fixed__": "0.007333333"
+        }
+      },
+      {
+        "key": "currency.balances:45f943fb2a63ac12ef9321af33322e514a873589400247ad983d278fa8b450b1",
+        "value": {
+          "__fixed__": "287590567.00150000"
+        },
+        "reward": {
+          "__fixed__": "0.00050000"
+        }
+      },
+      {
+        "key": "currency.balances:sys",
+        "value": {
+          "__fixed__": "0.01500000"
+        },
+        "reward": {
+          "__fixed__": "0.00500000"
+        }
+      }
+    ],
+    "origin": {
+      "signature": "024850ef8591bf0020ce10e53e305f0daf90ad026e3b9bcaf9524807208b24c3dfb3f54ab93f4db5c8d65fa3a29d3991a27330715ecfcf2b3c8a5989b5ea7508",
+      "sender": "92e45fb91c8f76fbfdc1ff2a58c2e901f3f56ec38d2f10f94ac52fcfa56fce2e"
+    }
+}

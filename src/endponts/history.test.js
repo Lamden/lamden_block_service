@@ -8,10 +8,8 @@ let db, pysocket, app, request;
 const validHistory = (item) => {
     // valid the block info
     expect(getType(item.blockNum)).toBe('number');
-    expect(getType(item.subBlockNum)).toBe('number');
     expect(getType(item.timestamp)).toBe('number');
     expect(getType(item.txHash)).toBe('string');
-    expect(getType(item.txIndex)).toBe('number');
     expect(getType(item.txInfo)).toBe('object');
     expect(getType(item.tx_uid)).toBe('string');
     expect(getType(item._id)).toBe('string');
