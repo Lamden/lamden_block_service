@@ -21,6 +21,7 @@ Features:
 
 ### Install App
 1. `git clone https://github.com/Lamden/lamden_block_service.git`
+2. `cd lamden_block_service`
 2. `npm install`
 
 ## Run
