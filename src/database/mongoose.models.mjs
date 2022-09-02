@@ -13,7 +13,11 @@ var blocks = new mongoose.Schema({
         required: true,
         index: true
     },
-    blockInfo: Object
+    blockInfo: Object,
+    previousExist: {
+        type: Boolean,
+        required: false
+    }
 });
 
 var stateChanges = new mongoose.Schema({
@@ -22,9 +26,12 @@ var stateChanges = new mongoose.Schema({
         required: true,
         index: true
     },
+    txHash: {
+        type: String,
+        required: false,
+        index: true
+    },
     blockNum: Number,
-    subBlockNum: Number,
-    txIndex: Number,
     timestamp: Number,
     affectedContractsList: Array,
     affectedVariablesList: Array,
@@ -73,8 +80,8 @@ var contracts = new mongoose.Schema({
 });
 
 var missingBlocks = new mongoose.Schema({
-    blockNum: {
-        type: Number,
+    hash: {
+        type: String,
         unique: true,
         required: true,
         index: true

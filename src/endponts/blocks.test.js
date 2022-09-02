@@ -8,10 +8,8 @@ let db, pysocket, app, request;
 const validBlock = (item) => {
     // valid the block info
     expect(getType(item.hash)).toBe('string');
-    expect(getType(item.id)).toBe('number');
     expect(getType(item.number)).toBe('number');
     expect(getType(item.previous)).toBe('string');
-    expect(getType(item.subblocks)).toBe('array');
 }
 
 beforeAll(async () => {

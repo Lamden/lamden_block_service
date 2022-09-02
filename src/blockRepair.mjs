@@ -24,19 +24,12 @@ class BlockRepair {
     async repair() {
         logger.start("Starting repairing...")
         try {
-            let missingBlocks = await this.db.queries.getMissingBlockNumber()
+            let missingBlocks = await this.db.queries.getMissingBlocks()
             logger.log(`${missingBlocks.length} missing blocks found.`)
             for (const i of missingBlocks) {
                 let blockData = await this.getBlock_MN(i, 250)
-                if (isNaN(parseInt(blockData.number))) {
-                    if (!isNaN(parseInt(blockData.id))) {
-                        blockData.number = blockData.id
-                    } else {
-                        return
-                    }
-                }
                 this.taskPool.addTask((data) => this.blockProcessor(data), blockData)
-                logger.success(`Added block ${i} to repairing queue`)
+                logger.success(`Added block ${blockData.number} to repairing queue`)
             }
         } catch (e) {
             logger.error(e)
@@ -49,23 +42,20 @@ class BlockRepair {
             logger.error(`Repair block ${blockData.number} failed. Error: ${blockData.error}`)
             return
         }
-        // try repair MalformedBlock. ex: {__fix__: '100'} => 100
-        blockData = utils.repairMalformedBlock(blockData)
-        if (utils.isMalformedBlock(blockData)) {
-            logger.error(`Repair block ${blockData.number} failed. Because this is a malformed block`)
-            return
-        }
+        
         try {
             await this.processor(blockData)
-            logger.success(`Repair block ${blockData.number} success.`)
-            await this.db.models.MissingBlocks.deleteOne({ blockNum: blockData.number })
-            logger.success(`Remove block ${blockData.number} from missingBlocks collection success.`)
+            logger.success(`Repair block ${blockData.hash} success.`)
+            await this.db.models.Blocks.updateOne({"blockInfo.previous": blockData.hash}, {previousExist: true})
+            await this.db.models.MissingBlocks.deleteOne({ hash: blockData.hash })
+            logger.success(`Remove block ${blockData.hash} from missingBlocks collection success.`)
         } catch (e) {
             logger.error(blockData)
             logger.error(e)
 
             // delete error data
             logger.start(`Starting clear error data.`)
+            await this.db.models.Blocks.updateOne({"blockInfo.previous": blockData.hash}, {previousExist: false})
             await this.db.models.Blocks.deleteMany({ hash: blockData.hash })
             await this.db.models.StateChanges.deleteMany({ blockNum: blockData.number })
             logger.complete(`Clear error data success.`)
@@ -73,20 +63,19 @@ class BlockRepair {
         }
     }
 
-    getBlock_MN(blockNum, timedelay = 0) {
+    getBlock_MN(blockHash, timedelay = 0) {
         return new Promise(resolver => {
             setTimeout(async () => {
-                await axios(`${this.MASTERNODE_URL}/blocks?num=${blockNum}`)
+                await axios(`${this.MASTERNODE_URL}/blocks?hash=${blockHash}`)
                     .then(res => {
                         let block_res = res.data
-                        block_res.id = blockNum
                         resolver(block_res);
                     })
                     .catch(err => {
                         logger.error(err)
                         resolver({
                             error: "Error: Error contacting maternode.",
-                            id: blockNum
+                            hash: blockHash
                         })
                     })
             }, timedelay)

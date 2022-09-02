@@ -10,7 +10,7 @@ import { getDatabase } from "../database.mjs";
     let totalBatchSize = await db.queries.countHistory()
     let batchSize = 20000
     let progress = 0
-    let last_tx_uid = "000000000000.00000.00000"
+    let last_tx_uid = "000000000000"
     
     
     async function get_batch(){

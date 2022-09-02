@@ -6,7 +6,7 @@ export const getHistoryQueries = (db) => {
         return await db.models.StateChanges.countDocuments()
     }
 
-    async function getAllHistory(last_tx_uid = "000000000000.00000.00000", limit = 10) {
+    async function getAllHistory(last_tx_uid = "000000000000", limit = 10) {
         limit = parseInt(limit) || 10
 
         let stateChanges = await db.models.StateChanges.find({
@@ -19,7 +19,7 @@ export const getHistoryQueries = (db) => {
         else return db.utils.hydrate_state_changes_obj(stateChanges)
     }
 
-    async function getContractHistory(contractName, last_tx_uid = "000000000000.00000.00000", limit = 10) {
+    async function getContractHistory(contractName, last_tx_uid = "000000000000", limit = 10) {
         limit = parseInt(limit) || 10
 
         let stateChanges = await db.models.StateChanges.find({
@@ -33,7 +33,7 @@ export const getHistoryQueries = (db) => {
         else return db.utils.hydrate_state_changes_obj(stateChanges)
     }
 
-    async function getVariableHistory(contractName, variableName, last_tx_uid = "000000000000.00000.00000", limit = 10) {
+    async function getVariableHistory(contractName, variableName, last_tx_uid = "000000000000", limit = 10) {
         limit = parseInt(limit) || 10
 
         let stateChanges = await db.models.StateChanges.find({
@@ -47,7 +47,7 @@ export const getHistoryQueries = (db) => {
         else return db.utils.hydrate_state_changes_obj(stateChanges)
     }
 
-    async function getRootKeyHistory(contractName, variableName, rootKey, last_tx_uid = "000000000000.00000.00000", limit = 10) {
+    async function getRootKeyHistory(contractName, variableName, rootKey, last_tx_uid = "000000000000", limit = 10) {
         limit = parseInt(limit) || 10
 
         let stateChanges = await db.models.StateChanges.find({
