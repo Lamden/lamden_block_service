@@ -29,24 +29,24 @@ describe('Test Tx Endpoints', () => {
     })
 
     test('/tx: Returns Transaction Info when tx uid is provided.', async () => {
-        const tx_uid = "000000000001.00000.00000"
-        const response = await request.get(`/tx?uid=${tx_uid}`);
+        const hlc_timestamp = "000000000001.00000.00000"
+        const response = await request.get(`/tx?uid=${hlc_timestamp}`);
         expect(response.headers['content-type']).toMatch(/json/);
         expect(response.statusCode).toBe(200);
         expect(getType(response.body)).toBe('object');
-        expect(response.body.tx_uid).toBe(tx_uid);
+        expect(response.body.hlc_timestamp).toBe(hlc_timestamp);
     })
 
     test('/tx: Returns Transaction Info when both tx uid and tx hash are provided.', async () => {
-        // If both txhash and tx_uid are provided, it will return the tx info by tx hash
+        // If both txhash and hlc_timestamp are provided, it will return the tx info by tx hash
         const hash = "f0b137b2435e46a660cd7179538d722387c417074c378fe38515f91f470c2821"
-        const tx_uid = "000000000015.00000.00000"
-        const response = await request.get(`/tx?hash=${hash}&uid=${tx_uid}`);
+        const hlc_timestamp = "000000000015.00000.00000"
+        const response = await request.get(`/tx?hash=${hash}&uid=${hlc_timestamp}`);
         expect(response.headers['content-type']).toMatch(/json/);
         expect(response.statusCode).toBe(200);
         expect(getType(response.body)).toBe('object');
         expect(response.body.txHash).toBe(hash);
-        expect(response.body.tx_uid).not.toBe(tx_uid);
+        expect(response.body.hlc_timestamp).not.toBe(hlc_timestamp);
     })
 
     test('/latest_processed_block: Returns latest processed block number.', async () => {

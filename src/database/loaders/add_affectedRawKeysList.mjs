@@ -10,14 +10,14 @@ import { getDatabase } from "../database.mjs";
     let totalBatchSize = await db.queries.countHistory()
     let batchSize = 20000
     let progress = 0
-    let last_tx_uid = "000000000000"
+    let last_blockNum = "0"
     
     
     async function get_batch(){
         progress = progress + batchSize
         console.log(`-> Getting batch of ${batchSize} transactions`)
         
-        process_batch(await db.queries.getAllHistory(last_tx_uid, batchSize))
+        process_batch(await db.queries.getAllHistory(last_blockNum, batchSize))
     }
 
     async function process_batch(batch){
@@ -25,10 +25,10 @@ import { getDatabase } from "../database.mjs";
         if (batch.length > 0){
             for (let change of batch){
                 if(change){
-                    let { txInfo, affectedRawKeysList, tx_uid } = change
+                    let { txInfo, affectedRawKeysList, blockNum } = change
 
                     try{
-                        last_tx_uid = tx_uid
+                        last_blockNum = blockNum
 
                         if (affectedRawKeysList.length > 0) continue
     
@@ -40,7 +40,7 @@ import { getDatabase } from "../database.mjs";
                         }
     
                        await db.models.StateChanges.updateOne({
-                            tx_uid: change.tx_uid
+                            blockNum: change.blockNum
                         }, {
                             affectedRawKeysList
                         })
@@ -51,7 +51,7 @@ import { getDatabase } from "../database.mjs";
                     }
                 }
             }
-            console.log(`-> Processed ${progress}/${totalBatchSize}. last_tx_uid: ${last_tx_uid}`)
+            console.log(`-> Processed ${progress}/${totalBatchSize}. last_blockNum: ${last_blockNum}`)
             console.log(`-> ${db.utils.estimateTimeLeft(startTime, progress, totalBatchSize)}`)
             get_batch()
             

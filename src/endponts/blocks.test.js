@@ -8,12 +8,11 @@ let db, pysocket, app, request;
 const validBlock = (item) => {
     // valid the block info
     expect(getType(item.hash)).toBe('string');
-    expect(getType(item.number)).toBe('number');
+    expect(getType(item.number)).toBe('string');
     expect(getType(item.previous)).toBe('string');
 }
 
 beforeAll(async () => {
-
     db = getDatabase();
     pysocket = createPythonSocketClient();
     app = createExpressApp(db, pysocket);
@@ -30,6 +29,7 @@ describe('Test Blocks Endpoints', () => {
     describe('/blocks: It should response the GET with blocks info', () => {
         test('Returns 10 blocks info when no payload is passed.', async () => {
             const response = await request.get('/blocks');
+            console.log(response.body)
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
             expect(getType(response.body)).toBe('array');
