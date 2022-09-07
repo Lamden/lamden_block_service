@@ -18,6 +18,8 @@ import { getDatabase } from "../database.mjs";
 
 const WipeDatabase = (async () => {
     let db = await getDatabase()
+    await new Promise(r => setTimeout(r, 5000));
+    
     let startTime = null
     
     const wipeDB = async () => {

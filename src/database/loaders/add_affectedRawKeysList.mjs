@@ -5,7 +5,8 @@ import { getDatabase } from "../database.mjs";
 
 (async function addAffectedRawKeysList(){
     let db = await getDatabase()
-
+    await new Promise(r => setTimeout(r, 5000));
+    
     let startTime = new Date()
     let totalBatchSize = await db.queries.countHistory()
     let batchSize = 20000

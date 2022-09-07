@@ -5,6 +5,8 @@ const loadContracts = async (drop) => {
     let batchSize = 20000
     let progress = 0
     let db = await getDatabase()
+    await new Promise(r => setTimeout(r, 5000));
+    
     let contracts = new Set()
     
     async function get_batch(last_tx_uid){

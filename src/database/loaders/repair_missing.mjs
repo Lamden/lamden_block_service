@@ -17,7 +17,8 @@ import { getDatabase } from "../database.mjs";
 
 const repairMissingBlocks = (async () => {
     let db = await getDatabase()
-
+    await new Promise(r => setTimeout(r, 5000));
+    
     let startTime = new Date()
     
     async function get_batch(start_block = 0, just_one=false){

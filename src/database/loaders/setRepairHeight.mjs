@@ -17,7 +17,8 @@ import { getDatabase } from "../database.mjs";
 
 const SetRepairHeight = (async () => {
     let db = await getDatabase()
-
+    await new Promise(r => setTimeout(r, 5000));
+    
     console.log("-- STARTING LOADER (set repair height) --")
 
     let [ block_num ] = process.argv.slice(2)
