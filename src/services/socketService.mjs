@@ -46,17 +46,16 @@ export const socketService = (io) => {
     }
 
     function emitTxStateChanges(stateChangeInfo) {
-        const { state_changes_obj, affectedContractsList, affectedVariablesList, affectedRootKeysList, txInfo, blockNum, timestamp, tx_uid } = stateChangeInfo
+        const { state_changes_obj, affectedContractsList, affectedVariablesList, affectedRootKeysList, txInfo, blockNum, hlc_timestamp } = stateChangeInfo
         const { transaction } = txInfo
         const { payload } = transaction
 
         const emitName = 'state-changes-by-transaction'
 
         const messageBasic = {
-            tx_uid,
+            hlc_timestamp,
             txInfo,
             blockNum,
-            timestamp,
             sender: payload.sender,
             contractCalled: payload.contract,
             methodCalled: payload.method,

@@ -36,10 +36,9 @@ describe("Testing websocket server.", () => {
     clientSocket.once("new-state-changes-by-transaction", (msg) => {
       let message = JSON.parse(msg).message
       expect(getType(message)).toBe('object')
-      expect(getType(message.tx_uid)).toBe('string')
-      expect(getType(message.blockNum)).toBe('number')
+      expect(getType(message.hlc_timestamp)).toBe('string')
+      expect(getType(message.blockNum)).toBe('string')
       expect(message.blockNum).toBeDefined()
-      expect(message.timestamp).toBeDefined()
       expect(message.affectedContractsList).toBeDefined()
       expect(message.affectedVariablesList).toBeDefined()
       expect(message.affectedRootKeysList).toBeDefined()
@@ -47,7 +46,7 @@ describe("Testing websocket server.", () => {
       expect(message.state_changes_obj).toBeDefined()
       //expect(message.txHash).toBeDefined()
       expect(message.txInfo).toBeDefined()
-      console.log(message)
+
       done()
     });
     clientSocket.emit('join', "all-state-changes-by-transaction")
@@ -70,11 +69,11 @@ describe("Testing websocket server.", () => {
     }
     clientSocket.once("new-state-changes-by-transaction", (msg) => {
       let message = JSON.parse(msg).message
+
       expect(getType(message)).toBe('object')
-      expect(getType(message.tx_uid)).toBe('string')
-      expect(getType(message.blockNum)).toBe('number')
+      expect(getType(message.hlc_timestamp)).toBe('string')
+      expect(getType(message.blockNum)).toBe('string')
       expect(message.blockNum).toBeDefined()
-      expect(message.timestamp).toBeDefined()
       expect(message.affectedContractsList).toBeDefined()
       expect(message.affectedVariablesList).toBeDefined()
       expect(message.affectedRootKeysList).toBeDefined()
