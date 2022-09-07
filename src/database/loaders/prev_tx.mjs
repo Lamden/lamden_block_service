@@ -8,6 +8,7 @@ const logger = createLogger('Database');
 
 (async function populatePreviousValue() {
     let db = await getDatabase()
+    await new Promise(r => setTimeout(r, 5000));
 
     let startTime = new Date()
     let totalBatchSize = await db.queries.countCurrentState()
