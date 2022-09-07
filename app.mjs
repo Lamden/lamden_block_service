@@ -18,7 +18,8 @@ const MASTERNODE_URLS = {
 }
 
 const GENESIS_BLOCKS = {
-    "testnet_v2": "https://raw.githubusercontent.com/Lamden/genesis_block/main/testnet/genesis_block.json"
+    "testnet_v2": "https://raw.githubusercontent.com/Lamden/genesis_block/main/testnet/genesis_block.json",
+    "staging_v2": "https://raw.githubusercontent.com/Lamden/genesis_block/main/staging/genesis_block.json"
 } 
 
 
