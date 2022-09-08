@@ -72,7 +72,7 @@ export const getGenesisBlockProcessor = (db) => {
                         }
 
                         await new db.models.CurrentState(new_current_state_document).save()
-                    } catch (e) {
+                    } catch (err) {
                         logger.error(err)
                         logger.debug(util.inspect({ blockInfo, txInfo }, false, null, true))
                     }
