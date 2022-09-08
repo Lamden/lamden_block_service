@@ -107,15 +107,19 @@ export const getBlockQueries = (db) => {
         if (limit < 1) limit = 10
 
         if (!start_block) start_block = 1
-        start_block = parseInt(start_block)
+        start_block = start_block
         if (start_block < 1) start_block = 1
 
         // console.log({start_block, limit})
 
         try {
-            let blocks = await db.models.Blocks.find({ blockNum: { "$gte": start_block } })
-                .sort({ "blockNum": 1 })
-                .limit(limit)
+            let blocks = await db.models.Blocks.find({ 
+                "$expr": { 
+                    "$gte": [ { "$toLong": "$blockNum" }, { "$toLong": start_block }] 
+                } 
+            })
+            .sort({ "blockNum": 1 })
+            .limit(limit)
 
             if (!blocks) return []
             else return blocks
