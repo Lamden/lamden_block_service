@@ -10,10 +10,15 @@ export const getBlockProcessor = (services, db) => {
         let block = await db.models.Blocks.findOne({ blockNum })
         if (!block) {
             if (!blockInfo.error) {
+                let prev_block = await db.models.Blocks.findOne({ hash: blockInfo.previous })
+
+                logger.log({prev_block})
+
                 block = new db.models.Blocks({
                     blockInfo,
                     blockNum,
-                    hash: blockInfo.hash
+                    hash: blockInfo.hash,
+                    previousExist: prev_block !== undefined
                 })
                 await block.save()
                 services.sockets.emitNewBlock(block.blockInfo)
