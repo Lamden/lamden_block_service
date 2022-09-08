@@ -124,7 +124,7 @@ export const getBlockProcessor = (services, db) => {
                 senderVk
             }
 
-            await db.models.StateChanges.updateOne({ blockNum }, stateChangesModel, { upsert: true });
+            await db.models.StateChanges.updateOne({ blockNum: number }, stateChangesModel, { upsert: true });
 
             services.sockets.emitTxStateChanges(stateChangesModel)
         } catch (e) {
