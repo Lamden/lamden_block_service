@@ -61,42 +61,6 @@ describe("Testing websocket server.", () => {
     clientSocket.once("new-state-changes-by-transaction", (msg) => {
       let message = JSON.parse(msg).message
       expect(getType(message)).toBe('object')
-      expect(getType(message.tx_uid)).toBe('string')
-      expect(getType(message.blockNum)).toBe('number')
-      expect(message.blockNum).toBeDefined()
-      expect(message.timestamp).toBeDefined()
-      expect(message.affectedContractsList).toBeDefined()
-      expect(message.affectedVariablesList).toBeDefined()
-      expect(message.affectedRootKeysList).toBeDefined()
-      //expect(message.affectedRawKeysList).toBeDefined()
-      expect(message.state_changes_obj).toBeDefined()
-      //expect(message.txHash).toBeDefined()
-      expect(message.txInfo).toBeDefined()
-      done()
-    });
-    clientSocket.emit('join', data.processed.hash)
-    blockProcessor(data).catch((e) => { console.log(e) })
-  });
-
-  test("Should parse genesis block correctly", (done) => {
-      let data = {
-        'hash': '2bb4e112aca11805538842bd993470f18f337797ec3f2f6ab02c47385caf088e',
-        'number': '0',
-        'hlc_timestamp': '0000-00-00T00:00:00.000000000Z_0',
-        'previous': '0000000000000000000000000000000000000000000000000000000000000000',
-        'genesis': [
-            {'key': 'currency.balances:9fb2b57b1740e8d86ecebe5bb1d059628df02236b69ed74de38b5e9d71230286', 'value': 100000000}
-        ],
-        'origin': {
-            'sender': '9fb2b57b1740e8d86ecebe5bb1d059628df02236b69ed74de38b5e9d71230286',
-            'signature': '82beb173f13ecc239ac108789b45428110ff56a84a3d999c0a1251a22974ea9b426ef61b13e04819d19556657448ba49a2f37230b8450b4de28a1a3cc85a3504'
-        }
-    }
-    clientSocket.once("new-state-changes-by-transaction", (msg) => {
-      let message = JSON.parse(msg).message
-
-      expect(getType(message)).toBe('object')
-      expect(getType(message.hlc_timestamp)).toBe('string')
       expect(getType(message.blockNum)).toBe('string')
       expect(message.blockNum).toBeDefined()
       expect(message.affectedContractsList).toBeDefined()
@@ -108,7 +72,7 @@ describe("Testing websocket server.", () => {
       expect(message.txInfo).toBeDefined()
       done()
     });
-    clientSocket.emit('join', "all-state-changes-by-transaction")
+    clientSocket.emit('join', data.processed.hash)
     blockProcessor(data).catch((e) => { console.log(e) })
   });
 });
