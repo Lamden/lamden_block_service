@@ -6,7 +6,12 @@ var app = new mongoose.Schema({
 });
 
 var blocks = new mongoose.Schema({
-    hash: String,
+    hash: {
+        type: String,
+        unique: true,
+        required: true,
+        index: true
+    },
     blockNum: {
         type: String,
         unique: true,

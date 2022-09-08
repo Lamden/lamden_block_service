@@ -76,10 +76,22 @@ export const getBlockQueries = (db) => {
 
     async function getBlockNumber(blockNum) {
         try {
-            blockNum = parseInt(blockNum)
             let result = await db.models.Blocks.findOne({ blockNum }, { '_id': 0, 'keys': 0, '__v': 0 })
             if (!result) return { error: `block number ${blockNum} does not exist.` }
             if (!result.blockInfo) return { error: `block number ${blockNum} does not exist.` }
+            return result.blockInfo
+        } catch (e) {
+            return { error: e }
+        }
+
+    }
+
+
+    async function getBlockHash(blockHash) {
+        try {
+            let result = await db.models.Blocks.findOne({ hash: blockHash }, { '_id': 0, 'keys': 0, '__v': 0 })
+            if (!result) return { error: `block hash ${blockHash} does not exist.` }
+            if (!result.blockInfo) return { error: `block number ${blockHash} does not exist.` }
             return result.blockInfo
         } catch (e) {
             return { error: e }
@@ -119,6 +131,7 @@ export const getBlockQueries = (db) => {
 
     return {
         getBlockNumber,
+        getBlockHash,
         getBlockCatchup,
         getMissingBlocks,
         hasGenesisBlock
