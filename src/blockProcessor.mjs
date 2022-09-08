@@ -18,7 +18,7 @@ export const getBlockProcessor = (services, db) => {
                     blockInfo,
                     blockNum,
                     hash: blockInfo.hash,
-                    previousExist: prev_block !== undefined
+                    previousExist: prev_block !== null
                 })
                 await block.save()
                 services.sockets.emitNewBlock(block.blockInfo)
