@@ -34,6 +34,7 @@ export const getBlockQueries = (db) => {
                 path: "$missingBlock"
             }
         }])
+        logger.log({getNotFoundMissingBlockNumber_result: result})
         if (!result) return []
         return result.map(item => {
             return item.missingBlock
@@ -46,7 +47,8 @@ export const getBlockQueries = (db) => {
      */
     async function getMissingBlocks() {
         try {
-            const notFoundMissingBlock = await getNotFoundMissingBlockNumber(minheight, maxheight)
+            const notFoundMissingBlock = await getNotFoundMissingBlockNumber()
+            logger.log({notFoundMissingBlock})
             logger.success(`${notFoundMissingBlock.length} previously undiscovered missing blocks was successfully found!`)
 
             for (const i of notFoundMissingBlock) {
@@ -58,13 +60,15 @@ export const getBlockQueries = (db) => {
                     await mblock.save()
                 }
             }
-            logger.success(`${notFoundMissingBlock.length} new missing blocks have been recorded in mongo`)
+            logger.success(`${notFoundMissingBlock.length} new missing blocks have been recorded in database`)
 
             let result = await db.models.MissingBlocks.find()
+            logger.log({getMissingBlocks_result: result})
             if (!result) return []
             return result.map(item => {
                 return item.hash
             })
+            v
         } catch (e) {
             return { error: e }
         }

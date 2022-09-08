@@ -21,7 +21,8 @@ export const getGenesisBlockProcessor = (db) => {
         const block = new db.models.Blocks({
             blockInfo,
             blockNum: blockInfo.number,
-            hash: blockInfo.hash
+            hash: blockInfo.hash,
+            previousExist: true
         })
         
         try{
