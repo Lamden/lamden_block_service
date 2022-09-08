@@ -23,8 +23,13 @@ const eventWebsockets = (MASTERNODE_URL) => {
     }
 
     function connect() {
-        wsClient = new WebSocket.client
+        wsClient = new WebSocket.client({
+            maxReceivedFrameSize: 0x10000000
+        })
         wsClient.on('connect', onConnect)
+        wsClient.on('connectFailed', function(error) {
+            console.log('Connect Error: ' + error.toString());
+        });
         wsClient.connect(`${url}`)
     }
 

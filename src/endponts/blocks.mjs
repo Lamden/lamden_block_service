@@ -6,22 +6,22 @@ export const getBlockEndpoints = (db) => {
 
     /**
     * @openapi
-    * /blocks/{number}:
-    *   get:
+    * /blocks/{item}:
+    *   get: /
     *     tags: ["Blocks"]
-    *     summary: Returns block info from a specified block number.
+    *     summary: Returns block info from a specified block number or block hash.
     *     parameters:
     *       - in: path
-    *         name: number
+    *         name: item
     *         schema: 
-    *           type: integer
+    *           type: string
     *         required: true
-    *         description: Block number.
+    *         description: Block number or block hash.
     *     responses:
     *       200:
     *         description: Success
     *       Not Exists:
-    *         description: Block number does not exist.
+    *         description: Block number or block hash does not exist.
     *         content: 
     *           'application/json':
     *               schema:
@@ -32,13 +32,18 @@ export const getBlockEndpoints = (db) => {
     *                           default: block number 9999999999 does not exist.
     *                   required: ["error"]
     */
-    async function get_block_number(req, res) {
-        const { number } = req.params
+    async function get_block(req, res) {
+        const { item } = req.params
 
-        if (!number) res.send({ error: "no block number provided" })
+        if (!item) res.send({ error: "no block number or block hash number provided" })
 
         try {
-            let result = await db.queries.getBlockNumber(number)
+            let result = null
+            if (item.length === 64){
+                result = await db.queries.getBlockHash(item)
+            }else{
+                result = await db.queries.getBlockNumber(item)
+            }
             res.send(result)
         } catch (e) {
             logger.error(e)
@@ -86,8 +91,8 @@ export const getBlockEndpoints = (db) => {
     return [
         {
             type: 'get',
-            route: '/blocks/:number',
-            handler: get_block_number
+            route: '/blocks/:item',
+            handler: get_block
         },
         {
             type: 'get',

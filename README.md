@@ -1,3 +1,5 @@
+## VERSION 2.0 will not work with a version 1 Lamden network.  Use the previuous version to v2 for an old Lamden network.
+
 # Lamden Block Service
 A nodejs application for syncing and serving the Lamden Blockchain to a local app.
 This application serves as starting point to be able to build an app on Lamden that requires easy access to current state and realtime updates.
@@ -19,6 +21,7 @@ Features:
 
 ### Install App
 1. `git clone https://github.com/Lamden/lamden_block_service.git`
+2. `cd lamden_block_service`
 2. `npm install`
 
 ## Run
@@ -41,6 +44,7 @@ Restart the app for these setting to take effect.
 ### Lamden configuration items
 - NETWORK `testnet`: Which Lamden network to sync
 - MASTERNODE_URL `https://testnet-master-1.lamden.io`: A URL of a lamden masternode
+- GENESIS_BLOCK_URL (optional): a genesis block url if different than the default Lamden Testnet or Lamden Mainnet genesis blocks
 
 ### Mongo DB configuration items
 - DBUSER `null`: database user

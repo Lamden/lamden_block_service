@@ -6,12 +6,6 @@ const logger = createLogger('Block Processor');
 
 export const getBlockProcessor = (services, db) => {
     const processBlock = async (blockInfo = {}) => {
-        try {
-            blockInfo.number = parseInt(blockInfo.number)
-        } catch(err) {
-            logger.error("Parse block number from string to number failed.")
-            return
-        }
         let blockNum = blockInfo.number;
         let block = await db.models.Blocks.findOne({ blockNum })
         if (!block) {
@@ -30,21 +24,20 @@ export const getBlockProcessor = (services, db) => {
     };
 
     const processBlockStateChanges = async (blockInfo) => {
-        const txInfo = blockInfo.number === 0 ? {transaction: {payload: {}}} : blockInfo.processed
-        const state = blockInfo.number === 0 ? blockInfo.genesis : txInfo.state
+        const { processed, hlc_timestamp, number } = blockInfo
+        const { transaction, state, hash } = processed
+        const senderVk = transaction.payload.sender
 
-        let timestamp = blockInfo.number === 0 ? 0 : txInfo.transaction.metadata.timestamp * 1000
         let state_changes_obj = {}
         let affectedContractsList = new Set()
         let affectedVariablesList = new Set()
         let affectedRootKeysList = new Set()
-        let tx_uid = utils.make_tx_uid(blockInfo.number)
 
         if (Array.isArray(state)) {
             for (const s of state) {
                 let keyInfo = utils.deconstructKey(s.key)
 
-                const { contractName, variableName, rootKey } = keyInfo
+                const { contractName, variableName, rootKey, keys, key } = keyInfo
 
                 let keyOk = true
 
@@ -56,29 +49,37 @@ export const getBlockProcessor = (services, db) => {
 
                     let currentState = await db.models.CurrentState.findOne({ rawKey: s.key })
                     if (currentState) {
-                        if (currentState.lastUpdated < timestamp) {
-                            currentState.txHash = txInfo.hash
+                        if (currentState.blockNum < number) {
+                            currentState.txHash = hash
                             currentState.prev_value = currentState.value
-                            currentState.prev_tx_uid = currentState.tx_uid
+                            currentState.prev_blockNum = currentState.blockNum
                             currentState.value = s.value
-                            currentState.lastUpdated = timestamp
-                            currentState.tx_uid = tx_uid
+                            currentState.hlc_timestamp = hlc_timestamp
+                            currentState.senderVk = senderVk
+                            currentState.blockNum = number
                             await currentState.save()
                         }
                     } else {
                         try {
-                            await new db.models.CurrentState({
+                            const new_current_state_document = {
                                 rawKey: s.key,
-                                txHash: txInfo.hash,
-                                tx_uid,
+                                txHash: hash,
+                                hlc_timestamp,
+                                blockNum: '0',
                                 prev_value: null,
-                                prev_tx_uid: null,
+                                prev_blockNum: null,
                                 value: s.value,
-                                lastUpdated: timestamp
-                            }).save()
+                                senderVk,
+                                contractName,
+                                variableName,
+                                keys,
+                                key,
+                                rootKey
+                            }
+                            await new db.models.CurrentState(new_current_state_document).save()
                         } catch (e) {
                             logger.error(err)
-                            logger.debug(util.inspect({ blockInfo, txInfo }, false, null, true))
+                            logger.debug(util.inspect({ blockInfo, txInfo: processed }, false, null, true))
                         }
                     }
 
@@ -89,7 +90,7 @@ export const getBlockProcessor = (services, db) => {
                     affectedContractsList.add(contractName)
                     affectedVariablesList.add(`${contractName}.${variableName}`)
                     if (rootKey) affectedRootKeysList.add(`${contractName}.${variableName}:${rootKey}`)
-                    services.sockets.emitStateChange(keyInfo, s.value, newStateChangeObj, txInfo)
+                    services.sockets.emitStateChange(keyInfo, s.value, newStateChangeObj, processed)
 
                     let foundContractName = await db.models.Contracts.findOne({ contractName })
                     if (!foundContractName) {
@@ -111,18 +112,19 @@ export const getBlockProcessor = (services, db) => {
 
         try {
             let stateChangesModel = {
-                tx_uid,
-                blockNum: blockInfo.number,
-                timestamp,
+                hlc_timestamp,
+                blockNum: number,
                 affectedContractsList: Array.from(affectedContractsList),
                 affectedVariablesList: Array.from(affectedVariablesList),
                 affectedRootKeysList: Array.from(affectedRootKeysList),
                 affectedRawKeysList: Array.isArray(state) ? state.map(change => change.key) : [],
                 state_changes_obj: utils.stringify(utils.cleanObj(state_changes_obj)),
-                txHash: txInfo.hash,
-                txInfo
+                txHash: hash,
+                txInfo: processed,
+                senderVk
             }
-            await db.models.StateChanges.updateOne({ tx_uid }, stateChangesModel, { upsert: true });
+
+            await db.models.StateChanges.updateOne({ blockNum: number }, stateChangesModel, { upsert: true });
 
             services.sockets.emitTxStateChanges(stateChangesModel)
         } catch (e) {
