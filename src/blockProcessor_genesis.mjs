@@ -35,7 +35,7 @@ export const getGenesisBlockProcessor = (db) => {
     };
 
     const processBlockStateChanges = async (blockInfo, state) => {
-        const { origin } = blockInfo
+        const { origin, hlc_timestamp } = blockInfo
 
         if (Array.isArray(state)) {
             logger.log(`Loading ${state.length} initial state values`)
