@@ -24,8 +24,9 @@ export const getBlockProcessor = (services, db) => {
     };
 
     const processBlockStateChanges = async (blockInfo) => {
-        const { txInfo, state, hlc_timestamp, number } = blockInfo
-        const senderVk = txInfo.transaction.payload.sender
+        const { processed, hlc_timestamp, number } = blockInfo
+        const { transaction, state, hash } = processed
+        const senderVk = transaction.payload.sender
 
         let state_changes_obj = {}
         let affectedContractsList = new Set()
@@ -49,7 +50,7 @@ export const getBlockProcessor = (services, db) => {
                     let currentState = await db.models.CurrentState.findOne({ rawKey: s.key })
                     if (currentState) {
                         if (currentState.blockNum < number) {
-                            currentState.txHash = txInfo.hash
+                            currentState.txHash = hash
                             currentState.prev_value = currentState.value
                             currentState.prev_blockNum = currentState.blockNum
                             currentState.value = s.value
@@ -62,7 +63,7 @@ export const getBlockProcessor = (services, db) => {
                         try {
                             const new_current_state_document = {
                                 rawKey: s.key,
-                                txHash: txInfo.hash,
+                                txHash: hash,
                                 hlc_timestamp,
                                 blockNum: '0',
                                 prev_value: null,
@@ -78,7 +79,7 @@ export const getBlockProcessor = (services, db) => {
                             await new db.models.CurrentState(new_current_state_document).save()
                         } catch (e) {
                             logger.error(err)
-                            logger.debug(util.inspect({ blockInfo, txInfo }, false, null, true))
+                            logger.debug(util.inspect({ blockInfo, txInfo: processed }, false, null, true))
                         }
                     }
 
@@ -89,7 +90,7 @@ export const getBlockProcessor = (services, db) => {
                     affectedContractsList.add(contractName)
                     affectedVariablesList.add(`${contractName}.${variableName}`)
                     if (rootKey) affectedRootKeysList.add(`${contractName}.${variableName}:${rootKey}`)
-                    services.sockets.emitStateChange(keyInfo, s.value, newStateChangeObj, txInfo)
+                    services.sockets.emitStateChange(keyInfo, s.value, newStateChangeObj, processed)
 
                     let foundContractName = await db.models.Contracts.findOne({ contractName })
                     if (!foundContractName) {
@@ -118,8 +119,8 @@ export const getBlockProcessor = (services, db) => {
                 affectedRootKeysList: Array.from(affectedRootKeysList),
                 affectedRawKeysList: Array.isArray(state) ? state.map(change => change.key) : [],
                 state_changes_obj: utils.stringify(utils.cleanObj(state_changes_obj)),
-                txHash: txInfo.hash,
-                txInfo,
+                txHash: hash,
+                txInfo: processed,
                 senderVk
             }
 
