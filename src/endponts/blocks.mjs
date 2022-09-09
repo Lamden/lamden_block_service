@@ -80,6 +80,7 @@ export const getBlockEndpoints = (db) => {
 
         try {
             let results = await db.queries.getBlockCatchup(start_block, limit)
+            console.log(results);
             results = results.map(result => result.blockInfo)
             res.send(results)
         } catch (e) {
