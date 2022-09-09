@@ -1,36 +1,38 @@
 const { createPythonSocketClient, createExpressApp } = require('../server.mjs');
-const { getDatabase } = require('../database/database.mjs');
 const supertest = require('supertest');
 const { getType } = require('jest-get-type');
 
-let db, pysocket, app, request;
+const db = require('mongoose')
+// Memory mongo server
+require("../db_test_helper/setup.js")
+
+let pysocket, app, request;
 
 beforeAll(async () => {
-    db = getDatabase();
     pysocket = createPythonSocketClient();
     app = createExpressApp(db, pysocket);
     request = supertest(app);
     await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log(await db.queries.getMissingBlocks())
 });
 
 afterAll(async () => {
-    await db.disconnect();
     await pysocket.disconnect();
 });
 
 describe('Test State Endpoints', () => {
     describe('/current/one/:contractName/:variableName: It should response the GET with current state value', () => {
         test('Returns current state value of variable of one contract.', async () => {
-            const contractName = "con_survival_test";
-            const variableName = "operator";
-            const operator = "757c03fef2a1c041ea0173081e19c4e908b77b7e0bbd87f7bb06402cdc7983ae";
+            const contractName = "stamp_cost";
+            const variableName = "__developer__";
+            const developer = "sys";
             const response = await request.get(`/current/one/${contractName}/${variableName}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
             expect(getType(response.body)).toBe('object');
 
             expect(response.body.notFound).toBeFalsy();
-            expect(response.body.value).toBe(operator);
+            expect(response.body.value).toBe(developer);
         })
 
         test('Returns nothing if contract is not existing.', async () => {
@@ -59,16 +61,15 @@ describe('Test State Endpoints', () => {
     describe('/current/one/:contractName/:variableName/:key: It should response the GET with contract detail by contract name', () => {
 
         test('Returns current state value of key of variable of one contract.', async () => {
-            const contractName = "con_survival_test";
-            const variableName = "game";
-            const key = "boss_enabled";
+            const contractName = "stamp_cost";
+            const variableName = "S";
+            const key = "current_total";
             const response = await request.get(`/current/one/${contractName}/${variableName}/${key}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
             expect(getType(response.body)).toBe('object');
 
             expect(response.body.notFound).toBeFalsy();
-            expect(response.body.value).toBe(false);
         })
 
         test('Returns nothing if contract is not existing.', async () => {
@@ -111,8 +112,8 @@ describe('Test State Endpoints', () => {
     describe('/current/all/:contractName: It should response the GET with all states of contract.', () => {
 
         test('Returns all states of one contract.', async () => {
-            const contractName = 'con_survival_test';
-            const operator = '757c03fef2a1c041ea0173081e19c4e908b77b7e0bbd87f7bb06402cdc7983ae';
+            const contractName = 'stamp_cost';
+            const developer = 'sys';
             const response = await request.get(`/current/all/${contractName}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
@@ -120,7 +121,7 @@ describe('Test State Endpoints', () => {
 
             const item = response.body[contractName];
             expect(getType(item)).toBe('object');
-            expect(item.operator).toBe(operator);
+            expect(item.__developer__).toBe(developer);
         })
     })
 
@@ -145,9 +146,8 @@ describe('Test State Endpoints', () => {
         })
 
         test('Returns all states of variable of one contract.', async () => {
-            const contractName = 'con_survival_test';
-            const variableName = 'game';
-            const operator = '757c03fef2a1c041ea0173081e19c4e908b77b7e0bbd87f7bb06402cdc7983ae';
+            const contractName = 'stamp_cost';
+            const variableName = 'S';
             const response = await request.get(`/current/all/${contractName}/${variableName}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
@@ -155,8 +155,7 @@ describe('Test State Endpoints', () => {
 
             const item = response.body[contractName];
             expect(getType(item)).toBe('object');
-            expect(getType(item.game)).toBe('object');
-            expect(item.game[operator]).toBeTruthy();
+            expect(getType(item.S)).toBe('object');
         })
     })
 
@@ -193,10 +192,9 @@ describe('Test State Endpoints', () => {
         })
 
         test('Returns all states of key.', async () => {
-            const contractName = 'con_survival_test';
-            const variableName = 'game';
-            const rootkey = 'boss_enabled';
-            const operator = '757c03fef2a1c041ea0173081e19c4e908b77b7e0bbd87f7bb06402cdc7983ae';
+            const contractName = 'stamp_cost';
+            const variableName = 'S';
+            const rootkey = 'current_total';
             const response = await request.get(`/current/all/${contractName}/${variableName}/${rootkey}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
@@ -204,8 +202,8 @@ describe('Test State Endpoints', () => {
 
             const item = response.body[contractName];
             expect(getType(item)).toBe('object');
-            expect(getType(item.game)).toBe('object');
-            expect(item.game[rootkey]).toBeFalsy();
+            expect(getType(item.S)).toBe('object');
+            expect(getType(item.S[rootkey])).toBe('number');
         })
     })
 })

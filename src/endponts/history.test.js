@@ -1,9 +1,11 @@
 const { createPythonSocketClient, createExpressApp } = require('../server.mjs');
-const { getDatabase } = require('../database/database.mjs');
 const supertest = require('supertest');
 const { getType } = require('jest-get-type');
+const db = require('mongoose')
+// Memory mongo server
+require("../db_test_helper/setup.js")
 
-let db, pysocket, app, request;
+let pysocket, app, request;
 
 const validHistory = (item) => {
     // valid the block info
@@ -15,7 +17,6 @@ const validHistory = (item) => {
 }
 
 beforeAll(async () => {
-    db = getDatabase();
     pysocket = createPythonSocketClient();
     app = createExpressApp(db, pysocket);
     request = supertest(app);
@@ -23,7 +24,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    await db.disconnect();
     await pysocket.disconnect();
 });
 
