@@ -47,7 +47,7 @@ export const getBlockQueries = (db) => {
     async function getMissingBlocks() {
         try {
             const notFoundMissingBlock = await getNotFoundMissingBlockNumber()
-            logger.log({notFoundMissingBlock})
+
             logger.success(`${notFoundMissingBlock.length} previously undiscovered missing blocks was successfully found!`)
 
             for (const i of notFoundMissingBlock) {
