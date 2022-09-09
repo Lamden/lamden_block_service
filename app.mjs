@@ -13,29 +13,21 @@ import { createLogger } from './src/logger.mjs'
 const logger = createLogger('App');
 
 const MASTERNODE_URLS = {
-    'testnet_v2': "https://testnet-v2-master-lon.lamden.io",
+    'testnet': "https://testnet-master-1.lamden.io",
     'mainnet': "https://masternode-01.lamden.io"
 }
 
-const GENESIS_BLOCKS = {
-    "testnet_v2": "https://raw.githubusercontent.com/Lamden/genesis_block/main/testnet/genesis_block.json",
-    "staging_v2": "https://raw.githubusercontent.com/Lamden/genesis_block/main/staging/genesis_block.json"
-} 
-
-
 /******* MONGO DB CONNECTION INFO **/
-const NETWORK = process.env.NETWORK || 'testnet_v2'
+const NETWORK = process.env.NETWORK || 'testnet'
 const MASTERNODE_URL = process.env.MASTERNODE_URL || MASTERNODE_URLS[NETWORK]
 
 /******* SERVER CONNECTION INFO **/
 const BLOCKSERVICE_PORT = process.env.BLOCKSERVICE_PORT || 3535
 const BLOCKSERVICE_HOST = process.env.BLOCKSERVICE_HOST || 'localhost'
-const GENESIS_BLOCK_URL = process.env.GENESIS_BLOCK_URL || GENESIS_BLOCKS[NETWORK]
 
 let grabberConfig = {
     DEBUG_ON: process.env.DEBUG_ON || false,
-    MASTERNODE_URL,
-    GENESIS_BLOCK_URL
+    MASTERNODE_URL
 }
 
 export const start = async () => {

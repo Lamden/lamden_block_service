@@ -11,7 +11,7 @@ const logger = createLogger('Database');
 let db = mongoose;
 
 /******* MONGO DB CONNECTION INFO **/
-const NETWORK = process.env.NETWORK || 'testnet_v2'
+const NETWORK = process.env.NETWORK || 'testnet'
 const DBUSER = process.env.DBUSER || null;
 const DBPWD = process.env.DBPWD || null;
 const DBURL = process.env.DBURL || '127.0.0.1'

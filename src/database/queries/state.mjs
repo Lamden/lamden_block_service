@@ -28,11 +28,11 @@ export const getStateQueries = (db) => {
         return await db.models.CurrentState.find({ rawKey: { $regex: "^" + db.utils.makeKey(contractName, variableName, rootKey) } }, { '_id': 0, 'keys': 0, '__v': 0 })
     }
 
-    async function getAllByBlockNum(blockNum, limit = 10) {
+    async function getAllByLastUpdated(lastUpdated, limit = 10) {
         let stateChanges = await db.models.CurrentState.find({
-            blockNum: { $gt: blockNum }
+            lastUpdated: { $gt: lastUpdated }
         })
-            .sort({ blockNum: 1 })
+            .sort({ lastUpdated: 1 })
             .limit(limit)
 
         if (!stateChanges) return []
@@ -46,7 +46,7 @@ export const getStateQueries = (db) => {
     return {
         getKeyFromCurrentState,
         getAllCurrentState,
-        getAllByBlockNum,
+        getAllByLastUpdated,
         findStateChangeById,
         countCurrentState
     }

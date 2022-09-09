@@ -6,75 +6,75 @@ export const getHistoryQueries = (db) => {
         return await db.models.StateChanges.countDocuments()
     }
 
-    async function getAllHistory(last_blockNum = "0", limit = 10) {
+    async function getAllHistory(last_tx_uid = "000000000000", limit = 10) {
         limit = parseInt(limit) || 10
 
         let stateChanges = await db.models.StateChanges.find({
-                hlc_timestamp: { $gt: last_blockNum }
+                tx_uid: { $gt: last_tx_uid }
             })
-            .sort({ "blockNum": 1 })
+            .sort({ "tx_uid": 1 })
             .limit(limit)
 
         if (!stateChanges) return []
         else return db.utils.hydrate_state_changes_obj(stateChanges)
     }
 
-    async function getContractHistory(contractName, last_blockNum = "0", limit = 10) {
+    async function getContractHistory(contractName, last_tx_uid = "000000000000", limit = 10) {
         limit = parseInt(limit) || 10
 
         let stateChanges = await db.models.StateChanges.find({
                 "affectedContractsList": contractName,
-                blockNum: { $gt: last_blockNum }
+                tx_uid: { $gt: last_tx_uid }
             })
-            .sort({ "hlc_timestamp": 1 })
+            .sort({ "tx_uid": 1 })
             .limit(limit)
 
         if (!stateChanges) return []
         else return db.utils.hydrate_state_changes_obj(stateChanges)
     }
 
-    async function getVariableHistory(contractName, variableName, last_blockNum = "0", limit = 10) {
+    async function getVariableHistory(contractName, variableName, last_tx_uid = "000000000000", limit = 10) {
         limit = parseInt(limit) || 10
 
         let stateChanges = await db.models.StateChanges.find({
                 "affectedVariablesList": `${contractName}.${variableName}`,
-                blockNUm: { $gt: last_blockNum }
+                tx_uid: { $gt: last_tx_uid }
             })
-            .sort({ "blockNum": 1 })
+            .sort({ "tx_uid": 1 })
             .limit(limit)
 
         if (!stateChanges) return []
         else return db.utils.hydrate_state_changes_obj(stateChanges)
     }
 
-    async function getRootKeyHistory(contractName, variableName, rootKey, last_blockNum = "0", limit = 10) {
+    async function getRootKeyHistory(contractName, variableName, rootKey, last_tx_uid = "000000000000", limit = 10) {
         limit = parseInt(limit) || 10
 
         let stateChanges = await db.models.StateChanges.find({
                 "affectedRootKeysList": `${contractName}.${variableName}:${rootKey}`,
-                blockNum: { $gt: last_blockNum }
+                tx_uid: { $gt: last_tx_uid }
             })
-            .sort({ "blockNum": 1 })
+            .sort({ "tx_uid": 1 })
             .limit(limit)
 
         if (!stateChanges) return []
         else return db.utils.hydrate_state_changes_obj(stateChanges)
     }
 
-    async function getPreviousKeyValue(contractName, variableName, keys, blockNum){
+    async function getPreviousKeyValue(contractName, variableName, keys, tx_uid){
         let rawKey = `${contractName}.${variableName}`
         if (keys.length > 0 ) rawKey = `${rawKey}:${keys.join(":")}`
 
         let result = await db.models.StateChanges.findOne(
             {
                 "affectedRawKeysList": rawKey,
-                blockNum: { $lt: blockNum }
-            },{ '_id': 0, 'keys': 0, '__v': 0 }).sort({blockNum: -1})
+                tx_uid: { $lt: tx_uid }
+            },{ '_id': 0, 'keys': 0, '__v': 0 }).sort({tx_uid: -1})
 
         if (!result) {
             return {
                 value: null, 
-                blockNum: null
+                tx_uid: null
             }
         }
 
@@ -86,7 +86,7 @@ export const getHistoryQueries = (db) => {
         if (keys.length === 0) {
             return {
                 value, 
-                blockNum: result.blockNum
+                tx_uid: result.tx_uid
             }
         }
 
@@ -99,13 +99,13 @@ export const getHistoryQueries = (db) => {
 
             return {
                 value: has_self ? value.__hash_self__ : value, 
-                blockNum: result.blockNum
+                tx_uid: result.tx_uid
             }
         }catch(e){
             console.log(e)
             return {
                 value: null, 
-                blockNum: result.blockNum
+                tx_uid: result.tx_uid
             }
         }
 

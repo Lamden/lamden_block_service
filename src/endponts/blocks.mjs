@@ -6,22 +6,22 @@ export const getBlockEndpoints = (db) => {
 
     /**
     * @openapi
-    * /blocks/{item}:
-    *   get: /
+    * /blocks/{number}:
+    *   get:
     *     tags: ["Blocks"]
-    *     summary: Returns block info from a specified block number or block hash.
+    *     summary: Returns block info from a specified block number.
     *     parameters:
     *       - in: path
-    *         name: item
+    *         name: number
     *         schema: 
-    *           type: string
+    *           type: integer
     *         required: true
-    *         description: Block number or block hash.
+    *         description: Block number.
     *     responses:
     *       200:
     *         description: Success
     *       Not Exists:
-    *         description: Block number or block hash does not exist.
+    *         description: Block number does not exist.
     *         content: 
     *           'application/json':
     *               schema:
@@ -32,18 +32,13 @@ export const getBlockEndpoints = (db) => {
     *                           default: block number 9999999999 does not exist.
     *                   required: ["error"]
     */
-    async function get_block(req, res) {
-        const { item } = req.params
+    async function get_block_number(req, res) {
+        const { number } = req.params
 
-        if (!item) res.send({ error: "no block number or block hash number provided" })
+        if (!number) res.send({ error: "no block number provided" })
 
         try {
-            let result = null
-            if (item.length === 64){
-                result = await db.queries.getBlockHash(item)
-            }else{
-                result = await db.queries.getBlockNumber(item)
-            }
+            let result = await db.queries.getBlockNumber(number)
             res.send(result)
         } catch (e) {
             logger.error(e)
@@ -80,7 +75,6 @@ export const getBlockEndpoints = (db) => {
 
         try {
             let results = await db.queries.getBlockCatchup(start_block, limit)
-            console.log(results);
             results = results.map(result => result.blockInfo)
             res.send(results)
         } catch (e) {
@@ -92,8 +86,8 @@ export const getBlockEndpoints = (db) => {
     return [
         {
             type: 'get',
-            route: '/blocks/:item',
-            handler: get_block
+            route: '/blocks/:number',
+            handler: get_block_number
         },
         {
             type: 'get',
