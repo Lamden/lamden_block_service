@@ -1,12 +1,14 @@
 const { createPythonSocketClient, createExpressApp } = require('../server.mjs');
-const { getDatabase } = require('../database/database.mjs');
 const supertest = require('supertest');
 const { getType } = require('jest-get-type');
 
-let db, pysocket, app, request;
+const db = require('mongoose')
+// Memory mongo server
+require("../db_test_helper/setup.js")
+
+let pysocket, app, request;
 
 beforeAll(async () => {
-    db = getDatabase();
     pysocket = createPythonSocketClient();
     app = createExpressApp(db, pysocket);
     request = supertest(app);
@@ -14,13 +16,12 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    await db.disconnect();
     await pysocket.disconnect();
 });
 
 describe('Test Tx Endpoints', () => {
     test('/tx: Returns Transaction Info when tx hash is provided.', async () => {
-        const hash = "d5a4de02b473265042a574d0a17710b3c9de67b11282cd9f95cd6d943436e9e2"
+        const hash = "87b56339e61483b5057e4401cf3ccbbd91341d3f4b5f22cb0cc4723039af0147"
         const response = await request.get(`/tx?hash=${hash}`);
         expect(response.headers['content-type']).toMatch(/json/);
         expect(response.statusCode).toBe(200);
