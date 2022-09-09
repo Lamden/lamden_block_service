@@ -10,8 +10,11 @@ export const getHistoryQueries = (db) => {
         limit = parseInt(limit) || 10
 
         let stateChanges = await db.models.StateChanges.find({
-                hlc_timestamp: { $gt: last_blockNum }
+                "$expr": { 
+                    "$gte": [ { "$toLong": "$blockNum" }, { "$toLong": last_blockNum }] 
+                } 
             })
+            .collation({"locale":"en", "numericOrdering":true})
             .sort({ "blockNum": 1 })
             .limit(limit)
 
@@ -24,9 +27,12 @@ export const getHistoryQueries = (db) => {
 
         let stateChanges = await db.models.StateChanges.find({
                 "affectedContractsList": contractName,
-                blockNum: { $gt: last_blockNum }
+                "$expr": { 
+                    "$gt": [ { "$toLong": "$blockNum" }, { "$toLong": last_blockNum }] 
+                }
             })
-            .sort({ "hlc_timestamp": 1 })
+            .collation({"locale":"en", "numericOrdering":true})
+            .sort({ "blockNum": 1 })
             .limit(limit)
 
         if (!stateChanges) return []
@@ -38,8 +44,11 @@ export const getHistoryQueries = (db) => {
 
         let stateChanges = await db.models.StateChanges.find({
                 "affectedVariablesList": `${contractName}.${variableName}`,
-                blockNUm: { $gt: last_blockNum }
+                "$expr": { 
+                    "$gt": [ { "$toLong": "$blockNum" }, { "$toLong": last_blockNum }] 
+                }
             })
+            .collation({"locale":"en", "numericOrdering":true})
             .sort({ "blockNum": 1 })
             .limit(limit)
 
@@ -52,8 +61,11 @@ export const getHistoryQueries = (db) => {
 
         let stateChanges = await db.models.StateChanges.find({
                 "affectedRootKeysList": `${contractName}.${variableName}:${rootKey}`,
-                blockNum: { $gt: last_blockNum }
+                "$expr": { 
+                    "$gt": [ { "$toLong": "$blockNum" }, { "$toLong": last_blockNum }] 
+                }
             })
+            .collation({"locale":"en", "numericOrdering":true})
             .sort({ "blockNum": 1 })
             .limit(limit)
 
@@ -68,7 +80,9 @@ export const getHistoryQueries = (db) => {
         let result = await db.models.StateChanges.findOne(
             {
                 "affectedRawKeysList": rawKey,
-                blockNum: { $lt: blockNum }
+                "$expr": { 
+                    "$lt": [ { "$toLong": "$blockNum" }, { "$toLong": last_blockNum }] 
+                }
             },{ '_id': 0, 'keys': 0, '__v': 0 }).sort({blockNum: -1})
 
         if (!result) {

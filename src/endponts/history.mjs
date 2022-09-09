@@ -18,21 +18,21 @@ export const getHistoryEndpoints = (db) => {
     *         description: Limit number.
     *         default: 10
     *       - in: query
-    *         name: last_hlc_timestamp
+    *         name: start_block_num
     *         schema: 
     *           type: string
     *         required: false
-    *         description: Last transaction uid.
-    *         default: 000000000000
+    *         description: start block number.
+    *         default: '0'
     *     responses:
     *       200:
     *         description: Success
     */
     async function all_history(req, res) {
-        const { last_hlc_timestamp, limit } = req.query
+        const { start_block_num, limit } = req.query
 
         try {
-            let history = await db.queries.getAllHistory(last_hlc_timestamp, limit)
+            let history = await db.queries.getAllHistory(start_block_num, limit)
             res.send({ history })
         } catch (e) {
             logger.error(e)
@@ -63,21 +63,21 @@ export const getHistoryEndpoints = (db) => {
     *         description: Limit number.
     *         default: 10
     *       - in: query
-    *         name: last_hlc_timestamp
+    *         name: start_block_num
     *         schema: 
     *           type: string
     *         required: false
-    *         description: Last transaction uid.
-    *         default: 000000000000
+    *         description: start block number.
+    *         default: 0
     *     responses:
     *       200:
     *         description: Success
     */
     async function contract_history(req, res) {
-        const { contract, last_hlc_timestamp, limit } = req.query
+        const { contract, start_block_num, limit } = req.query
 
         try {
-            let history = await db.queries.getContractHistory(contract, last_hlc_timestamp, limit)
+            let history = await db.queries.getContractHistory(contract, start_block_num, limit)
             res.send({ history })
         } catch (e) {
             logger.error(e)
@@ -115,21 +115,21 @@ export const getHistoryEndpoints = (db) => {
     *         description: Limit number.
     *         default: 10
     *       - in: query
-    *         name: last_hlc_timestamp
+    *         name: start_block_num
     *         schema: 
     *           type: string
     *         required: false
-    *         description: Last transaction uid.
-    *         default: 000000000000
+    *         description: start block number.
+    *         default: 0
     *     responses:
     *       200:
     *         description: Success
     */
     async function variable_history(req, res) {
-        const { contract, variable, last_hlc_timestamp, limit } = req.query
+        const { contract, variable, start_block_num, limit } = req.query
 
         try {
-            let history = await db.queries.getVariableHistory(contract, variable, last_hlc_timestamp, limit)
+            let history = await db.queries.getVariableHistory(contract, variable, start_block_num, limit)
             res.send({ history })
         } catch (e) {
             logger.error(e)
@@ -173,21 +173,21 @@ export const getHistoryEndpoints = (db) => {
     *         description: Limit number.
     *         default: 10
     *       - in: query
-    *         name: last_hlc_timestamp
+    *         name: start_block_num
     *         schema: 
     *           type: string
     *         required: false
-    *         description: Last transaction uid.
-    *         default: 000000000000
+    *         description: start block number.
+    *         default: 0
     *     responses:
     *       200:
     *         description: Success
     */
     async function rootkey_history(req, res) {
-        const { contract, variable, root_key, last_hlc_timestamp, limit } = req.query
+        const { contract, variable, root_key, start_block_num, limit } = req.query
 
         try {
-            let history = await db.queries.getRootKeyHistory(contract, variable, root_key, last_hlc_timestamp, limit)
+            let history = await db.queries.getRootKeyHistory(contract, variable, root_key, start_block_num, limit)
             res.send({ history })
         } catch (e) {
             logger.error(e)
@@ -217,23 +217,23 @@ export const getHistoryEndpoints = (db) => {
     *         description: Limit number.
     *         default: 10
     *       - in: query
-    *         name: max_hlc_timestamp
+    *         name: last_block_number
     *         schema: 
     *           type: string
     *         required: false
-    *         description: Max transaction unique ID.
-    *         default: 999999999999
-    *         example: 999999999999
+    *         description: last block number.
+    *         default: 8888888888888888888
+    *         example: 8888888888888888888
     *     responses:
     *       200:
     *         description: Success
     */
     async function tx_history(req, res) {
         const { vk } = req.params
-        const { max_hlc_timestamp, limit } = req.query
+        const { last_block_number, limit } = req.query
 
         try {
-            let history = await db.queries.getTxHistory(vk, max_hlc_timestamp, limit)
+            let history = await db.queries.getTxHistory(vk, last_block_number, limit)
             res.send({ history })
         } catch (e) {
             logger.error(e)

@@ -48,7 +48,7 @@ class BlockRepair {
 
     async blockProcessor(blockData) {
         if (blockData.error) {
-            logger.error(`Repair block ${blockData.number} failed. Error: ${blockData.error}`)
+            logger.error(`Repair block ${blockData.hash} failed. Error: ${blockData.error}`)
             return
         }
         

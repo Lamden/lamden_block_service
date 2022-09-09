@@ -28,7 +28,7 @@ describe("Testing websocket server.", () => {
   });
 
   test("Should get push notifications of new block after a new block was processed.", (done) => {
-    let data = newblock
+    let data = newblock[0]
     clientSocket.once("new-block", (msg) => {
       let message = JSON.parse(msg).message
       expect(message).toEqual(data)
@@ -53,7 +53,7 @@ describe("Testing websocket server.", () => {
   });
 
   test("Subscribe to the new-state-changes-by-transaction event in tx hash room ", (done) => {
-    let data = newblock
+    let data = newblock[1]
     clientSocket.once("new-block", (msg) => {
       let message = JSON.parse(msg).message
       expect(message).toEqual(data)

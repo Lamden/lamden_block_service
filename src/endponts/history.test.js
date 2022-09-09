@@ -50,10 +50,10 @@ describe('Test History Endpoints', () => {
             validHistory(item)
         })
 
-        test('Returns 10 history info from a specified starting point when last_hlc_timestamp parameter is passed.', async () => {
-            const last_hlc_timestamp = '000000000001.00000.00000'
-            const new_hlc_timestamp = '000000000002.00000.00000'
-            const response = await request.get(`/all_history?last_hlc_timestamp=${last_hlc_timestamp}`);
+        test('Returns 10 history info from a specified starting point when last_block_num parameter is passed.', async () => {
+            const last_block_num = '0'
+            const new_block_num = '1662667389487444992'
+            const response = await request.get(`/all_history?last_block_num=${last_block_num}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
             expect(getType(response.body.history)).toBe('array');
@@ -62,13 +62,13 @@ describe('Test History Endpoints', () => {
             const item = response.body.history[0];
             validHistory(item)
 
-            expect(item.hlc_timestamp).toBe(new_hlc_timestamp);
+            expect(item.blockNum).toBe(new_block_num);
         })
 
         test('Returns a specified number of history info from a specified starting point when both limit and start_block parameters are passed.', async () => {
-            const last_hlc_timestamp = '000000000001.00000.00000'
-            const new_hlc_timestamp = '000000000002.00000.00000'
-            const response = await request.get(`/all_history?limit=20&last_hlc_timestamp=${last_hlc_timestamp}`);
+            const last_block_num = '0'
+            const new_block_num = '1662667389487444992'
+            const response = await request.get(`/all_history?limit=20&last_block_num=${last_block_num}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
             expect(getType(response.body.history)).toBe('array');
@@ -77,7 +77,7 @@ describe('Test History Endpoints', () => {
             const item = response.body.history[0];
             validHistory(item)
 
-            expect(item.hlc_timestamp).toBe(new_hlc_timestamp);
+            expect(item.blockNum).toBe(new_block_num);
         })
     })
 
@@ -121,9 +121,9 @@ describe('Test History Endpoints', () => {
         test('Returns a specified number of history info by limit ,contract name and last tx uid.', async () => {
             const contract = 'currency';
             const limit = 6;
-            const last_hlc_timestamp = '000000000001.00000.00000'
-            const new_hlc_timestamp = '000000000002.00000.00000'
-            const response = await request.get(`/contract_history?contract=${contract}&limit=${limit}&last_hlc_timestamp=${last_hlc_timestamp}`);
+            const last_block_num = '0'
+            const new_block_num = '1662667389487444992'
+            const response = await request.get(`/contract_history?contract=${contract}&limit=${limit}&last_block_num=${last_block_num}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
             expect(getType(response.body.history)).toBe('array');
@@ -132,7 +132,7 @@ describe('Test History Endpoints', () => {
             const item = response.body.history[0];
             validHistory(item)
             expect(item.affectedContractsList).toContain(contract);
-            expect(item.hlc_timestamp).toBe(new_hlc_timestamp);
+            expect(item.blockNum).toBe(new_block_num);
         })
     })
 
@@ -189,9 +189,9 @@ describe('Test History Endpoints', () => {
             const contract = 'currency';
             const variable = 'balances';
             const limit = 6;
-            const last_hlc_timestamp = '000000000001.00000.00000';
-            const new_hlc_timestamp = '000000000002.00000.00000';
-            const response = await request.get(`/variable_history?contract=${contract}&variable=${variable}&limit=${limit}&last_hlc_timestamp=${last_hlc_timestamp}`);
+            const last_block_num = '0'
+            const new_block_num = '1662667389487444992'
+            const response = await request.get(`/variable_history?contract=${contract}&variable=${variable}&limit=${limit}&last_block_num=${last_block_num}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
             expect(getType(response.body.history)).toBe('array');
@@ -201,14 +201,14 @@ describe('Test History Endpoints', () => {
             validHistory(item)
             expect(item.affectedContractsList).toContain(contract);
             expect(item.affectedVariablesList).toContain(`${contract}.${variable}`);
-            expect(item.hlc_timestamp).toBe(new_hlc_timestamp);
+            expect(item.blockNum).toBe(new_block_num);
         })
     })
 
     describe('/rootkey_history: It should response the GET with history info by rootkey', () => {
         test('Don\'t return history info if contract name is not provided.', async () => {
             const variable = 'balances';
-            const root_key = '4a035ff604ffb0a44e5235e2fed8f69666b6df6ff11cbfa347d154d1a5453bba';
+            const root_key = '970b9152c7b8afb00bfe072e0777df3ae253c7f34d72cab324ffaf80fa7cd41a';
             const response = await request.get(`/rootkey_history?variable=${variable}&rootkey=${root_key}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
@@ -217,7 +217,7 @@ describe('Test History Endpoints', () => {
 
         test('Don\'t return history info if variable is not provided.', async () => {
             const contract = 'currency';
-            const root_key = '4a035ff604ffb0a44e5235e2fed8f69666b6df6ff11cbfa347d154d1a5453bba';
+            const root_key = '970b9152c7b8afb00bfe072e0777df3ae253c7f34d72cab324ffaf80fa7cd41a';
             const response = await request.get(`/rootkey_history?contract=${contract}&root_key=${root_key}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
@@ -232,63 +232,21 @@ describe('Test History Endpoints', () => {
             expect(response.statusCode).toBe(200);
             expect(response.body.history.length).toBe(0);
         })
-
-
-        test('Returns a specified number of history info by limit, variable, root_key and contract name.', async () => {
-            const contract = 'currency';
-            const variable = 'balances';
-            const root_key = '4a035ff604ffb0a44e5235e2fed8f69666b6df6ff11cbfa347d154d1a5453bba';
-            const limit = 6;
-            const response = await request.get(`/rootkey_history?contract=${contract}&variable=${variable}&root_key=${root_key}&limit=${limit}`);
-            expect(response.headers['content-type']).toMatch(/json/);
-            expect(response.statusCode).toBe(200);
-            expect(getType(response.body.history)).toBe('array');
-            expect(response.body.history.length).toBe(6);
-
-            const item = response.body.history[0];
-            validHistory(item)
-            expect(item.affectedContractsList).toContain(contract);
-            expect(item.affectedVariablesList).toContain(`${contract}.${variable}`);
-            expect(item.affectedRootKeysList).toContain(`${contract}.${variable}:${root_key}`);
-        })
-
-        test('Returns a specified number of history info by limit , variable, root_key, contract name and last tx uid.', async () => {
-            const contract = 'currency';
-            const variable = 'balances';
-            const root_key = '4a035ff604ffb0a44e5235e2fed8f69666b6df6ff11cbfa347d154d1a5453bba';
-            const limit = 6;
-            const last_hlc_timestamp = '000000000001.00000.00000';
-            const new_hlc_timestamp = '000000000002.00000.00000';
-            const response = await request.get(`/rootkey_history?contract=${contract}&variable=${variable}&root_key=${root_key}&limit=${limit}&last_hlc_timestamp=${last_hlc_timestamp}`);
-            expect(response.headers['content-type']).toMatch(/json/);
-            expect(response.statusCode).toBe(200);
-            expect(getType(response.body.history)).toBe('array');
-            expect(response.body.history.length).toBe(6);
-
-            const item = response.body.history[0];
-            validHistory(item)
-            expect(item.affectedContractsList).toContain(contract);
-            expect(item.affectedVariablesList).toContain(`${contract}.${variable}`);
-            expect(item.affectedRootKeysList).toContain(`${contract}.${variable}:${root_key}`);
-            expect(item.hlc_timestamp).toBe(new_hlc_timestamp);
-        })
     })
 
     describe('/tx_history/:vk: It should response the GET with history info by user account vk', () => {
         test('Return history info if vk is provided.', async () => {
-            const vk = '4a035ff604ffb0a44e5235e2fed8f69666b6df6ff11cbfa347d154d1a5453bba';
+            const vk = '970b9152c7b8afb00bfe072e0777df3ae253c7f34d72cab324ffaf80fa7cd41a';
             const response = await request.get(`/tx_history/${vk}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
 
-            // default limit = 10
-            expect(response.body.history.length).toBe(10);
             expect(response.body.history[0].txInfo.transaction.payload.sender).toBe(vk);
         })
 
         test('Returns a specified number of history info by limit', async () => {
-            const vk = '4a035ff604ffb0a44e5235e2fed8f69666b6df6ff11cbfa347d154d1a5453bba';
-            const limit = 6;
+            const vk = '970b9152c7b8afb00bfe072e0777df3ae253c7f34d72cab324ffaf80fa7cd41a';
+            const limit = 1;
             const response = await request.get(`/tx_history/${vk}?limit=${limit}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
@@ -298,9 +256,9 @@ describe('Test History Endpoints', () => {
         })
 
         test('Returns a specified number of history info by max_hlc_timestamp', async () => {
-            const vk = '4a035ff604ffb0a44e5235e2fed8f69666b6df6ff11cbfa347d154d1a5453bba';
-            const max_hlc_timestamp = "000000000010.00000.00000"
-            const response = await request.get(`/tx_history/${vk}?max_hlc_timestamp=${max_hlc_timestamp}`);
+            const vk = '970b9152c7b8afb00bfe072e0777df3ae253c7f34d72cab324ffaf80fa7cd41a';
+            const last_block_number = "1662667398321946378"
+            const response = await request.get(`/tx_history/${vk}?last_block_number=${last_block_number}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
 
