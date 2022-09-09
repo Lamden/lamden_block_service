@@ -34,7 +34,6 @@ export const getBlockQueries = (db) => {
                 path: "$missingBlock"
             }
         }])
-        logger.log({getNotFoundMissingBlockNumber_result: result})
         if (!result) return []
         return result.map(item => {
             return item.missingBlock
@@ -63,7 +62,7 @@ export const getBlockQueries = (db) => {
             logger.success(`${notFoundMissingBlock.length} new missing blocks have been recorded in database`)
 
             let result = await db.models.MissingBlocks.find()
-            logger.log({getMissingBlocks_result: result})
+
             if (!result) return []
             return result.map(item => {
                 return item.hash
@@ -109,8 +108,6 @@ export const getBlockQueries = (db) => {
         if (!start_block) start_block = 1
         start_block = start_block
         if (start_block < 1) start_block = 1
-
-        // console.log({start_block, limit})
 
         try {
             let blocks = await db.models.Blocks.find({ 
