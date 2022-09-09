@@ -13,12 +13,3 @@ const sg = new signale.Signale(option)
 export const createLogger = (scope) => {
     return sg.scope(scope)
 }
-
-/**
- * 
- * @param {string[]} scope 
- * @returns 
- */
- export const createInteractiveLogger = (scope) => {
-    return new signale.Signale({interactive: true, scope})
-}

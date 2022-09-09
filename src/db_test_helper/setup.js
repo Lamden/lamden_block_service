@@ -7,7 +7,7 @@ beforeAll(async () => await connect());
 /**
  * Clear all test data after every test.
  */
-afterAll(async () => await clearDatabase());
+afterEach(async () => await clearDatabase());
 /**
  * Remove and close the db and server after running all tests.
  */

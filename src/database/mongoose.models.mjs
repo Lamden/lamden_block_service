@@ -6,14 +6,9 @@ var app = new mongoose.Schema({
 });
 
 var blocks = new mongoose.Schema({
-    hash: {
-        type: String,
-        unique: true,
-        required: true,
-        index: true
-    },
+    hash: String,
     blockNum: {
-        type: String,
+        type: Number,
         unique: true,
         required: true,
         index: true
@@ -26,12 +21,18 @@ var blocks = new mongoose.Schema({
 });
 
 var stateChanges = new mongoose.Schema({
-    blockNum: {
+    tx_uid: {
         type: String,
         required: true,
         index: true
     },
-    hlc_timestamp: String,
+    txHash: {
+        type: String,
+        required: false,
+        index: true
+    },
+    blockNum: Number,
+    timestamp: Number,
     affectedContractsList: Array,
     affectedVariablesList: Array,
     affectedRootKeysList: Array,
@@ -42,15 +43,8 @@ var stateChanges = new mongoose.Schema({
         index: true
     },
     state_changes_obj: mongoose.Schema.Types.Mixed,
-    txInfo: Object,
-    senderVk: {
-        type: String,
-        required: true,
-        index: true
-    }
+    txInfo: Object
 });
-
-stateChanges.index({senderVk: 1, blockNum: 1})
 
 var currentState = new mongoose.Schema({
     rawKey: {
@@ -58,18 +52,12 @@ var currentState = new mongoose.Schema({
         required: true,
         index: true
     },
-    blockNum: {
+    tx_uid: {
         type: String,
         required: true,
         index: true
     },
-    senderVk: {
-        type: String,
-        required: true,
-        index: true
-    },
-    prev_blockNum: String,
-    hlc_timestamp: String,
+    prev_tx_uid: String,
     txHash: String,
     value: mongoose.Schema.Types.Mixed,
     prev_value: mongoose.Schema.Types.Mixed,
@@ -77,10 +65,9 @@ var currentState = new mongoose.Schema({
     variableName: String,
     keys: Array,
     key: String,
-    rootKey: String
+    rootKey: String,
+    lastUpdated: Date
 });
-
-currentState.index({contractName: 1, variableName: 1, rootKey: 1})
 
 var contracts = new mongoose.Schema({
     contractName: {
@@ -89,11 +76,7 @@ var contracts = new mongoose.Schema({
         required: true,
         index: true
     },
-    lst001: {
-        type: Boolean,
-        required: true,
-        index: true
-    }
+    lst001: Boolean
 });
 
 var missingBlocks = new mongoose.Schema({

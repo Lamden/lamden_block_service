@@ -8,15 +8,13 @@ const loadContracts = async (drop) => {
     let batchSize = 20000
     let progress = 0
     let db = await getDatabase()
-    await new Promise(r => setTimeout(r, 5000));
-    
     let contracts = new Set()
 
-    async function get_batch(last_blockNum) {
+    async function get_batch(last_tx_uid) {
         progress = progress + batchSize
         logger.start(`Getting batch of ${batchSize} transactions`)
 
-        process_batch(await db.queries.getAllHistory(last_blockNum, batchSize))
+        process_batch(await db.queries.getAllHistory(last_tx_uid, batchSize))
     }
 
     async function process_batch(batch) {
@@ -43,9 +41,9 @@ const loadContracts = async (drop) => {
                     logger.success(`Saved "${contractName}" ${lst001 ? " found LST001 token" : ""}`)
                 }
             }
-            let last_blockNum = batch[batch.length - 1].blockNum
+            let last_tx_uid = batch[batch.length - 1].tx_uid
             logger.success(`Processed ${progress} txs`)
-            get_batch(last_blockNum)
+            get_batch(last_tx_uid)
 
         } else {
             process.exit()

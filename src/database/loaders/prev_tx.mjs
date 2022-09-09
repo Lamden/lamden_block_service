@@ -8,7 +8,6 @@ const logger = createLogger('Database');
 
 (async function populatePreviousValue() {
     let db = await getDatabase()
-    await new Promise(r => setTimeout(r, 5000));
 
     let startTime = new Date()
     let totalBatchSize = await db.queries.countCurrentState()
@@ -28,18 +27,18 @@ const logger = createLogger('Database');
         if (batch.length > 0) {
             await Promise.all(batch.map(async (change) => {
 
-                if (typeof change.prev_value === 'undefined' || typeof change.prev_blockNum === 'undefined') {
+                if (typeof change.prev_value === 'undefined' || typeof change.prev_tx_uid === 'undefined') {
                     try {
                         let keyInfo = deconstructKey(change.rawKey)
                         let transactionInfo = await db.queries.getTransactionByHash(change.txHash)
 
-                        let prev_values = await db.queries.getPreviousKeyValue(keyInfo.contractName, keyInfo.variableName, keyInfo.keys, transactionInfo.blockNum)
+                        let prev_values = await db.queries.getPreviousKeyValue(keyInfo.contractName, keyInfo.variableName, keyInfo.keys, transactionInfo.tx_uid)
 
                         await db.models.CurrentState.updateOne({
                             rawKey: change.rawKey
                         }, {
                             prev_value: prev_values.value,
-                            prev_blockNum: prev_values.blockNum,
+                            prev_tx_uid: prev_values.tx_uid,
                         })
 
                     } catch (e) {

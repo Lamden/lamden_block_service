@@ -20,7 +20,8 @@ afterAll(async () => {
 
 const good_tx = {
     "metadata": {
-        "signature": "fa4afe36080b5a79d9cfc8b1207df7d147f1e87e1880384b63ea417967ee1515e0ab9a471bd61d0834cb381f80780dee1eaed85e126e31a2eae732b2b5520c0a"
+        "signature": "fa4afe36080b5a79d9cfc8b1207df7d147f1e87e1880384b63ea417967ee1515e0ab9a471bd61d0834cb381f80780dee1eaed85e126e31a2eae732b2b5520c0a",
+        "timestamp": 1601498663
     },
     "payload": {
         "contract": "currency",
@@ -38,7 +39,8 @@ const good_tx = {
 
 const bad_tx = {
     "metadata": {
-        "signature": "fa4afe36080b5a79d9cfc8b1207df7d147f1e87e1880384b63ea417967ee1515e0ab9a471bd61d0834cb381f80780dee1eaed85e126e31a2eae732b2b5520c0a"
+        "signature": "fa4afe36080b5a79d9cfc8b1207df7d147f1e87e1880384b63ea417967ee1515e0ab9a471bd61d0834cb381f80780dee1eaed85e126e31a2eae732b2b5520c0a",
+        "timestamp": 1601498663
     },
     "payload": {
         "contract": "currency",

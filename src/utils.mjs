@@ -6,17 +6,12 @@ export const deconstructKey = (rawKey) => {
     let keys = rawKey.split(".")[1].split(":")
     let variableName = keys.shift()
 
-    let rootKey = null
-    if (keys.length > 0){
-        rootKey = keys[0]
-    }
-
     return {
         contractName,
         variableName,
         key: keys.join(":"),
         keys,
-        rootKey
+        rootKey: keys[0]
     }
 }
 

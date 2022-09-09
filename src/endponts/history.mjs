@@ -18,7 +18,7 @@ export const getHistoryEndpoints = (db) => {
     *         description: Limit number.
     *         default: 10
     *       - in: query
-    *         name: last_hlc_timestamp
+    *         name: last_tx_uid
     *         schema: 
     *           type: string
     *         required: false
@@ -29,10 +29,10 @@ export const getHistoryEndpoints = (db) => {
     *         description: Success
     */
     async function all_history(req, res) {
-        const { last_hlc_timestamp, limit } = req.query
+        const { last_tx_uid, limit } = req.query
 
         try {
-            let history = await db.queries.getAllHistory(last_hlc_timestamp, limit)
+            let history = await db.queries.getAllHistory(last_tx_uid, limit)
             res.send({ history })
         } catch (e) {
             logger.error(e)
@@ -63,7 +63,7 @@ export const getHistoryEndpoints = (db) => {
     *         description: Limit number.
     *         default: 10
     *       - in: query
-    *         name: last_hlc_timestamp
+    *         name: last_tx_uid
     *         schema: 
     *           type: string
     *         required: false
@@ -74,10 +74,10 @@ export const getHistoryEndpoints = (db) => {
     *         description: Success
     */
     async function contract_history(req, res) {
-        const { contract, last_hlc_timestamp, limit } = req.query
+        const { contract, last_tx_uid, limit } = req.query
 
         try {
-            let history = await db.queries.getContractHistory(contract, last_hlc_timestamp, limit)
+            let history = await db.queries.getContractHistory(contract, last_tx_uid, limit)
             res.send({ history })
         } catch (e) {
             logger.error(e)
@@ -115,7 +115,7 @@ export const getHistoryEndpoints = (db) => {
     *         description: Limit number.
     *         default: 10
     *       - in: query
-    *         name: last_hlc_timestamp
+    *         name: last_tx_uid
     *         schema: 
     *           type: string
     *         required: false
@@ -126,10 +126,10 @@ export const getHistoryEndpoints = (db) => {
     *         description: Success
     */
     async function variable_history(req, res) {
-        const { contract, variable, last_hlc_timestamp, limit } = req.query
+        const { contract, variable, last_tx_uid, limit } = req.query
 
         try {
-            let history = await db.queries.getVariableHistory(contract, variable, last_hlc_timestamp, limit)
+            let history = await db.queries.getVariableHistory(contract, variable, last_tx_uid, limit)
             res.send({ history })
         } catch (e) {
             logger.error(e)
@@ -173,7 +173,7 @@ export const getHistoryEndpoints = (db) => {
     *         description: Limit number.
     *         default: 10
     *       - in: query
-    *         name: last_hlc_timestamp
+    *         name: last_tx_uid
     *         schema: 
     *           type: string
     *         required: false
@@ -184,10 +184,10 @@ export const getHistoryEndpoints = (db) => {
     *         description: Success
     */
     async function rootkey_history(req, res) {
-        const { contract, variable, root_key, last_hlc_timestamp, limit } = req.query
+        const { contract, variable, root_key, last_tx_uid, limit } = req.query
 
         try {
-            let history = await db.queries.getRootKeyHistory(contract, variable, root_key, last_hlc_timestamp, limit)
+            let history = await db.queries.getRootKeyHistory(contract, variable, root_key, last_tx_uid, limit)
             res.send({ history })
         } catch (e) {
             logger.error(e)
@@ -217,7 +217,7 @@ export const getHistoryEndpoints = (db) => {
     *         description: Limit number.
     *         default: 10
     *       - in: query
-    *         name: max_hlc_timestamp
+    *         name: max_tx_uid
     *         schema: 
     *           type: string
     *         required: false
@@ -230,10 +230,10 @@ export const getHistoryEndpoints = (db) => {
     */
     async function tx_history(req, res) {
         const { vk } = req.params
-        const { max_hlc_timestamp, limit } = req.query
+        const { max_tx_uid, limit } = req.query
 
         try {
-            let history = await db.queries.getTxHistory(vk, max_hlc_timestamp, limit)
+            let history = await db.queries.getTxHistory(vk, max_tx_uid, limit)
             res.send({ history })
         } catch (e) {
             logger.error(e)
