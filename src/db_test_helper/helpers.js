@@ -3,6 +3,8 @@ import mongoose_models from '../database/mongoose.models.mjs'
 import { getQueries } from '../database/queries.mjs'
 import * as dbUtils from '../database/db_utils.mjs'
 import mongoose from 'mongoose'
+import restore from '@ai-lion/mongodb-restore'
+import path from 'path'
 
 let mongod
 
@@ -11,7 +13,8 @@ let mongod
  */
 export const connect = async () => {
     mongod = await MongoMemoryServer.create();
-    const uri = mongod.getUri();
+    const dbname = 'test'
+    const uri = mongod.getUri(dbname);
 
     const mongooseOpts = {
         useNewUrlParser: true,
@@ -22,6 +25,13 @@ export const connect = async () => {
     mongoose.queries = getQueries(mongoose)
     mongoose.models = mongoose_models
     mongoose.utils = dbUtils
+
+    await restore.database({
+        uri,
+        database: dbname,
+        from: path.resolve(__dirname, '../../mongo_dump/'),
+        onCollectionExists: 'overwrite'
+    });
 };
 /**
  * Drop database,  close the connection and stop mongod.

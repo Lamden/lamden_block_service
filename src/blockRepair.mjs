@@ -9,16 +9,17 @@ const logger = createLogger('Repair');
 
 class BlockRepair {
     constructor(nodeurl, services) {
-        this.taskPool = new TaskPool()
+        //this.taskPool = new TaskPool()
         this.MASTERNODE_URL = nodeurl
         this.db = getDatabase()
         this.processor = getBlockProcessor(services, this.db)
     }
 
     run() {
-        if (this.taskPool.queue.isEmpty()) {
-            this.repair()
-        }
+        // if (this.taskPool.queue.isEmpty()) {
+        //     this.repair()
+        // }
+        this.repair()
     }
 
     async repair() {
@@ -27,9 +28,17 @@ class BlockRepair {
             let missingBlocks = await this.db.queries.getMissingBlocks()
             logger.log(`${missingBlocks.length} missing blocks found.`)
             for (const i of missingBlocks) {
-                let blockData = await this.getBlock_MN(i, 250)
-                this.taskPool.addTask((data) => this.blockProcessor(data), blockData)
-                logger.success(`Added block ${blockData.number} to repairing queue`)
+                // 10s => 25 blocks
+                let blockData = await this.getBlock_MN(i, 450)
+                await this.blockProcessor(blockData)
+                // this.taskPool.addTask(async (data) => {
+                //     await this.blockProcessor(data)
+                //     this.run()
+                // }, blockData)
+                // logger.success(`Added block ${blockData.number} to repairing queue`)
+            }
+            if (missingBlocks.length>0) {
+                this.run()
             }
         } catch (e) {
             logger.error(e)

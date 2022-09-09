@@ -1,9 +1,12 @@
 const { createPythonSocketClient, createExpressApp } = require('../server.mjs');
-const { getDatabase } = require('../database/database.mjs');
 const supertest = require('supertest');
 const { getType } = require('jest-get-type');
 
-let db, pysocket, app, request;
+const db = require('mongoose')
+// Memory mongo server
+require("../db_test_helper/setup.js")
+
+let pysocket, app, request;
 
 const validContract = (item) => {
     expect(getType(item.contractName)).toBe('string');
@@ -11,7 +14,6 @@ const validContract = (item) => {
 }
 
 beforeAll(async () => {
-    db = getDatabase();
     pysocket = createPythonSocketClient();
     app = createExpressApp(db, pysocket);
     request = supertest(app);
@@ -19,7 +21,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    await db.disconnect();
     await pysocket.disconnect();
 });
 
@@ -66,7 +67,7 @@ describe('Test Info Endpoints', () => {
     describe('/tokens/:contractName: It should response the GET with contract detail by contract name', () => {
 
         test('Returns contract info by contract name.', async () => {
-            const contractName = 'con_days';
+            const contractName = 'stamp_cost';
             const response = await request.get(`/tokens/${contractName}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
