@@ -28,22 +28,25 @@ const runBlockGrabber = (config) => {
         let block = await db.models.Blocks.findOne({ blockNum: data.number })
 
         if (!block) {
+            // will auto start repair process when block is added.
             blockProcessingQueue.addBlock(data)
+        } else {
+            await blockRepair.run()
         }
-
-        await blockRepair.run()
     };
 
     async function processBlockFromWebsocket(blockData) {
         await db.queries.setLatestBlock(blockData.number)
         blockProcessingQueue.addBlock(blockData)
-        await blockRepair.run()
     }
 
     async function start() {
         const processor = getBlockProcessor(server.services, db)
         // Create a block processing queue so we can add new blocks one at a time and process them in order
-        blockProcessingQueue.setupBlockProcessor(processor)
+        blockProcessingQueue.setupBlockProcessor(async (data)=>{
+            await processor(data)
+            await blockRepair.run()
+        })
 
         // connect to the websocket events we want
         blockchainEvents.setupEventProcessor('new_block', processBlockFromWebsocket)

@@ -10,7 +10,7 @@ export const getHistoryQueries = (db) => {
         limit = parseInt(limit) || 10
 
         let stateChanges = await db.models.StateChanges.find({
-                blockNum: { $gt: last_blockNum }
+                hlc_timestamp: { $gt: last_blockNum }
             })
             .sort({ "blockNum": 1 })
             .limit(limit)
