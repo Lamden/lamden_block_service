@@ -51,7 +51,7 @@ describe('Test Blocks Endpoints', () => {
         })
 
         test('Returns blocks info from a specified starting point when start_block parameter is passed.', async () => {
-            const blocknum = '1662651720884662528'
+            const blocknum = '1662667389487444992'
             const response = await request.get(`/blocks?start_block=${blocknum}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
@@ -60,11 +60,12 @@ describe('Test Blocks Endpoints', () => {
             const item = response.body[0];
             validBlock(item)
 
+            console.log(response.body)
             expect(item.number).toBe(blocknum);
         })
 
         test('Returns a specified number of blocks info from a specified starting point when both limit and start_block parameters are passed.', async () => {
-            const blocknum = '1662651720884662528'
+            const blocknum = '1662667389487444992'
             const response = await request.get(`/blocks?limit=20&&start_block=${blocknum}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
@@ -112,7 +113,7 @@ describe('Test Blocks Endpoints', () => {
         })
 
         test('Returns a specified block info when passing block number.', async () => {
-            const blocknumber = '1662651744094669312';
+            const blocknumber = '1662667389487444992';
             const response = await request.get(`/blocks/${blocknumber}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);

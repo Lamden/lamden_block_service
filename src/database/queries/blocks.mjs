@@ -115,6 +115,7 @@ export const getBlockQueries = (db) => {
                     "$gte": [ { "$toLong": "$blockNum" }, { "$toLong": start_block }] 
                 } 
             })
+            .collation({"locale":"en", "numericOrdering":true})
             .sort({ "blockNum": 1 })
             .limit(limit)
 

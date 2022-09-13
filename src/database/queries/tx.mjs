@@ -10,16 +10,19 @@ export const getTransactionQueries = (db) => {
         return await db.models.StateChanges.findOne({BlockNum},{ '_id': 0, '__v': 0 })
     }
 
-    async function getTxHistory(vk, blockNum = "999999999999999999999999999999", limit=10){
+    async function getTxHistory(vk, blockNum = "8888888888888888888", limit=10){
         limit = parseInt(limit) || 10
 
         let stateChanges = await db.models.StateChanges.find({
                 senderVk: vk,
-                blockNum: { $lt: blockNum }
+                "$expr": { 
+                    "$lt": [ { "$toLong": "$blockNum" }, { "$toLong": blockNum }] 
+                }
             })
+            .collation({"locale":"en", "numericOrdering":true})
             .sort({ "blockNum": -1 })
             .limit(limit)
-
+            
         if (!stateChanges) return []
         else return db.utils.hydrate_state_changes_obj(stateChanges)
     }
@@ -34,6 +37,7 @@ export const getTransactionQueries = (db) => {
         let stateChanges = await db.models.StateChanges.find({
                 senderVk: vk
             })
+            .collation({"locale":"en", "numericOrdering":true})
             .sort({ "blockNum": -1 })
             .skip(page_limit * page)
             .limit(page_limit)
