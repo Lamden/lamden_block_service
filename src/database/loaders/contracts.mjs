@@ -1,10 +1,11 @@
-import { getDatabase } from "../database.mjs";
+import { getDatabase, databaseInit } from "../database.mjs";
 import { isLst001 } from "../processors/lst001.mjs"
 import { createLogger } from '../../logger.mjs'
 
 const logger = createLogger('Database');
 
 const loadContracts = async (drop) => {
+    await databaseInit()
     let batchSize = 20000
     let progress = 0
     let db = await getDatabase()

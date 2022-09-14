@@ -48,4 +48,23 @@ db.connect(
     }
 );
 
+export const databaseInit = async () => {
+    try {
+        await db.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: true })
+        logger.success("DB Connection Successful.");
+        db.queries = getQueries(db)
+        db.models = mongoose_models
+        db.utils = dbUtils
+        db.config = {
+            NETWORK,
+            DBNAME,
+            DBURL,
+            DBPORT
+        }
+        logger.log(db.config)
+    } catch (error) {
+        logger.error(error)
+        throw new Error(error)
+    }
+}
 export const getDatabase = () => db

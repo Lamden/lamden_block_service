@@ -6,7 +6,7 @@ import { eventWebsockets } from './src/services/eventsWebsocket.mjs'
 
 import { createServer } from './src/server.mjs'
 
-import { getDatabase } from './src/database/database.mjs'
+import { getDatabase, databaseInit } from './src/database/database.mjs'
 
 import { createLogger } from './src/logger.mjs'
 
@@ -39,6 +39,9 @@ let grabberConfig = {
 }
 
 export const start = async () => {
+    // Init database
+    await databaseInit()
+    
     const db = getDatabase()
     // ensure backward compatibility 
     await db.models.Blocks.deleteMany({ hash: "block-does-not-exist" })
