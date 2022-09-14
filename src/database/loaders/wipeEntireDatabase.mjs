@@ -13,10 +13,11 @@ import util from 'util'
 import readline from 'readline'
 
 import * as utils from '../../utils.mjs'
-import { getDatabase } from "../database.mjs";
+import { getDatabase, databaseInit } from "../database.mjs";
 
 
 const WipeDatabase = (async () => {
+    await databaseInit()
     let db = await getDatabase()
     await new Promise(r => setTimeout(r, 5000));
     let startTime = null

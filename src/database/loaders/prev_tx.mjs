@@ -1,12 +1,13 @@
 import util from 'util'
 
-import { getDatabase } from "../database.mjs";
+import { getDatabase, databaseInit } from "../database.mjs";
 import { deconstructKey } from "../../utils.mjs"
 import { createLogger } from '../logger.mjs'
 
 const logger = createLogger('Database');
 
 (async function populatePreviousValue() {
+    await databaseInit()
     let db = await getDatabase()
     await new Promise(r => setTimeout(r, 5000));
 
