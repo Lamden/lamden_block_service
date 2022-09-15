@@ -13,10 +13,12 @@ class BlockRepair {
         this.MASTERNODE_URL = nodeurl
         this.db = getDatabase()
         this.processor = getBlockProcessor(services, this.db)
+        this.running = false
     }
 
     run() {
-        if (this.taskPool.queue.isEmpty()) {
+        if (this.taskPool.queue.isEmpty() && !this.running) {
+            this.running = true
             this.repair()
         }
     }
@@ -32,6 +34,7 @@ class BlockRepair {
                     if (!isNaN(parseInt(blockData.id))) {
                         blockData.number = blockData.id
                     } else {
+                        this.running = false
                         return
                     }
                 }
@@ -39,9 +42,11 @@ class BlockRepair {
                 logger.success(`Added block ${i} to repairing queue`)
             }
         } catch (e) {
+            this.running = false
             logger.error(e)
         }
         logger.complete("Repairing process ended.")
+        this.running = false
     }
 
     async blockProcessor(blockData) {
