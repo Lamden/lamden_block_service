@@ -106,10 +106,30 @@ export const socketService = (io) => {
         }));
     }
 
+    function emitNewReward(rewardInfo) {
+        io.to(`new-rewards`).emit(`new_reward`, JSON.stringify({
+            room: `new-rewards`,
+            message: rewardInfo,
+        }));
+
+        // recipient room
+        io.to(rewardInfo.recipient).emit(`new_reward`, JSON.stringify({
+            room: rewardInfo.recipient,
+            message: rewardInfo,
+        }));
+
+        // type room
+        io.to(rewardInfo.type).emit(`new_reward`, JSON.stringify({
+            room: rewardInfo.type,
+            message: rewardInfo,
+        }));
+    }
+
     return {
         emitNewBlock,
         emitStateChange,
         emitTxStateChanges,
-        emitNewContract
+        emitNewContract,
+        emitNewReward
     }
 }

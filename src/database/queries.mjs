@@ -4,6 +4,7 @@ import { getSyncStatsQueries } from './queries/sync_stats.mjs'
 import { getBlockQueries } from './queries/blocks.mjs'
 import { getInfoQueries } from './queries/info.mjs'
 import { getTransactionQueries } from './queries/tx.mjs'
+import { getStaticsQueries } from './queries/statics.mjs'
 
 export const getQueries = (db) => {
     return {
@@ -12,6 +13,7 @@ export const getQueries = (db) => {
         ...getSyncStatsQueries(db),
         ...getBlockQueries(db),
         ...getInfoQueries(db),
-        ...getTransactionQueries(db)
+        ...getTransactionQueries(db),
+        ...getStaticsQueries(db)
     }
 }

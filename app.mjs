@@ -10,6 +10,8 @@ import { getDatabase, databaseInit } from './src/database/database.mjs'
 
 import { createLogger } from './src/logger.mjs'
 
+import { fixRewardsRecord } from './src/rewardsFix.mjs'
+
 const logger = createLogger('App');
 
 const MASTERNODE_URLS = {
@@ -43,8 +45,13 @@ export const start = async () => {
     await databaseInit()
     
     const db = getDatabase()
+    const server = createServer(BLOCKSERVICE_HOST, BLOCKSERVICE_PORT, db)
+
     // ensure backward compatibility 
     await db.models.Blocks.deleteMany({ hash: "block-does-not-exist" })
+
+    // parse rewards for old block data in database
+    await fixRewardsRecord(server.services, db)
 
     logger.info("Syncing Indexes...");
     //console.log( db.models)
@@ -54,7 +61,7 @@ export const start = async () => {
             .then(() => logger.success(`DONE Syncing Indexes for ${db.models[model_name].collection.collectionName}...`))
     }
     
-    grabberConfig.server = createServer(BLOCKSERVICE_HOST, BLOCKSERVICE_PORT, db)
+    grabberConfig.server = server
     grabberConfig.blockchainEvents = eventWebsockets(grabberConfig.MASTERNODE_URL)
 
     let blockGrabber = runBlockGrabber(grabberConfig)

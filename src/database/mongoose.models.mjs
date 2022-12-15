@@ -105,11 +105,40 @@ var missingBlocks = new mongoose.Schema({
     }
 });
 
+var rewards = new mongoose.Schema({
+    type: { // masternodes, developer, foundation, "burn"
+        type: String,
+        required: true,
+        index: true
+    },
+    recipient: {
+        type: String,
+        required: true,
+        index: true
+    },
+    blockNum: {
+        type: String,
+        required: true,
+        index: true
+    },
+    amount: {
+        type: String
+    },
+    contract: { // Only populated on a type devloper
+        type: String,
+        index: true
+    }
+});
+
+// Multiple Field Unique
+rewards.index({ recipient: 1, type: 1, blockNum: 1 }, { unique: true });
+
 export default {
     App: mongoose.model('App', app, 'app'),
     StateChanges: mongoose.model('StateChanges', stateChanges, 'stateChanges'),
     CurrentState: mongoose.model('CurrentState', currentState, 'currentState'),
     Blocks: mongoose.model('Blocks', blocks, 'blocks'),
     Contracts: mongoose.model('Contracts', contracts, 'contracts'),
-    MissingBlocks: mongoose.model('MissingBlocks', missingBlocks, 'missingBlocks')
+    MissingBlocks: mongoose.model('MissingBlocks', missingBlocks, 'missingBlocks'),
+    Rewards: mongoose.model('Rewards', rewards, 'rewards'),
 };

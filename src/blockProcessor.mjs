@@ -1,10 +1,12 @@
 import * as utils from './utils.mjs'
-import util from 'util'
 import { createLogger } from './logger.mjs'
+import BigNumber from 'bignumber.js';
 
 const logger = createLogger('Block Processor');
 
 export const getBlockProcessor = (services, db) => {
+    const processRewards = getRewarsProcessor(services, db)
+
     const processBlock = async (blockInfo = {}) => {
         let blockNum = blockInfo.number;
         let block = await db.models.Blocks.findOne({ blockNum })
@@ -19,6 +21,7 @@ export const getBlockProcessor = (services, db) => {
                 services.sockets.emitNewBlock(block.blockInfo)
                 
                 await processBlockStateChanges(block.blockInfo)
+                await processRewards(block.blockInfo)
             }
         }
     };
@@ -134,4 +137,121 @@ export const getBlockProcessor = (services, db) => {
     }
 
     return processBlock
+}
+
+
+export const getRewarsProcessor = (services, db) => {
+    const processRewards = async (blockInfo) => {
+        const NUM_LENGTH = 30
+    
+        // check if transaction exists
+        if (!blockInfo.processed) return
+    
+        const foundationKey = "foundation.owner"
+        const membersKey = "masternodes.S:members"
+        const args = [foundationKey, membersKey]
+        // contract name
+        let contract = blockInfo.processed.transaction.payload.contract
+        args.push(`${contract}.__developer__`)
+    
+        let developer
+    
+        const [master_ratio, burn_ratio, foundation_ratio, developer_ratio] = await db.models.CurrentState.findOne({
+            rawKey: "rewards.S:value"
+        }).then(r => r.value.map(m => utils.parseValue(m)))
+        
+        let res = await db.models.CurrentState.find({
+            rawKey: { $in: args }
+        })
+    
+        const foudnation = res.find(r => r.rawKey === foundationKey).value
+        const masternodes = res.find(r => r.rawKey === membersKey).value 
+    
+        let dev = res.find(r => r.rawKey === `${contract}.__developer__`)
+        if (dev) {
+            developer = dev.value
+        }
+    
+        try { 
+            if (blockInfo.rewards && Array.isArray(blockInfo.rewards)) {
+                let totalRewards = new BigNumber(0)
+                let stamps = utils.parseValue(blockInfo.processed.stamps_used)
+    
+    
+                const tasks = blockInfo.rewards.map(async r => {
+    
+                    let amount = utils.parseValue(r.reward)
+                    let k = r.key.replace("currency.balances:", "")
+                    let isMasternode = masternodes.findIndex(m => m === k) > -1
+    
+                    // foundation, masternodes, developer, none(developer not exists)
+                    totalRewards = totalRewards.plus(amount)
+    
+                    if (k === foudnation) {
+                        await saveRewards(foudnation, "foundation", blockInfo.number, amount.toFixed(NUM_LENGTH))
+                    } else if (isMasternode) {
+                        // check if it is developer and masternode
+                        if (k === developer) {
+                            // first calc developer rewards
+                            let developerReward = developer_ratio.plus(stamps) 
+                            // then get maternode rewards
+                            let masternodeReward = amount.minus(developerReward)
+                            await saveRewards(k, "developer", blockInfo.number, developerReward.toFixed(NUM_LENGTH), contract)
+                            await saveRewards(k, "masternodes", blockInfo.number, masternodeReward.toFixed(NUM_LENGTH))
+                        } else {
+                            await saveRewards(k, "masternodes", blockInfo.number, amount.toFixed(NUM_LENGTH))
+                        }
+                    } else if (k === developer) {
+                        await saveRewards(k, "developer", blockInfo.number, amount.toFixed(NUM_LENGTH), contract)
+                    }
+                })
+                
+                await Promise.all(tasks)
+                // recipient is burnt_rewards
+                await saveRewards("burnt_rewards", "burn", blockInfo.number, stamps.minus(totalRewards).toFixed(NUM_LENGTH))
+            }
+        } catch(e) {
+            logger.error(e)
+        }
+    }
+    
+    /**
+    * @param {string} recipient 
+    * @param {string} type 
+    * @param {Bignumber} amount 
+    * @param {string} contract 
+    **/
+    
+    const saveRewards = async (recipient, type, blocknumber, amount, contract) => {
+        
+        // check type
+        const types = ["masternodes", "developer", "foundation", "burn"]
+        if (types.findIndex(t => t === type) === -1) return
+    
+        let res = await db.models.CurrentState.findOne({    
+            type,
+            recipient,
+            blockNum: blocknumber, 
+        })
+        if (res) return
+    
+        const reward = new db.models.Rewards({
+            type,
+            recipient,
+            blockNum: blocknumber,
+            amount: amount
+        })
+    
+        // if type is developer, contract can not be populated
+        if (type === "developer") {
+            if (!contract) return
+            reward.contract = contract
+        }
+    
+        await reward.save()
+    
+        services.sockets.emitNewReward(reward)
+    }
+
+    return processRewards
 }
