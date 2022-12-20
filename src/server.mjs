@@ -50,6 +50,11 @@ export const createServer = (host, port, db) => {
             logger.log(" someone left room " + room)
             socket.leave(room)
         });
+
+        // send /rewards list when connected
+        db.queries.getRewards().then(r => {
+            io.emit('rewards', JSON.stringify({ message: r }));
+        })
     });
 
     server.listen(port, host, () => {

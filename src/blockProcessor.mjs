@@ -209,6 +209,9 @@ export const getRewarsProcessor = (services, db) => {
                 await Promise.all(tasks)
                 // recipient is burnt_rewards
                 await saveRewards("burnt_rewards", "burn", blockInfo.number, stamps.minus(totalRewards).toFixed(NUM_LENGTH))
+                // emit total rewards
+                let total = await db.queries.getTotalRewards()
+                services.sockets.emitTotalRewards(total.amount)
             }
         } catch(e) {
             logger.error(e)

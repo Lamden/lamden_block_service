@@ -106,20 +106,26 @@ export const socketService = (io) => {
         }));
     }
 
+    function emitTotalRewards(amount) {
+        io.to(`rewards`).emit(`total_rewards`, JSON.stringify({
+            message: {amount},
+        }));
+    }
+
     function emitNewReward(rewardInfo) {
-        io.to(`new-rewards`).emit(`new_reward`, JSON.stringify({
+        io.to(`rewards`).emit(`new_reward`, JSON.stringify({
             room: `new-rewards`,
             message: rewardInfo,
         }));
 
         // recipient room
-        io.to(rewardInfo.recipient).emit(`new_reward`, JSON.stringify({
+        io.to(`rewards-${rewardInfo.recipient}`).emit(`new_reward`, JSON.stringify({
             room: rewardInfo.recipient,
             message: rewardInfo,
         }));
 
         // type room
-        io.to(rewardInfo.type).emit(`new_reward`, JSON.stringify({
+        io.to(`rewards-${rewardInfo.type}`).emit(`new_reward`, JSON.stringify({
             room: rewardInfo.type,
             message: rewardInfo,
         }));
@@ -130,6 +136,7 @@ export const socketService = (io) => {
         emitStateChange,
         emitTxStateChanges,
         emitNewContract,
-        emitNewReward
+        emitNewReward,
+        emitTotalRewards
     }
 }
