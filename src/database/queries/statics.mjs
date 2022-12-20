@@ -170,6 +170,39 @@ export const getStaticsQueries = (db) => {
         return res
     }
 
+    async function getTotalRewards() {
+        let res = await db.models.Rewards.aggregate([{
+            $match: {
+                    type: {
+                        $ne: "burn"
+                    },
+                }
+        }, {
+            $group: {
+                _id: null,
+                amount: {
+                    $sum: {
+                        $convert: {
+                            input: "$amount",
+                            to: "decimal",
+                            onError: 0,
+                            onNull: 0
+                        }
+                    }
+                }
+            }
+        }, {
+            $project: {
+                _id: 0,
+                amount: {
+                    $toString: "$amount"
+                },
+            }
+        }]).then(r => r[0])
+
+        return res
+    }
+
 
     async function getRewardsByVk(vk) {
         let res = await db.models.Rewards.aggregate([{
@@ -282,6 +315,7 @@ export const getStaticsQueries = (db) => {
         getRewards,
         getRewardsByVk,
         getRewardsByType,
-        getRewardsByContract
+        getRewardsByContract,
+        getTotalRewards
     }
 }
