@@ -170,16 +170,41 @@ export const getStaticsQueries = (db) => {
         return res
     }
 
-    async function getTotalRewards() {
+    /**
+     * 
+     * @param {string} recipient 
+     * @param {int} start 13 digit number
+     * @param {int} end 13 digit number
+     * @returns 
+     */
+    async function getTotalRewards(recipient, start, end) {
+
+        let con = {
+            type: {
+                $ne: "burn"
+            },
+            $expr: {
+                $and: []
+            }
+        }
+
+        if (recipient) {
+            con.recipient = recipient
+        }
+
+        if (start) {
+            con["$expr"]["$and"].push({$gte: [{$toLong: "$blockNum"}, start * 1000000]})
+        }
+
+        if (end) {
+            con["$expr"]["$and"].push({$lte: [{$toLong: "$blockNum"}, end * 1000000]})
+        }
+
         let res = await db.models.Rewards.aggregate([{
-            $match: {
-                    type: {
-                        $ne: "burn"
-                    },
-                }
-        }, {
+            $match: con
+        },{
             $group: {
-                _id: null,
+                _id: recipient,
                 amount: {
                     $sum: {
                         $convert: {
@@ -191,9 +216,10 @@ export const getStaticsQueries = (db) => {
                     }
                 }
             }
-        }, {
+        },{
             $project: {
                 _id: 0,
+                recipient: "$_id",
                 amount: {
                     $toString: "$amount"
                 },
@@ -316,6 +342,6 @@ export const getStaticsQueries = (db) => {
         getRewardsByVk,
         getRewardsByType,
         getRewardsByContract,
-        getTotalRewards
+        getTotalRewards,
     }
 }

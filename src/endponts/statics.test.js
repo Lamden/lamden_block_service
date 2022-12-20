@@ -117,6 +117,69 @@ describe('Test Nodes Endpoints', () => {
             expect(getType(response.body)).toBe('object');
             expect(getType(response.body.amount)).toBe('string');
         })
+
+        test('/rewards/total?recipient=92e45fb91c8f76fbfdc1ff2a58c2e901f3f56ec38d2f10f94ac52fcfa56fce2e: Returns the total rewards amount by recipient', async () => {
+            let vk = "92e45fb91c8f76fbfdc1ff2a58c2e901f3f56ec38d2f10f94ac52fcfa56fce2e"
+            const response = await request.get(`/rewards/total?recipient=${vk}`);
+            expect(response.headers['content-type']).toMatch(/json/);
+            expect(response.statusCode).toBe(200);
+            expect(getType(response.body)).toBe('object');
+            expect(response.body.recipient).toBe(vk);
+            expect(getType(response.body.amount)).toBe('string');
+        })
+
+        test('/rewards/total?start=1662667407679: Returns the total rewards amount by start time', async () => {
+            const response = await request.get(`/rewards/total?start=1662667407679`);
+            expect(response.headers['content-type']).toMatch(/json/);
+            expect(response.statusCode).toBe(200);
+            expect(getType(response.body)).toBe('object');
+            expect(getType(response.body.amount)).toBe('string');
+        })
+
+        test('/rewards/total?start=999999999999999999: Returns nothing if start time is too big', async () => {
+            const response = await request.get(`/rewards/total?start=999999999999999999`);
+            expect(response.statusCode).toBe(200);
+            expect(response.body).toEqual({});
+        })
+
+        test('/rewards/total?end=1662667406139: Returns the total rewards amount by end time', async () => {
+            const response = await request.get(`/rewards/total?end=1662667406139`);
+            expect(response.headers['content-type']).toMatch(/json/);
+            expect(response.statusCode).toBe(200);
+            expect(getType(response.body)).toBe('object');
+            expect(getType(response.body.amount)).toBe('string');
+        })
+
+        test('/rewards/total?end=-1: Returns nothing if end time is too small', async () => {
+            const response = await request.get(`/rewards/total?end=-1`);
+            expect(response.statusCode).toBe(200);
+            expect(response.body).toEqual({});
+        })
+
+        test('/rewards/total?start=1662667406139&end=1662667407679: Returns the total rewards amount by start time and end time', async () => {
+            const response = await request.get(`/rewards/total?start=1662667406139&end=1662667407679`);
+            expect(response.headers['content-type']).toMatch(/json/);
+            expect(response.statusCode).toBe(200);
+            expect(getType(response.body)).toBe('object');
+            expect(getType(response.body.amount)).toBe('string');
+        })
+
+        test('/rewards/total?start=1662667407679&end=1662667406139: Returns nothing if start time is lager than end time', async () => {
+            const response = await request.get(`/rewards/total?start=1662667407679&end=1662667406139`);
+            expect(response.statusCode).toBe(200);
+            expect(response.body).toEqual({});
+        })
+
+        test('/rewards/total?start=1662667406139&end=1662667407679: Returns the total rewards amount by start time and end time and recipient', async () => {
+            let vk = "92e45fb91c8f76fbfdc1ff2a58c2e901f3f56ec38d2f10f94ac52fcfa56fce2e"
+            const response = await request.get(`/rewards/total?start=1662667406139&end=1662667407679&recipient=${vk}`);
+            expect(response.headers['content-type']).toMatch(/json/);
+            expect(response.statusCode).toBe(200);
+            expect(getType(response.body)).toBe('object');
+            expect(getType(response.body.amount)).toBe('string');
+            expect(response.body.recipient).toBe(vk);
+        })
+
     })
 })
 

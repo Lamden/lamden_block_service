@@ -50,7 +50,8 @@ export const getStaticsEndpoints = (db) => {
         try {
             if (type) {
                 if (type === "total") {
-                    result = await db.queries.getTotalRewards()
+                    let {recipient, start, end} = req.query
+                    result = await db.queries.getTotalRewards(recipient, start, end)
                 } else if (type === "burn") {
                     result = await db.queries.getBurnRewards()
                 } else {
@@ -69,11 +70,6 @@ export const getStaticsEndpoints = (db) => {
         let { contract } = req.params
 
         let result = await db.queries.getRewardsByContract(contract)
-        res.send(result)
-    }
-
-    async function rewardsTotal(req, res) {
-        const result = await db.queries.getTotalRewards()
         res.send(result)
     }
 
