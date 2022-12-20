@@ -109,6 +109,14 @@ describe('Test Nodes Endpoints', () => {
             expect(getType(response.body)).toBe('object');
             expect(getType(response.body.amount)).toBe('string');
         })
+
+        test('/rewards/total: Returns the total rewards amount', async () => {
+            const response = await request.get(`/rewards/total`);
+            expect(response.headers['content-type']).toMatch(/json/);
+            expect(response.statusCode).toBe(200);
+            expect(getType(response.body)).toBe('object');
+            expect(getType(response.body.amount)).toBe('string');
+        })
     })
 })
 
