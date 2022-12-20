@@ -352,6 +352,9 @@ export const getStaticsQueries = (db) => {
         const today = new Date(new Date().setHours(0, 0, 0, 0) + 24 * 60 * 60 * 1000 - 1)
         const day = today.setDate(today.getDate() - 7)
         let con = {
+            type: {
+                $ne: "burn"
+            },
             $expr: {
                 $gte: [{$toLong: "$blockNum"},  day * 1000000]
             }  
