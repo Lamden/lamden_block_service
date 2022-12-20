@@ -52,6 +52,11 @@ export const getStaticsEndpoints = (db) => {
                 if (type === "total") {
                     let {recipient, start, end} = req.query
                     result = await db.queries.getTotalRewards(recipient, start, end)
+                } else if (type === "lastdays") {
+                    let { recipient, days } = req.query
+                    // default 7 days
+                    if (!days) days = 7
+                    result = await db.queries.getLastDaysRewards(days, recipient)
                 } else if (type === "burn") {
                     result = await db.queries.getBurnRewards()
                 } else {
@@ -70,6 +75,16 @@ export const getStaticsEndpoints = (db) => {
         let { contract } = req.params
 
         let result = await db.queries.getRewardsByContract(contract)
+        res.send(result)
+    }
+
+    async function lastDaysRewards(req, res) {
+        let { recipient, days } = req.query
+
+        // default 7 days
+        if (!days) days = 7
+
+        let result = await db.queries.getLastDaysRewards(days, recipient)
         res.send(result)
     }
 

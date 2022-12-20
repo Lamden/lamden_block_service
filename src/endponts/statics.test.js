@@ -180,6 +180,14 @@ describe('Test Nodes Endpoints', () => {
             expect(response.body.recipient).toBe(vk);
         })
 
+
+        test('/rewards/lastdays?days=7: Returns the rewards by last N days', async () => {
+            const response = await request.get(`/rewards/lastdays?days=7`);
+            expect(response.headers['content-type']).toMatch(/json/);
+            expect(response.statusCode).toBe(200);
+            expect(getType(response.body)).toBe('array');
+        })
+
     })
 })
 

@@ -347,6 +347,65 @@ export const getStaticsQueries = (db) => {
         return res
     }
 
+    async function getLastDaysRewards(days, recipient=undefined) {
+        // 23:59:59
+        const today = new Date(new Date().setHours(0, 0, 0, 0) + 24 * 60 * 60 * 1000 - 1)
+        const day = today.setDate(today.getDate() - 7)
+        let con = {
+            $expr: {
+                $gte: [{$toLong: "$blockNum"},  day * 1000000]
+            }  
+        }
+
+        if (recipient) {
+            con.recipient = recipient
+        }
+
+        let res = await db.models.Rewards.aggregate([{
+                $match: con,
+            }, {
+                $set: 
+                {
+                    'time': {
+                        $dateToString: {
+                            format: "%Y-%m-%d",
+                            date: {
+                                '$toDate': {
+                                    '$divide': [{
+                                        $toLong: "$blockNum"
+                                    }, 1000000]
+                                }
+                            }
+                        }
+                    },
+                    
+                }
+            },{
+                $group: {
+                    _id: "$time",
+                    amount: {
+                        $sum: {
+                            $convert: {
+                                input: "$amount",
+                                to: "decimal",
+                                onError: 0,
+                                onNull: 0
+                            }
+                        }
+                    }
+                }
+            }, {
+                $project: {
+                    _id: 0,
+                    date: "$_id",
+                    amount: {
+                        $toString: "$amount"
+                    }
+                }
+            }])
+
+        return res
+    }
 
     return {
         getNodeStaticsByVk,
@@ -357,5 +416,6 @@ export const getStaticsQueries = (db) => {
         getRewardsByType,
         getRewardsByContract,
         getTotalRewards,
+        getLastDaysRewards
     }
 }
