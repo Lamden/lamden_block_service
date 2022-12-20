@@ -33,9 +33,9 @@ export const getStaticsEndpoints = (db) => {
     async function rewards(req, res) {
         let result
 
-        let { recipient } = req.query
+        let { recipient, start, end} = req.query
         if (recipient) {
-            result = await db.queries.getRewardsByVk(recipient)
+            result = await db.queries.getRewardsByVk(recipient, start, end)
         } else {
             result = await db.queries.getRewards()
         }

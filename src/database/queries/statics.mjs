@@ -230,11 +230,25 @@ export const getStaticsQueries = (db) => {
     }
 
 
-    async function getRewardsByVk(vk) {
-        let res = await db.models.Rewards.aggregate([{
-            $match: {
-                recipient: vk
+    async function getRewardsByVk(vk, start, end) {
+
+        let con = {
+            recipient: vk,
+            $expr: {
+                $and: []
             }
+        }
+
+        if (start) {
+            con["$expr"]["$and"].push({$gte: [{$toLong: "$blockNum"}, start * 1000000]})
+        }
+
+        if (end) {
+            con["$expr"]["$and"].push({$lte: [{$toLong: "$blockNum"}, end * 1000000]})
+        }
+
+        let res = await db.models.Rewards.aggregate([{
+            $match:con
         }, {
             
             $group: {
@@ -258,7 +272,7 @@ export const getStaticsQueries = (db) => {
                     $toString: "$amount"
                 },
             } 
-        }]).then(v => v[0])
+        }])
 
         return res
     }

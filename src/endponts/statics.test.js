@@ -58,9 +58,9 @@ describe('Test Nodes Endpoints', () => {
             const response = await request.get(`/rewards?recipient=${vk}`);
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
-            expect(getType(response.body)).toBe('object');
-            expect(response.body.recipient).toBe(vk);
-            expect(getType(response.body.amount)).toBe('string');
+            expect(getType(response.body)).toBe('array');
+            expect(response.body[0].recipient).toBe(vk);
+            expect(getType(response.body[0].amount)).toBe('string');
         })
 
         test('/rewards/masternodes: Gives just a list of nodes rewards', async () => {
