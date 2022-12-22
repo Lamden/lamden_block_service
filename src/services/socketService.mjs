@@ -106,10 +106,37 @@ export const socketService = (io) => {
         }));
     }
 
+    function emitTotalRewards(amount) {
+        io.to(`rewards`).emit(`total_rewards`, JSON.stringify({
+            message: {amount},
+        }));
+    }
+
+    function emitNewReward(rewardInfo) {
+        io.to(`rewards`).emit(`new_reward`, JSON.stringify({
+            room: `new-rewards`,
+            message: rewardInfo,
+        }));
+
+        // recipient room
+        io.to(`rewards-${rewardInfo.recipient}`).emit(`new_reward`, JSON.stringify({
+            room: rewardInfo.recipient,
+            message: rewardInfo,
+        }));
+
+        // type room
+        io.to(`rewards-${rewardInfo.type}`).emit(`new_reward`, JSON.stringify({
+            room: rewardInfo.type,
+            message: rewardInfo,
+        }));
+    }
+
     return {
         emitNewBlock,
         emitStateChange,
         emitTxStateChanges,
-        emitNewContract
+        emitNewContract,
+        emitNewReward,
+        emitTotalRewards
     }
 }

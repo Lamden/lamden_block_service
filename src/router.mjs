@@ -5,6 +5,7 @@ import { getBlockEndpoints } from './endponts/blocks.mjs'
 import { getInfoEndpoints } from './endponts/info.mjs'
 import { getTransactionEndpoints } from './endponts/tx.mjs'
 import { getStampsEndpoints } from './endponts/stamps.mjs'
+import { getStaticsEndpoints } from './endponts/statics.mjs'
 
 export const startRouter = (app, db, socketClient) => {
     [
@@ -14,7 +15,8 @@ export const startRouter = (app, db, socketClient) => {
         ...getBlockEndpoints(db),
         ...getInfoEndpoints(db),
         ...getTransactionEndpoints(db),
-        ...getStampsEndpoints(socketClient)
+        ...getStaticsEndpoints(db),
+        ...getStampsEndpoints(socketClient),
     ].map(endpointInfo => {
         app[endpointInfo.type](endpointInfo.route, endpointInfo.handler)
     })

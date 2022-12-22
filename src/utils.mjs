@@ -1,5 +1,6 @@
 import util from 'util'
 import merge from 'lodash.merge';
+import BigNumber from 'bignumber.js';
 
 export const deconstructKey = (rawKey) => {
     let contractName = rawKey.split(".")[0]
@@ -105,5 +106,19 @@ export function stringify(obj) {
     } catch (e) {
         console.log(e)
         console.log(util.inspect(obj, false, null, true))
+    }
+}
+
+
+export function parseValue(v) {
+    if (!v) return new BigNumber(0)
+    try {
+        if (v.__fixed__) {
+            return new BigNumber(v.__fixed__)
+        } else {
+            return new BigNumber(v)
+        }
+    } catch {
+        return new BigNumber(0)
     }
 }

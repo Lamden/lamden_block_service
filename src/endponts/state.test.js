@@ -13,7 +13,6 @@ beforeAll(async () => {
     app = createExpressApp(db, pysocket);
     request = supertest(app);
     await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log(await db.queries.getMissingBlocks())
 });
 
 afterAll(async () => {

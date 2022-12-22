@@ -75,4 +75,62 @@ describe("Testing websocket server.", () => {
     clientSocket.emit('join', data.processed.hash)
     blockProcessor(data).catch((e) => { console.log(e) })
   });
+
+
+  test("Subscribe to new_reward event in rewards room ", (done) => {
+    let data = newblock[2]
+    clientSocket.once("new_reward", (msg) => {
+      let message = JSON.parse(msg).message
+      expect(getType(message)).toBe('object')
+      expect(getType(message.blockNum)).toBe('string')
+      expect(message.blockNum).toBeDefined()
+      expect(message.type).toBeDefined()
+      expect(message.amount).toBeDefined()
+      done()
+    });
+    clientSocket.emit('join', "rewards")
+    blockProcessor(data).catch((e) => { console.log(e) })
+  });
+
+  test("Subscribe to the total_rewards event in rewards room ", (done) => {
+    let data = newblock[3]
+    clientSocket.once("total_rewards", (msg) => {
+      let message = JSON.parse(msg).message
+      expect(message.amount).toBeDefined()
+      done()
+    });
+    clientSocket.emit('join', "rewards")
+    blockProcessor(data).catch((e) => { console.log(e) })
+  });
+
+  test("Subscribe to the new_reward event in recipient rewards room ", (done) => {
+    let data = newblock[4]
+    clientSocket.once("new_reward", (msg) => {
+      let message = JSON.parse(msg).message
+      expect(getType(message)).toBe('object')
+      expect(getType(message.blockNum)).toBe('string')
+      expect(message.blockNum).toBeDefined()
+      expect(message.type).toBeDefined()
+      expect(message.amount).toBeDefined()
+      done()
+    });
+    clientSocket.emit('join', "rewards-92e45fb91c8f76fbfdc1ff2a58c2e901f3f56ec38d2f10f94ac52fcfa56fce2e")
+    blockProcessor(data).catch((e) => { console.log(e) })
+  });
+
+  test("Subscribe to the new_reward event in type rewards room ", (done) => {
+    let data = newblock[5]
+    clientSocket.once("new_reward", (msg) => {
+      let message = JSON.parse(msg).message
+      expect(getType(message)).toBe('object')
+      expect(getType(message.blockNum)).toBe('string')
+      expect(message.blockNum).toBeDefined()
+      expect(message.type).toBeDefined()
+      expect(message.amount).toBeDefined()
+      done()
+    });
+    clientSocket.emit('join', "rewards-masternodes")
+    blockProcessor(data).catch((e) => { console.log(e) })
+  });
+
 });
