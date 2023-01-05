@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import rateLimit from "express-rate-limit"
 import http from 'http'
 import { Server } from 'socket.io'
 import { io } from "socket.io-client";
@@ -21,6 +22,20 @@ export const createPythonSocketClient = () => {
 
 export const createExpressApp = (db, socketClient) => {
     const app = express();
+    if (process.env.RATE_LIMIT_ENABLE) {
+        const limiter = rateLimit({
+            max: process.env.RATE_LIMIT_NUM || 10,
+            windowMs: process.env.RATE_LIMIT_PERIOD || 600000, // default 10min
+            message: "Too many request from this IP",
+            standardHeaders: true, 
+            legacyHeaders: true,
+        })
+
+        app.use(limiter)
+        // Troubleshooting Proxy Issues
+        app.set('trust proxy', 2)
+    }
+
     app.use(cors())
     app.use(express.json({ limit: '50mb', extended: true }));
     app.use(express.urlencoded({ limit: '50mb', extended: true }));
