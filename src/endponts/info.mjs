@@ -68,7 +68,6 @@ export const getInfoEndpoints = (db) => {
     async function get_tokens(req, res) {
         try {
             let result = await db.queries.getTokens()
-            logger.log(result)
             res.send(result)
         } catch (e) {
             logger.error(e)

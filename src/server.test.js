@@ -14,11 +14,13 @@ describe("Testing websocket server.", () => {
   let host = "127.0.0.1"
   let port = 3535
   beforeAll((done) => {
-    server = createServer(host, port, db)
-    io = server.io
-    blockProcessor = getBlockProcessor(server.services, db)
-    clientSocket = Client.io(`ws://${host}:${port}`)
-    clientSocket.on("connect", done);
+    createServer(host, port, db).then(s => {
+        server = s
+        io = server.io
+        blockProcessor = getBlockProcessor(server.services, db)
+        clientSocket = Client.io(`ws://${host}:${port}`)
+        clientSocket.on("connect", done);
+    })
   });
 
   afterAll(() => {

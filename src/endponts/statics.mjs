@@ -78,16 +78,6 @@ export const getStaticsEndpoints = (db) => {
         res.send(result)
     }
 
-    async function lastDaysRewards(req, res) {
-        let { recipient, days } = req.query
-
-        // default 7 days
-        if (!days) days = 7
-
-        let result = await db.queries.getLastDaysRewards(days, recipient)
-        res.send(result)
-    }
-
     return [
         {
             type: 'get',

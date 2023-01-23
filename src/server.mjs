@@ -7,6 +7,12 @@ import { io } from "socket.io-client";
 import { socketService } from './services/socketService.mjs'
 import { startRouter } from './router.mjs'
 
+// Graphql
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
+import { typeDefs, resolvers } from './graphql/schemas/index.mjs'
+import DataAPI from './graphql/dataSource.mjs'
+
 import { createLogger } from './logger.mjs'
 
 const logger = createLogger('Server');
@@ -20,8 +26,21 @@ export const createPythonSocketClient = () => {
     return socket;
 }
 
-export const createExpressApp = (db, socketClient) => {
+export const createExpressApp = async (db, socketClient) => {
     const app = express();
+
+    const server = new ApolloServer({
+        typeDefs,
+        resolvers,
+        dataSources: () => {
+            return {
+              moviesAPI: new MoviesAPI(),
+            };
+        },
+    });
+
+    await server.start();
+
     if (process.env.RATE_LIMIT_ENABLE) {
         const limiter = rateLimit({
             max: process.env.RATE_LIMIT_NUM || 10,
@@ -40,6 +59,17 @@ export const createExpressApp = (db, socketClient) => {
     app.use(express.json({ limit: '50mb', extended: true }));
     app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+    app.use('/graphql', expressMiddleware(server, {
+        context: async () => {
+            const dataApi = new DataAPI(db);
+            return {
+              dataSources: {
+                dataApi,
+              },
+            };
+          },
+    }));
+
     startRouter(app, db, socketClient)
 
     app.get('/ping', (req, res) => {
@@ -49,10 +79,10 @@ export const createExpressApp = (db, socketClient) => {
     return app
 }
 
-export const createServer = (host, port, db) => {
+export const createServer = async (host, port, db) => {
 
     const socketClient = createPythonSocketClient();
-    const app = createExpressApp(db, socketClient)
+    const app = await createExpressApp(db, socketClient)
     const server = http.createServer(app);
     const io = new Server(server);
 

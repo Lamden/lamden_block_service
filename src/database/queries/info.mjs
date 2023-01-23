@@ -26,7 +26,8 @@ export const getInfoQueries = (db) => {
             __developer__: token.__developer__,
             __owner__: token.__owner__,
             __submitted__: token.__submitted__,
-            metadata: token.metadata
+            metadata: token.metadata,
+            lst001: true
         }
     }
 

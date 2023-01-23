@@ -18,7 +18,7 @@ const validHistory = (item) => {
 
 beforeAll(async () => {
     pysocket = createPythonSocketClient();
-    app = createExpressApp(db, pysocket);
+    app = await createExpressApp(db, pysocket);
     request = supertest(app);
     await new Promise(resolve => setTimeout(resolve, 1000));
 });

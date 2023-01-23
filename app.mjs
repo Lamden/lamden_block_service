@@ -45,7 +45,7 @@ export const start = async () => {
     await databaseInit()
     
     const db = getDatabase()
-    const server = createServer(BLOCKSERVICE_HOST, BLOCKSERVICE_PORT, db)
+    const server = await createServer(BLOCKSERVICE_HOST, BLOCKSERVICE_PORT, db)
 
     // ensure backward compatibility 
     await db.models.Blocks.deleteMany({ hash: "block-does-not-exist" })

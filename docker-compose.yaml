@@ -3,4 +3,4 @@ services:
   app:
     build: .
     network_mode: "host"
-    restart: on-failure
+    restart: always
