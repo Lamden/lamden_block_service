@@ -48,6 +48,7 @@ export const createExpressApp = async (db, socketClient) => {
             message: "Too many request from this IP",
             standardHeaders: true, 
             legacyHeaders: true,
+            skip: (request, _) => request.url.includes("/graphql"),
         })
 
         app.use(limiter)
