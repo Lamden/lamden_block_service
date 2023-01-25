@@ -26,6 +26,11 @@ const typeDefs = `#graphql
         signature: String!
     }
 
+    type Mint {
+        minter: String!
+        signature: String!
+    }
+
     type Payload {
         contract: String!,
         function: String!,
@@ -65,6 +70,7 @@ const typeDefs = `#graphql
         processed: Processed,
         origin: Origin!,
         genesis: [JSONObject!],
+        minted: Mint
     }
 
     # statics
