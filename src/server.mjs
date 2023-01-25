@@ -85,7 +85,11 @@ export const createServer = async (host, port, db) => {
     const socketClient = createPythonSocketClient();
     const app = await createExpressApp(db, socketClient)
     const server = http.createServer(app);
-    const io = new Server(server);
+    const io = new Server(server, {
+        cors: {
+          origin: '*',
+        }
+      });
 
     io.on('connection', (socket) => {
         socket.on('join', (room) => {
