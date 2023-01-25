@@ -5,7 +5,7 @@ const logger = createLogger('Database');
 export { isLst001 } from './processors/lst001.mjs'
 
 export function makeKey(contractName, variableName, key) {
-    return `${contractName}${variableName ? "." + variableName : ""}${key ? ":" + key : ""}`.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+    return `${contractName}${variableName ? "." + variableName : ""}${key ? ":" + key : ""}`
 }
 
 
