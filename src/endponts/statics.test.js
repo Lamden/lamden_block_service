@@ -10,7 +10,7 @@ let pysocket, app, request;
 
 beforeAll(async () => {
     pysocket = createPythonSocketClient();
-    app = createExpressApp(db, pysocket);
+    app = await createExpressApp(db, pysocket);
     request = supertest(app);
     await new Promise(resolve => setTimeout(resolve, 1000));
 });
@@ -36,7 +36,7 @@ describe('Test Nodes Endpoints', () => {
             expect(response.headers['content-type']).toMatch(/json/);
             expect(response.statusCode).toBe(200);
             expect(getType(response.body)).toBe('object');
-            expect(response.body.id).toBe("92e45fb91c8f76fbfdc1ff2a58c2e901f3f56ec38d2f10f94ac52fcfa56fce2e");
+            expect(response.body.vk).toBe("92e45fb91c8f76fbfdc1ff2a58c2e901f3f56ec38d2f10f94ac52fcfa56fce2e");
             expect(response.body.txs_received).toBeTruthy();
             expect(response.body.used_in_consensus).toBeTruthy();
         })

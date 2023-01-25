@@ -7,7 +7,7 @@ export const getInfoQueries = (db) => {
     }
 
     async function getContract(contractName) {
-        let stateResults = await db.models.CurrentState.find({ rawKey: { $regex: "^" + db.utils.makeKey(contractName) } })
+        let stateResults = await db.models.CurrentState.find({ rawKey: { $regex: "^" + db.utils.makeKey(contractName).replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') } })
         let allStateObjects = stateResults.map(result => utils.keysToObj(utils.deconstructKey(result.rawKey), result.value))
         let merged = utils.mergeObjects(allStateObjects)
 
@@ -26,7 +26,8 @@ export const getInfoQueries = (db) => {
             __developer__: token.__developer__,
             __owner__: token.__owner__,
             __submitted__: token.__submitted__,
-            metadata: token.metadata
+            metadata: token.metadata,
+            lst001: true
         }
     }
 

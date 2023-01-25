@@ -30,6 +30,38 @@ Features:
 ## Run api doc server
 `npm run docs`
 
+## Run Service with docker
+
+Install docker
+
+```
+curl -fsSL https://get.docker.com | bash -s docker
+```
+
+Then install docker-compose, you can get the latest release at [here](https://github.com/docker/compose/releases)
+
+```
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.2.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+```
+
+Clone this project
+```
+git clone https://github.com/Dapiguabc/lamden_block_service.git
+cd lamden_block_service
+```
+
+Build project
+```
+docker-compose build # build docker image
+```
+
+Run the server
+```
+docker-compose up -d
+```
+
+
+
 ## Sync Chaindata (Optional)
 The first time you run the block service, it will take long time to sync blocks data. In order to avoid waiting for so long, you can use
 [mongodump](https://www.mongodb.com/docs/database-tools/mongodump/#mongodb-binary-bin.mongodump) to export data from another block service to you own block service.
@@ -61,6 +93,14 @@ Restart the app for these setting to take effect.
 ### Server options
 - BLOCKSERVICE_PORT `3535`: The port used for the webserver and websockets
 - BLOCKSERVICE_HOST `localhost`: Api bind host
+
+### Api Rate Limit
+you can limit the number of api calls for each ip. **This feature is turned off by default.**
+
+- RATE_LIMIT_ENABLE `0`: Enable:1 Disable:0
+- RATE_LIMIT_PERIOD `600000`: Time frame for which requests are checked, defaults units is ms
+- RATE_LIMIT_NUM  `10`: number of api calls
+
 
 ### Misc options
 - APIDOC_PORT `8999`: Api document port.

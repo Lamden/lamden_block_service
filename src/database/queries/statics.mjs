@@ -30,9 +30,9 @@ export const getStaticsQueries = (db) => {
 
        let res = await Promise.all([query1, query2])
        return {
-            id: vk,
-            txs_received :res[0][0].txs_received,
-            used_in_consensus: res[1][0].used_in_consensus
+            vk: vk,
+            txs_received : res[0][0] ? res[0][0].txs_received : null,
+            used_in_consensus: res[1][0] ? res[1][0].used_in_consensus : null
        }
     }
 
@@ -343,14 +343,14 @@ export const getStaticsQueries = (db) => {
                 },
             } 
         }]).then(v => v[0])
-
+        if (!res) res = {}
         return res
     }
 
     async function getLastDaysRewards(days, recipient=undefined) {
         // 23:59:59
         const today = new Date(new Date().setHours(0, 0, 0, 0) + 24 * 60 * 60 * 1000 - 1)
-        const day = today.setDate(today.getDate() - 7)
+        const day = today.setDate(today.getDate() - days)
         let con = {
             type: {
                 $ne: "burn"
