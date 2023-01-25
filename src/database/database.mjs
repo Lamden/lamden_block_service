@@ -11,7 +11,7 @@ const logger = createLogger('Database');
 let db = mongoose;
 
 /******* MONGO DB CONNECTION INFO **/
-const NETWORK = process.env.NETWORK || 'testnet'
+const NETWORK = process.env.NETWORK || 'testnet_v2'
 const DBUSER = process.env.DBUSER || null;
 const DBPWD = process.env.DBPWD || null;
 const DBURL = process.env.DBURL || '127.0.0.1'
@@ -48,4 +48,23 @@ db.connect(
     }
 );
 
+export const databaseInit = async () => {
+    try {
+        await db.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: true })
+        logger.success("DB Connection Successful.");
+        db.queries = getQueries(db)
+        db.models = mongoose_models
+        db.utils = dbUtils
+        db.config = {
+            NETWORK,
+            DBNAME,
+            DBURL,
+            DBPORT
+        }
+        logger.log(db.config)
+    } catch (error) {
+        logger.error(error)
+        throw new Error(error)
+    }
+}
 export const getDatabase = () => db

@@ -8,66 +8,25 @@ export const getBlockQueries = (db) => {
      * @params lastQueryHeight Last query height
      * @returns number[] 
      */
-    async function getNotFoundMissingBlockNumber(start, end) {
+    async function getNotFoundMissingBlockNumber() {
         let result = await db.models.Blocks.aggregate([{
-            $facet: {
-                data: [
-                    {
-                        $sort: {
-                            blockNum: 1
-                        }
-                    },
-                    {
-                        $match: {
-                            blockNum: {
-                                $gte: start,
-                                $lte: end
-                            }
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: null,
-                            seq: {
-                                $addToSet: "$blockNum"
-                            }
-                        }
-                    }
-                ]
+            $match: {
+                'previousExist': { "$ne": true }
             }
         }, {
-            $project: {
-                data: {
-                    $cond: [{
-                        $gt: [{
-                            $size: "$data"
-                        }, 0]
-                    }, "$data", [{
-                        "_id": null,
-                        seq: []
-                    }]]
+            $group: {
+                _id: null,
+                hashs: {
+                    $addToSet: "$hash"
+                },
+                pre_hashs: {
+                    $addToSet: "$blockInfo.previous"
                 }
-            }
-        }, {
-            $unwind: "$data"
-        }, {
-            $replaceRoot: {
-                newRoot: "$data"
             }
         }, {
             $project: {
                 missingBlock: {
-                    $setDifference: [{
-                        $range: [start, {
-                            $cond: [{
-                                $gt: [{
-                                    $size: "$seq"
-                                }, 0]
-                            }, {
-                                $max: "$seq"
-                            }, end]
-                        }]
-                    }, "$seq"]
+                    $setDifference: ["$pre_hashs", "$hashs"]
                 }
             }
         }, {
@@ -85,65 +44,30 @@ export const getBlockQueries = (db) => {
      * @description Get all missing block number
      * @returns number[] 
      */
-    async function getMissingBlockNumber() {
+    async function getMissingBlocks() {
         try {
-            let latestBlock = await db.queries.getLatestBlock()
-            let lastQueryHeight = await db.queries.getLastQueryHeight()
-            if (!lastQueryHeight) {
-                lastQueryHeight = 1
-            }
-            // default step = 1000
-            let notFoundMissingBlock, maxheight
-            let step = 1000, i = 0, minheight = lastQueryHeight
-            while (lastQueryHeight + step * i <= latestBlock) {
-                minheight = lastQueryHeight + i * step
-                let j = lastQueryHeight + (i + 1) * step
-                maxheight = j < latestBlock ? j : latestBlock
-                notFoundMissingBlock = await getNotFoundMissingBlockNumber(minheight, maxheight)
-                logger.success(`${notFoundMissingBlock.length} previously undiscovered missing blocks was successfully found!`)
+            const notFoundMissingBlock = await getNotFoundMissingBlockNumber()
 
-                for (const i of notFoundMissingBlock) {
-                    let mblock = await db.models.MissingBlocks.findOne({ blockNum: i })
-                    if (!mblock) {
-                        mblock = new db.models.MissingBlocks({
-                            blockNum: i
-                        })
-                        await mblock.save()
-                    }
+            logger.success(`${notFoundMissingBlock.length} previously undiscovered missing blocks was successfully found!`)
+
+            for (const i of notFoundMissingBlock) {
+                let mblock = await db.models.MissingBlocks.findOne({ hash: i })
+                if (!mblock) {
+                    mblock = new db.models.MissingBlocks({
+                        hash: i
+                    })
+                    await mblock.save()
                 }
-                logger.success(`${notFoundMissingBlock.length} new missing blocks have been recorded in mongo`)
-
-                await db.models.App.updateOne({ key: "last_query_height" }, {
-                    key: "last_query_height",
-                    value: maxheight
-                }, { upsert: true })
-                logger.success(`Update last query height success. Current query height is ${maxheight}`)
-
-                i++
             }
+            logger.success(`${notFoundMissingBlock.length} new missing blocks have been recorded in database`)
 
-            // const session = await db.startSession()
-            // await session.withTransaction(async () => {
-            //     for (const i of arr) {
-            //         let mblock = await db.models.MissingBlocks.updateOne({ blockNum: i }).session(session)
-            //         if (!mblock) {
-            //             mblock.blockNum = i
-            //             await mblock.save({ session })
-            //         }
-            //     }
-            //     await db.models.App.updateOne({ key: "last_query_height" }, {
-            //         key: "last_query_height",
-            //         value: height
-            //     }, { upsert: true }).session(session)
-            // })
-            // // End session
-            // await session.endSession();
+            let result = await db.models.MissingBlocks.find()
 
-            let result = await db.models.MissingBlocks.find().sort({ blockNum: 1 })
             if (!result) return []
             return result.map(item => {
-                return item.blockNum
+                return item.hash
             })
+            v
         } catch (e) {
             return { error: e }
         }
@@ -151,10 +75,22 @@ export const getBlockQueries = (db) => {
 
     async function getBlockNumber(blockNum) {
         try {
-            blockNum = parseInt(blockNum)
             let result = await db.models.Blocks.findOne({ blockNum }, { '_id': 0, 'keys': 0, '__v': 0 })
             if (!result) return { error: `block number ${blockNum} does not exist.` }
             if (!result.blockInfo) return { error: `block number ${blockNum} does not exist.` }
+            return result.blockInfo
+        } catch (e) {
+            return { error: e }
+        }
+
+    }
+
+
+    async function getBlockHash(blockHash) {
+        try {
+            let result = await db.models.Blocks.findOne({ hash: blockHash }, { '_id': 0, 'keys': 0, '__v': 0 })
+            if (!result) return { error: `block hash ${blockHash} does not exist.` }
+            if (!result.blockInfo) return { error: `block number ${blockHash} does not exist.` }
             return result.blockInfo
         } catch (e) {
             return { error: e }
@@ -170,15 +106,18 @@ export const getBlockQueries = (db) => {
         if (limit < 1) limit = 10
 
         if (!start_block) start_block = 1
-        start_block = parseInt(start_block)
+        start_block = start_block
         if (start_block < 1) start_block = 1
 
-        // console.log({start_block, limit})
-
         try {
-            let blocks = await db.models.Blocks.find({ blockNum: { "$gte": start_block } })
-                .sort({ "blockNum": 1 })
-                .limit(limit)
+            let blocks = await db.models.Blocks.find({ 
+                "$expr": { 
+                    "$gte": [ { "$toLong": "$blockNum" }, { "$toLong": start_block }] 
+                } 
+            })
+            .collation({"locale":"en", "numericOrdering":true})
+            .sort({ "blockNum": 1 })
+            .limit(limit)
 
             if (!blocks) return []
             else return blocks
@@ -187,9 +126,16 @@ export const getBlockQueries = (db) => {
         }
     }
 
+    async function hasGenesisBlock(){
+        const block = await getBlockNumber('0')
+        return !block.error
+    }
+
     return {
         getBlockNumber,
+        getBlockHash,
         getBlockCatchup,
-        getMissingBlockNumber
+        getMissingBlocks,
+        hasGenesisBlock
     }
 }

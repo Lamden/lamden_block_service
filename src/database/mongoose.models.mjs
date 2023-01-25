@@ -6,26 +6,32 @@ var app = new mongoose.Schema({
 });
 
 var blocks = new mongoose.Schema({
-    hash: String,
-    blockNum: {
-        type: Number,
+    hash: {
+        type: String,
         unique: true,
         required: true,
         index: true
     },
-    blockInfo: Object
+    blockNum: {
+        type: String,
+        unique: true,
+        required: true,
+        index: true
+    },
+    blockInfo: Object,
+    previousExist: {
+        type: Boolean,
+        required: false
+    }
 });
 
 var stateChanges = new mongoose.Schema({
-    tx_uid: {
+    blockNum: {
         type: String,
         required: true,
         index: true
     },
-    blockNum: Number,
-    subBlockNum: Number,
-    txIndex: Number,
-    timestamp: Number,
+    hlc_timestamp: String,
     affectedContractsList: Array,
     affectedVariablesList: Array,
     affectedRootKeysList: Array,
@@ -36,8 +42,15 @@ var stateChanges = new mongoose.Schema({
         index: true
     },
     state_changes_obj: mongoose.Schema.Types.Mixed,
-    txInfo: Object
+    txInfo: Object,
+    senderVk: {
+        type: String,
+        required: true,
+        index: true
+    }
 });
+
+stateChanges.index({senderVk: 1, blockNum: 1})
 
 var currentState = new mongoose.Schema({
     rawKey: {
@@ -45,12 +58,18 @@ var currentState = new mongoose.Schema({
         required: true,
         index: true
     },
-    tx_uid: {
+    blockNum: {
         type: String,
         required: true,
         index: true
     },
-    prev_tx_uid: String,
+    senderVk: {
+        type: String,
+        required: true,
+        index: true
+    },
+    prev_blockNum: String,
+    hlc_timestamp: String,
     txHash: String,
     value: mongoose.Schema.Types.Mixed,
     prev_value: mongoose.Schema.Types.Mixed,
@@ -58,9 +77,10 @@ var currentState = new mongoose.Schema({
     variableName: String,
     keys: Array,
     key: String,
-    rootKey: String,
-    lastUpdated: Date
+    rootKey: String
 });
+
+currentState.index({contractName: 1, variableName: 1, rootKey: 1})
 
 var contracts = new mongoose.Schema({
     contractName: {
@@ -69,17 +89,49 @@ var contracts = new mongoose.Schema({
         required: true,
         index: true
     },
-    lst001: Boolean
+    lst001: {
+        type: Boolean,
+        required: true,
+        index: true
+    }
 });
 
 var missingBlocks = new mongoose.Schema({
-    blockNum: {
-        type: Number,
+    hash: {
+        type: String,
         unique: true,
         required: true,
         index: true
     }
 });
+
+var rewards = new mongoose.Schema({
+    type: { // masternodes, developer, foundation, "burn"
+        type: String,
+        required: true,
+        index: true
+    },
+    recipient: {
+        type: String,
+        required: true,
+        index: true
+    },
+    blockNum: {
+        type: String,
+        required: true,
+        index: true
+    },
+    amount: {
+        type: String
+    },
+    contract: { // Only populated on a type devloper
+        type: String,
+        index: true
+    }
+});
+
+// Multiple Field Unique
+rewards.index({ recipient: 1, type: 1, blockNum: 1 }, { unique: true });
 
 export default {
     App: mongoose.model('App', app, 'app'),
@@ -87,5 +139,6 @@ export default {
     CurrentState: mongoose.model('CurrentState', currentState, 'currentState'),
     Blocks: mongoose.model('Blocks', blocks, 'blocks'),
     Contracts: mongoose.model('Contracts', contracts, 'contracts'),
-    MissingBlocks: mongoose.model('MissingBlocks', missingBlocks, 'missingBlocks')
+    MissingBlocks: mongoose.model('MissingBlocks', missingBlocks, 'missingBlocks'),
+    Rewards: mongoose.model('Rewards', rewards, 'rewards'),
 };

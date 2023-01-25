@@ -1,3 +1,5 @@
+## VERSION 2.0 will not work with a version 1 Lamden network.  Use the previuous version to v2 for an old Lamden network.
+
 # Lamden Block Service
 A nodejs application for syncing and serving the Lamden Blockchain to a local app.
 This application serves as starting point to be able to build an app on Lamden that requires easy access to current state and realtime updates.
@@ -19,6 +21,7 @@ Features:
 
 ### Install App
 1. `git clone https://github.com/Lamden/lamden_block_service.git`
+2. `cd lamden_block_service`
 2. `npm install`
 
 ## Run
@@ -26,6 +29,38 @@ Features:
 
 ## Run api doc server
 `npm run docs`
+
+## Run Service with docker
+
+Install docker
+
+```
+curl -fsSL https://get.docker.com | bash -s docker
+```
+
+Then install docker-compose, you can get the latest release at [here](https://github.com/docker/compose/releases)
+
+```
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.2.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+```
+
+Clone this project
+```
+git clone https://github.com/Dapiguabc/lamden_block_service.git
+cd lamden_block_service
+```
+
+Build project
+```
+docker-compose build # build docker image
+```
+
+Run the server
+```
+docker-compose up -d
+```
+
+
 
 ## Sync Chaindata (Optional)
 The first time you run the block service, it will take long time to sync blocks data. In order to avoid waiting for so long, you can use
@@ -41,6 +76,7 @@ Restart the app for these setting to take effect.
 ### Lamden configuration items
 - NETWORK `testnet`: Which Lamden network to sync
 - MASTERNODE_URL `https://testnet-master-1.lamden.io`: A URL of a lamden masternode
+- GENESIS_BLOCK_URL (optional): a genesis block url if different than the default Lamden Testnet or Lamden Mainnet genesis blocks
 
 ### Mongo DB configuration items
 - DBUSER `null`: database user
@@ -57,6 +93,14 @@ Restart the app for these setting to take effect.
 ### Server options
 - BLOCKSERVICE_PORT `3535`: The port used for the webserver and websockets
 - BLOCKSERVICE_HOST `localhost`: Api bind host
+
+### Api Rate Limit
+you can limit the number of api calls for each ip. **This feature is turned off by default.**
+
+- RATE_LIMIT_ENABLE `0`: Enable:1 Disable:0
+- RATE_LIMIT_PERIOD `600000`: Time frame for which requests are checked, defaults units is ms
+- RATE_LIMIT_NUM  `10`: number of api calls
+
 
 ### Misc options
 - APIDOC_PORT `8999`: Api document port.

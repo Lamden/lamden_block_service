@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"hash":{"$numberInt":"1"}},"name":"hash_1","background":true,"unique":true}],"uuid":"8b12e58916f8415dbb63bdca8c451431","collectionName":"missingBlocks","type":"collection"}

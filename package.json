@@ -1,6 +1,6 @@
 {
     "name": "lamden-blockservice",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "description": "A service to replicate the lamden blockchain's current state and provide it as a service.",
     "main": "app.mjs",
     "scripts": {
@@ -14,10 +14,19 @@
     "author": "jeffwscott",
     "license": "ISC",
     "dependencies": {
+        "@ai-lion/mongodb-restore": "^1.2.0",
+        "@apollo/datasource-rest": "^5.0.1",
+        "@apollo/server": "^4.3.0",
+        "apollo-datasource": "^3.3.2",
         "axios": "^0.25.0",
+        "bignumber.js": "^9.1.1",
         "cors": "^2.8.5",
         "dotenv": "^10.0.0",
         "express": "^4.17.1",
+        "express-rate-limit": "^6.7.0",
+        "graphql": "^16.6.0",
+        "graphql-tools": "^8.3.15",
+        "graphql-type-json": "^0.3.2",
         "lodash.merge": "^4.6.2",
         "mongodb-memory-server": "^8.5.2",
         "mongoose": "^5.13.1",
@@ -38,6 +47,7 @@
         "@babel/core": "^7.17.9",
         "@babel/preset-env": "^7.16.11",
         "babel-jest": "^27.5.1",
+        "babel-plugin-import-graphql": "^2.8.1",
         "jest": "^27.5.1",
         "supertest": "^6.2.2"
     }

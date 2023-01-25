@@ -1,13 +1,15 @@
 import util from 'util'
 
-import { getDatabase } from "../database.mjs";
+import { getDatabase, databaseInit } from "../database.mjs";
 import { deconstructKey } from "../../utils.mjs"
 import { createLogger } from '../logger.mjs'
 
 const logger = createLogger('Database');
 
 (async function populatePreviousValue() {
+    await databaseInit()
     let db = await getDatabase()
+    await new Promise(r => setTimeout(r, 5000));
 
     let startTime = new Date()
     let totalBatchSize = await db.queries.countCurrentState()
@@ -27,18 +29,18 @@ const logger = createLogger('Database');
         if (batch.length > 0) {
             await Promise.all(batch.map(async (change) => {
 
-                if (typeof change.prev_value === 'undefined' || typeof change.prev_tx_uid === 'undefined') {
+                if (typeof change.prev_value === 'undefined' || typeof change.prev_blockNum === 'undefined') {
                     try {
                         let keyInfo = deconstructKey(change.rawKey)
                         let transactionInfo = await db.queries.getTransactionByHash(change.txHash)
 
-                        let prev_values = await db.queries.getPreviousKeyValue(keyInfo.contractName, keyInfo.variableName, keyInfo.keys, transactionInfo.tx_uid)
+                        let prev_values = await db.queries.getPreviousKeyValue(keyInfo.contractName, keyInfo.variableName, keyInfo.keys, transactionInfo.blockNum)
 
                         await db.models.CurrentState.updateOne({
                             rawKey: change.rawKey
                         }, {
                             prev_value: prev_values.value,
-                            prev_tx_uid: prev_values.tx_uid,
+                            prev_blockNum: prev_values.blockNum,
                         })
 
                     } catch (e) {

@@ -1,10 +1,17 @@
 import express from 'express'
 import cors from 'cors'
+import rateLimit from "express-rate-limit"
 import http from 'http'
 import { Server } from 'socket.io'
 import { io } from "socket.io-client";
 import { socketService } from './services/socketService.mjs'
 import { startRouter } from './router.mjs'
+
+// Graphql
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
+import { typeDefs, resolvers } from './graphql/schemas/index.mjs'
+import DataAPI from './graphql/dataSource.mjs'
 
 import { createLogger } from './logger.mjs'
 
@@ -19,11 +26,50 @@ export const createPythonSocketClient = () => {
     return socket;
 }
 
-export const createExpressApp = (db, socketClient) => {
+export const createExpressApp = async (db, socketClient) => {
     const app = express();
+
+    const server = new ApolloServer({
+        typeDefs,
+        resolvers,
+        dataSources: () => {
+            return {
+              moviesAPI: new MoviesAPI(),
+            };
+        },
+    });
+
+    await server.start();
+
+    if (process.env.RATE_LIMIT_ENABLE) {
+        const limiter = rateLimit({
+            max: process.env.RATE_LIMIT_NUM || 10,
+            windowMs: process.env.RATE_LIMIT_PERIOD || 600000, // default 10min
+            message: "Too many request from this IP",
+            standardHeaders: true, 
+            legacyHeaders: true,
+            skip: (request, _) => request.url.includes("/graphql"),
+        })
+
+        app.use(limiter)
+        // Troubleshooting Proxy Issues
+        app.set('trust proxy', 2)
+    }
+
     app.use(cors())
     app.use(express.json({ limit: '50mb', extended: true }));
     app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+    app.use('/graphql', expressMiddleware(server, {
+        context: async () => {
+            const dataApi = new DataAPI(db);
+            return {
+              dataSources: {
+                dataApi,
+              },
+            };
+          },
+    }));
 
     startRouter(app, db, socketClient)
 
@@ -34,12 +80,16 @@ export const createExpressApp = (db, socketClient) => {
     return app
 }
 
-export const createServer = (host, port, db) => {
+export const createServer = async (host, port, db) => {
 
     const socketClient = createPythonSocketClient();
-    const app = createExpressApp(db, socketClient)
+    const app = await createExpressApp(db, socketClient)
     const server = http.createServer(app);
-    const io = new Server(server);
+    const io = new Server(server, {
+        cors: {
+          origin: '*',
+        }
+      });
 
     io.on('connection', (socket) => {
         socket.on('join', (room) => {
@@ -50,6 +100,11 @@ export const createServer = (host, port, db) => {
             logger.log(" someone left room " + room)
             socket.leave(room)
         });
+
+        // send /rewards list when connected
+        db.queries.getRewards().then(r => {
+            io.emit('rewards', JSON.stringify({ message: r }));
+        })
     });
 
     server.listen(port, host, () => {

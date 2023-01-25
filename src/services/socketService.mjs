@@ -8,7 +8,7 @@ export const socketService = (io) => {
     function emitStateChange(keyInfo, value, state_changes_obj, txInfo) {
         const { contractName, variableName, rootKey } = keyInfo
         const { transaction } = txInfo
-        const { payload } = transaction
+        const { payload } = transaction 
 
         const message = {
             ...keyInfo,
@@ -46,18 +46,17 @@ export const socketService = (io) => {
     }
 
     function emitTxStateChanges(stateChangeInfo) {
-        const { state_changes_obj, affectedContractsList, affectedVariablesList, affectedRootKeysList, txInfo, blockNum, subblockNum, timestamp, tx_uid } = stateChangeInfo
-        const { transaction, hash } = txInfo
+        const { state_changes_obj, affectedContractsList, affectedVariablesList, affectedRootKeysList, txInfo, blockNum, hlc_timestamp } = stateChangeInfo
+        const { transaction } = txInfo
         const { payload } = transaction
+        const hash = txInfo['hash']
 
         const emitName = 'state-changes-by-transaction'
 
         const messageBasic = {
-            tx_uid,
+            hlc_timestamp,
             txInfo,
             blockNum,
-            subblockNum,
-            timestamp,
             sender: payload.sender,
             contractCalled: payload.contract,
             methodCalled: payload.method,
@@ -107,10 +106,37 @@ export const socketService = (io) => {
         }));
     }
 
+    function emitTotalRewards(amount) {
+        io.to(`rewards`).emit(`total_rewards`, JSON.stringify({
+            message: {amount},
+        }));
+    }
+
+    function emitNewReward(rewardInfo) {
+        io.to(`rewards`).emit(`new_reward`, JSON.stringify({
+            room: `new-rewards`,
+            message: rewardInfo,
+        }));
+
+        // recipient room
+        io.to(`rewards-${rewardInfo.recipient}`).emit(`new_reward`, JSON.stringify({
+            room: rewardInfo.recipient,
+            message: rewardInfo,
+        }));
+
+        // type room
+        io.to(`rewards-${rewardInfo.type}`).emit(`new_reward`, JSON.stringify({
+            room: rewardInfo.type,
+            message: rewardInfo,
+        }));
+    }
+
     return {
         emitNewBlock,
         emitStateChange,
         emitTxStateChanges,
-        emitNewContract
+        emitNewContract,
+        emitNewReward,
+        emitTotalRewards
     }
 }
