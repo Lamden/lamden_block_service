@@ -60,15 +60,17 @@ export const createExpressApp = async (db, socketClient) => {
     app.use(express.json({ limit: '50mb', extended: true }));
     app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-    app.use('/graphql', expressMiddleware(server, {
-        context: async () => {
-            const dataApi = new DataAPI(db);
-            return {
-              dataSources: {
-                dataApi,
-              },
-            };
-          },
+    app.use('/graphql',  cors({ origin: '*' }),
+        express.json(),
+        expressMiddleware(server, {
+            context: async () => {
+                const dataApi = new DataAPI(db);
+                return {
+                dataSources: {
+                    dataApi,
+                },
+                };
+            },
     }));
 
     startRouter(app, db, socketClient)
