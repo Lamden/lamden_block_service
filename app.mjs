@@ -20,7 +20,7 @@ const MASTERNODE_URLS = {
 }
 
 const GENESIS_BLOCKS = {
-    "mainnet": "https://raw.githubusercontent.com/Lamden/genesis_block/main/testnet",
+    "mainnet": "https://raw.githubusercontent.com/Lamden/genesis_block/main/mainnet",
     "testnet": "https://raw.githubusercontent.com/Lamden/genesis_block/main/testnet",
     "staging": "https://raw.githubusercontent.com/Lamden/genesis_block/main/staging"
 } 
