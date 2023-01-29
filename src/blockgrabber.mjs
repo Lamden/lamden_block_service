@@ -63,10 +63,34 @@ const runBlockGrabber = (config) => {
     }
 
     async function load_genesis_block(){
-        logger.log(`Downloading Genesis Block from Github. (${GENESIS_BLOCK_URL})`)
-        const genesis_block = await axios.get(GENESIS_BLOCK_URL).then(res => {
+        logger.log(`Downloading Genesis Block from Github. (${GENESIS_BLOCK_URL}/genesis_block.json)`)
+        const genesis_block = await axios.get(`${GENESIS_BLOCK_URL}/genesis_block.json`).then(res => {
             return res.data
         })
+        // load gensis_state
+        let flag = true
+        let i = 1
+        while (flag) {
+            let state_url = `${GENESIS_BLOCK_URL}/state_changes_${i}.json`
+            logger.log(`Downloading Genesis States from Github. (${state_url})`)
+            const genesis_state = await axios.get(state_url)
+            .then(res => {
+                i = i + 1
+                return Array.isArray(res.data) ? res.data : []
+            })
+            .catch(e => {
+                // stop the loop
+                flag = false
+                if (e.response.status === 404) {
+                    return []
+                } else {
+                    logger.error(`Load genesis state failed, the link is ${state_url}`)
+                    throw new Error("load")
+                }
+            })   
+            genesis_block.genesis = [...genesis_block.genesis, ...genesis_state]
+        }
+        
         if (genesis_block.genesis){
             logger.success(`Genesis Block Downloaded and contains ${genesis_block.genesis.length} initial state entries.`)
         }
