@@ -15,18 +15,19 @@ import { fixRewardsRecord } from './src/rewardsFix.mjs'
 const logger = createLogger('App');
 
 const MASTERNODE_URLS = {
-    'testnet_v2': "https://testnet-v2-master-lon.lamden.io",
+    'testnet': "https://testnet-v2-master-lon.lamden.io",
     'mainnet': "https://masternode-01.lamden.io"
 }
 
 const GENESIS_BLOCKS = {
-    "testnet_v2": "https://raw.githubusercontent.com/Lamden/genesis_block/main/testnet/genesis_block.json",
-    "staging_v2": "https://raw.githubusercontent.com/Lamden/genesis_block/main/staging/genesis_block.json"
+    "mainnet": "https://raw.githubusercontent.com/Lamden/genesis_block/main/mainnet",
+    "testnet": "https://raw.githubusercontent.com/Lamden/genesis_block/main/testnet",
+    "staging": "https://raw.githubusercontent.com/Lamden/genesis_block/main/staging"
 } 
 
 
 /******* MONGO DB CONNECTION INFO **/
-const NETWORK = process.env.NETWORK || 'testnet_v2'
+const NETWORK = process.env.NETWORK || 'testnet'
 const MASTERNODE_URL = process.env.MASTERNODE_URL || MASTERNODE_URLS[NETWORK]
 
 /******* SERVER CONNECTION INFO **/
