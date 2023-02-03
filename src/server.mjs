@@ -110,7 +110,7 @@ export const createServer = async (host, port, db) => {
 
         // Send the latest_block on connect
         db.queries.getLatestBlock().then((latest_block) => {
-            socket.send([JSON.stringify({event: "latest_block", message: latest_block})])
+            socket.emit('latest_block', JSON.stringify({message: latest_block}))
         })
         
     });
