@@ -105,7 +105,7 @@ export const createServer = async (host, port, db) => {
 
         // send /rewards list when connected
         db.queries.getRewards().then(r => {
-            io.emit('rewards', JSON.stringify({ message: r }));
+            socket.emit('rewards', JSON.stringify({ message: r }));
         })
 
         // Send the latest_block on connect
