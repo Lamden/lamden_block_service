@@ -36,90 +36,102 @@ export const getBlockProcessor = (services, db) => {
         let affectedVariablesList = new Set()
         let affectedRootKeysList = new Set()
 
-        if (Array.isArray(state)) {
-            for (const s of state) {
-                let keyInfo = utils.deconstructKey(s.key)
+        let stateList = [] 
+        if (Array.isArray(state)) stateList = [...state]
 
-                const { contractName, variableName, rootKey, keys, key } = keyInfo
+        for (let i=0;i < rewards.length;i++) {
+            let index = stateList.findIndex(t => t.key === rewards[i].key)
+            if (index > -1) {
+                stateList[index].value = rewards[i].value
+            } else {
+                stateList.append(rewards[i])
+            }
+        }
 
-                let keyOk = true
+        for (const s of stateList) {
+            let keyInfo = utils.deconstructKey(s.key)
 
-                if (rootKey) {
-                    if (rootKey.charAt(0) === "$") keyOk = false
+            const { contractName, variableName, rootKey, keys, key } = keyInfo
+
+            let keyOk = true
+
+            if (rootKey) {
+                if (rootKey.charAt(0) === "$") keyOk = false
+            }
+
+            if (keyOk) {
+
+                // check whether there is a reward value
+                // if (contractName === "currency" && variableName === "balances") {
+                //     let rew = rewards.find(x => x.key === s.key)
+                //     if (rew) {
+                //         s.value = rew.value
+                //     }
+                // }
+
+                let currentState = await db.models.CurrentState.findOne({ rawKey: s.key })
+                if (currentState) {
+                    if (currentState.blockNum < number) {
+                        currentState.txHash = hash
+                        currentState.prev_value = currentState.value
+                        currentState.prev_blockNum = currentState.blockNum
+                        currentState.value = s.value
+                        currentState.hlc_timestamp = hlc_timestamp
+                        currentState.senderVk = senderVk
+                        currentState.blockNum = number
+                        await currentState.save()
+                    }
+                } else {
+                    try {
+                        const new_current_state_document = {
+                            rawKey: s.key,
+                            txHash: hash,
+                            hlc_timestamp,
+                            blockNum: '0',
+                            prev_value: null,
+                            prev_blockNum: null,
+                            value: s.value,
+                            senderVk,
+                            contractName,
+                            variableName,
+                            keys,
+                            key,
+                            rootKey
+                        }
+                        await new db.models.CurrentState(new_current_state_document).save()
+                    } catch (e) {
+                        logger.error(err)
+                        logger.debug(utils.inspect({ blockInfo, txInfo: processed }, false, null, true))
+                    }
                 }
 
-                if (keyOk) {
+                let newStateChangeObj = utils.keysToObj(keyInfo, s.value)
 
-                    // check whether there is a reward value
-                    if (contractName === "currency" && variableName === "balances") {
-                        let rew = rewards.find(x => x.key === s.key)
-                        if (rew) {
-                            s.value = rew.value
-                        }
+                state_changes_obj = utils.mergeObjects([state_changes_obj, newStateChangeObj])
+
+                affectedContractsList.add(contractName)
+                affectedVariablesList.add(`${contractName}.${variableName}`)
+                if (rootKey) affectedRootKeysList.add(`${contractName}.${variableName}:${rootKey}`)
+                services.sockets.emitStateChange(keyInfo, s.value, newStateChangeObj, processed)
+
+                let foundContractName = await db.models.Contracts.findOne({ contractName })
+                if (!foundContractName) {
+                    let code = await db.queries.getKeyFromCurrentState(contractName, "__code__")
+                    let lst001 = db.utils.isLst001(code.value)
+                    try {
+                        await new db.models.Contracts({
+                            contractName,
+                            lst001
+                        }).save()
+                    } catch (e) {
+                        logger.error(e)
                     }
-
-                    let currentState = await db.models.CurrentState.findOne({ rawKey: s.key })
-                    if (currentState) {
-                        if (currentState.blockNum < number) {
-                            currentState.txHash = hash
-                            currentState.prev_value = currentState.value
-                            currentState.prev_blockNum = currentState.blockNum
-                            currentState.value = s.value
-                            currentState.hlc_timestamp = hlc_timestamp
-                            currentState.senderVk = senderVk
-                            currentState.blockNum = number
-                            await currentState.save()
-                        }
-                    } else {
-                        try {
-                            const new_current_state_document = {
-                                rawKey: s.key,
-                                txHash: hash,
-                                hlc_timestamp,
-                                blockNum: '0',
-                                prev_value: null,
-                                prev_blockNum: null,
-                                value: s.value,
-                                senderVk,
-                                contractName,
-                                variableName,
-                                keys,
-                                key,
-                                rootKey
-                            }
-                            await new db.models.CurrentState(new_current_state_document).save()
-                        } catch (e) {
-                            logger.error(err)
-                            logger.debug(utils.inspect({ blockInfo, txInfo: processed }, false, null, true))
-                        }
-                    }
-
-                    let newStateChangeObj = utils.keysToObj(keyInfo, s.value)
-
-                    state_changes_obj = utils.mergeObjects([state_changes_obj, newStateChangeObj])
-
-                    affectedContractsList.add(contractName)
-                    affectedVariablesList.add(`${contractName}.${variableName}`)
-                    if (rootKey) affectedRootKeysList.add(`${contractName}.${variableName}:${rootKey}`)
-                    services.sockets.emitStateChange(keyInfo, s.value, newStateChangeObj, processed)
-
-                    let foundContractName = await db.models.Contracts.findOne({ contractName })
-                    if (!foundContractName) {
-                        let code = await db.queries.getKeyFromCurrentState(contractName, "__code__")
-                        let lst001 = db.utils.isLst001(code.value)
-                        try {
-                            await new db.models.Contracts({
-                                contractName,
-                                lst001
-                            }).save()
-                        } catch (e) {
-                            logger.error(e)
-                        }
-                        services.sockets.emitNewContract({ contractName, lst001 })
-                    }
+                    services.sockets.emitNewContract({ contractName, lst001 })
                 }
             }
         }
+        
+
 
         try {
             let stateChangesModel = {
