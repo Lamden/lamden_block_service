@@ -27,7 +27,7 @@ export const getBlockProcessor = (services, db) => {
     };
 
     const processBlockStateChanges = async (blockInfo) => {
-        const { processed, hlc_timestamp, number } = blockInfo
+        const { processed, hlc_timestamp, number, rewards } = blockInfo
         const { transaction, state, hash } = processed
         const senderVk = transaction.payload.sender
 
@@ -49,6 +49,14 @@ export const getBlockProcessor = (services, db) => {
                 }
 
                 if (keyOk) {
+
+                    // check whether there is a reward value
+                    if (contractName === "currency" && variableName === "balances") {
+                        let rew = rewards.find(x => x.key === s.key)
+                        if (rew) {
+                            s.value = rew.value
+                        }
+                    }
 
                     let currentState = await db.models.CurrentState.findOne({ rawKey: s.key })
                     if (currentState) {
@@ -82,7 +90,7 @@ export const getBlockProcessor = (services, db) => {
                             await new db.models.CurrentState(new_current_state_document).save()
                         } catch (e) {
                             logger.error(err)
-                            logger.debug(util.inspect({ blockInfo, txInfo: processed }, false, null, true))
+                            logger.debug(utils.inspect({ blockInfo, txInfo: processed }, false, null, true))
                         }
                     }
 
