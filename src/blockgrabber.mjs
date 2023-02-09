@@ -56,7 +56,7 @@ const runBlockGrabber = (config) => {
             logger.success(`Genesis Block Loaded.`)
         }else{
             logger.log("No Genesis Block detected.")
-            await load_genesis_block()
+            //await load_genesis_block()
         }
 
         blockchainEvents.start()

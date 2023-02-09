@@ -7,7 +7,7 @@ const logger = createLogger('Block Processor');
 export const getBlockProcessor = (services, db) => {
     const processRewards = getRewarsProcessor(services, db)
 
-    const processBlock = async (blockInfo = {}) => {
+    const processBlock = async (blockInfo = {}, fix = false) => {
         let blockNum = blockInfo.number;
         let block = await db.models.Blocks.findOne({ blockNum })
         if (!block) {
@@ -23,6 +23,11 @@ export const getBlockProcessor = (services, db) => {
                 await processBlockStateChanges(block.blockInfo)
                 await processRewards(block.blockInfo)
             }
+        }
+
+        if (fix) {
+            await processBlockStateChanges(blockInfo)
+            await processRewards(block.blockInfo)
         }
     };
 
@@ -44,7 +49,7 @@ export const getBlockProcessor = (services, db) => {
             if (index > -1) {
                 stateList[index].value = rewards[i].value
             } else {
-                stateList.append(rewards[i])
+                stateList.push(rewards[i])
             }
         }
 
@@ -144,7 +149,8 @@ export const getBlockProcessor = (services, db) => {
                 state_changes_obj: utils.stringify(utils.cleanObj(state_changes_obj)),
                 txHash: hash,
                 txInfo: processed,
-                senderVk
+                senderVk,
+                rewards
             }
 
             await db.models.StateChanges.updateOne({ blockNum: number }, stateChangesModel, { upsert: true });
@@ -152,7 +158,7 @@ export const getBlockProcessor = (services, db) => {
             services.sockets.emitTxStateChanges(stateChangesModel)
         } catch (e) {
             logger.error(e)
-            logger.debug(util.inspect({ blockInfo }, false, null, true))
+            logger.debug(utils.inspect({ blockInfo }, false, null, true))
         }
     }
 

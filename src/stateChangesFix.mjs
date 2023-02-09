@@ -17,7 +17,7 @@ export const fixStateChanges = async (services, db) => {
         for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
             let block = doc.blockInfo
             logger.await(`Fixing block ${block.number}`)
-            await processor(block)
+            await processor(block, true)
         }
         await db.models.App.updateOne({ key: "latest_block" }, {
             key: "need_fix_stateChanges",

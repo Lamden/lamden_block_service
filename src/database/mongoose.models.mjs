@@ -47,7 +47,8 @@ var stateChanges = new mongoose.Schema({
         type: String,
         required: true,
         index: true
-    }
+    },
+    rewards: Array
 });
 
 stateChanges.index({senderVk: 1, blockNum: 1})
