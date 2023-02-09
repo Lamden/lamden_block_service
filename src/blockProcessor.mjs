@@ -145,7 +145,7 @@ export const getBlockProcessor = (services, db) => {
                 affectedContractsList: Array.from(affectedContractsList),
                 affectedVariablesList: Array.from(affectedVariablesList),
                 affectedRootKeysList: Array.from(affectedRootKeysList),
-                affectedRawKeysList: Array.isArray(state) ? state.map(change => change.key) : [],
+                affectedRawKeysList: Array.isArray(stateList) ? stateList.map(change => change.key) : [],
                 state_changes_obj: utils.stringify(utils.cleanObj(state_changes_obj)),
                 txHash: hash,
                 txInfo: processed,
