@@ -12,6 +12,8 @@ import { createLogger } from './src/logger.mjs'
 
 import { fixRewardsRecord } from './src/rewardsFix.mjs'
 
+import { load_mising_hashes } from './src/database/loaders/missing_hashes.mjs'
+
 const logger = createLogger('App');
 
 const MASTERNODE_URLS = {
@@ -61,6 +63,8 @@ export const start = async () => {
             .catch(err => logger.error(err))
             .then(() => logger.success(`DONE Syncing Indexes for ${db.models[model_name].collection.collectionName}...`))
     }
+
+    await load_mising_hashes(db)
     
     grabberConfig.server = server
     grabberConfig.blockchainEvents = eventWebsockets(grabberConfig.MASTERNODE_URL)
