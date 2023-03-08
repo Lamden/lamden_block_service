@@ -3,4 +3,4 @@
 *.log
 *.out
 *.swp
-/src/database/loaders/loader_files/*
+/src/database/loaders/loader_files/*.*
