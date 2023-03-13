@@ -81,12 +81,13 @@ const runBlockGrabber = (config) => {
             .catch(e => {
                 // stop the loop
                 flag = false
-                if (e.response.status === 404) {
+                if (e.response && e.response.status === 404) {
                     logger.log(`Genesis States Not Exist: (${state_url})`)
                     logger.log(`Genesis States Json Files Founded: ${i -1 } Files.`)
                     logger.log(`Genesis States Download Finished.`)
                     return []
                 } else {
+                    console.log(e)
                     logger.error(`Load genesis state failed, the link is ${state_url}`)
                     throw new Error("load")
                 }

@@ -11,6 +11,7 @@ import { getDatabase, databaseInit } from './src/database/database.mjs'
 import { createLogger } from './src/logger.mjs'
 
 import { fixRewardsRecord } from './src/rewardsFix.mjs'
+import { fixStateChanges } from './src/stateChangesFix.mjs'
 
 const logger = createLogger('App');
 
@@ -53,6 +54,8 @@ export const start = async () => {
 
     // parse rewards for old block data in database
     await fixRewardsRecord(server.services, db)
+
+    await fixStateChanges(server.services, db)
 
     logger.info("Syncing Indexes...");
     //console.log( db.models)
