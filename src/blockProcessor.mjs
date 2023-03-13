@@ -33,6 +33,11 @@ export const getBlockProcessor = (services, db) => {
 
     const processBlockStateChanges = async (blockInfo) => {
         const { processed, hlc_timestamp, number, rewards } = blockInfo
+        if (!processed){
+            logger.error("Malformed BLock")
+            logger.debug(utils.inspect({ blockInfo }, false, null, true))
+            return
+        }
         const { transaction, state, hash } = processed
         const senderVk = transaction.payload.sender
 
