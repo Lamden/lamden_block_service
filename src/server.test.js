@@ -29,6 +29,33 @@ describe("Testing websocket server.", () => {
     clientSocket.disconnect();
   });
 
+  test("Subscribe to the new-state-changes-by-transaction event in tx hash room ", (done) => {
+    let data = newblock
+    clientSocket.once("new-block", (msg) => {
+      let message = JSON.parse(msg).message
+      expect(message).toEqual(data)
+    });
+    clientSocket.once("new-state-changes-by-transaction", (msg) => {
+      let message = JSON.parse(msg).message
+      expect(getType(message)).toBe('object')
+      expect(getType(message.tx_uid)).toBe('string')
+      expect(getType(message.blockNum)).toBe('number')
+      expect(message.blockNum).toBeDefined()
+      expect(message.timestamp).toBeDefined()
+      expect(message.affectedContractsList).toBeDefined()
+      expect(message.affectedVariablesList).toBeDefined()
+      expect(message.affectedRootKeysList).toBeDefined()
+      //expect(message.affectedRawKeysList).toBeDefined()
+      expect(message.state_changes_obj).toBeDefined()
+      //expect(message.txHash).toBeDefined()
+      expect(message.txInfo).toBeDefined()
+      done()
+    });
+    clientSocket.emit('join', data.processed.hash)
+    blockProcessor(data).catch((e) => { console.log(e) })
+  });
+
+
   test("Should get push notifications of new block after a new block was processed.", (done) => {
     let data = newblock[0]
     clientSocket.once("new-block", (msg) => {

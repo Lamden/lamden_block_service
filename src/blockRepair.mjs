@@ -13,6 +13,7 @@ class BlockRepair {
         this.MASTERNODE_URL = nodeurl
         this.db = getDatabase()
         this.processor = getBlockProcessor(services, this.db)
+        this.running = false
     }
 
     run() {
@@ -41,9 +42,11 @@ class BlockRepair {
                 this.run()
             }
         } catch (e) {
+            this.running = false
             logger.error(e)
         }
         logger.complete("Repairing process ended.")
+        this.running = false
     }
 
     async blockProcessor(blockData) {
