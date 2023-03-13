@@ -55,10 +55,37 @@ Build project
 docker-compose build # build docker image
 ```
 
-Run the server
+Run the server(not build)
 ```
 docker-compose up -d
 ```
+
+Stop the server
+```
+docker-compose stop
+```
+
+start/restart the server
+```
+docker-compose up --detach --build
+```
+
+
+
+## Check Logs
+
+Follow log output
+
+```
+docker-compose logs -f
+```
+
+Number of lines to show from the end of the logs for each container
+```
+docker-compose logs -f --tail N
+```
+
+
 
 
 
