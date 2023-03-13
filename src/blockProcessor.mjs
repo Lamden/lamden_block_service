@@ -1,4 +1,5 @@
 import * as utils from './utils.mjs'
+import util from 'util'
 import { createLogger } from './logger.mjs'
 import BigNumber from 'bignumber.js';
 
@@ -35,7 +36,7 @@ export const getBlockProcessor = (services, db) => {
         const { processed, hlc_timestamp, number, rewards } = blockInfo
         if (!processed){
             logger.error("Malformed BLock")
-            logger.debug(utils.inspect({ blockInfo }, false, null, true))
+            logger.debug(util.inspect({ blockInfo }, false, null, true))
             return
         }
         const { transaction, state, hash } = processed
@@ -111,7 +112,7 @@ export const getBlockProcessor = (services, db) => {
                         await new db.models.CurrentState(new_current_state_document).save()
                     } catch (e) {
                         logger.error(err)
-                        logger.debug(utils.inspect({ blockInfo, txInfo: processed }, false, null, true))
+                        logger.debug(util.inspect({ blockInfo, txInfo: processed }, false, null, true))
                     }
                 }
 
@@ -163,7 +164,7 @@ export const getBlockProcessor = (services, db) => {
             services.sockets.emitTxStateChanges(stateChangesModel)
         } catch (e) {
             logger.error(e)
-            logger.debug(utils.inspect({ blockInfo }, false, null, true))
+            logger.debug(util.inspect({ blockInfo }, false, null, true))
         }
     }
 
