@@ -60,6 +60,33 @@ Run the server
 docker-compose up -d
 ```
 
+Stop the server
+```
+docker-compose stop
+```
+
+Rebuild and restart the server
+```
+docker-compose up --detach --build
+```
+
+
+
+## Check Logs
+
+Follow log output
+
+```
+docker-compose logs -f
+```
+
+Number of lines to show from the end of the logs for each container
+```
+docker-compose logs -f --tail N
+```
+
+
+
 
 
 ## Sync Chaindata (Optional)
