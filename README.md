@@ -55,7 +55,7 @@ Build project
 docker-compose build # build docker image
 ```
 
-Run the server
+Run the server(not build)
 ```
 docker-compose up -d
 ```
@@ -65,7 +65,7 @@ Stop the server
 docker-compose stop
 ```
 
-Rebuild and restart the server
+start/restart the server
 ```
 docker-compose up --detach --build
 ```
