@@ -49,7 +49,7 @@ class BlockRepair {
         this.running = false
     }
 
-    async blockProcessor(blockData, next) {
+    async blockProcessor(blockData, nextBlockNum) {
         if (blockData.error) {
             logger.error(`Repair block ${blockData.number} failed. Error: ${blockData.error}`)
             return
@@ -58,8 +58,8 @@ class BlockRepair {
         try {
             await this.processor(blockData)
             logger.success(`Repair block ${blockData.number} success.`)
-            await this.db.models.Blocks.updateOne({"blockNum": next.blockNum}, {"blockInfo.previous": blockData.number, previousExist: true})
-            await this.db.models.MissingBlocks.deleteOne({ number: next.blockNum})
+            await this.db.models.Blocks.updateOne({"blockNum": nextBlockNum}, {"previous": blockData.number, previousExist: true})
+            await this.db.models.MissingBlocks.deleteOne({ number: nextBlockNum})
             logger.success(`Remove next block ${blockData.number} from missingBlocks collection success.`)
         } catch (e) {
             logger.error(blockData)
@@ -67,7 +67,7 @@ class BlockRepair {
 
             // delete error data
             logger.start(`Starting clear error data.`)
-            await this.db.models.Blocks.updateOne({"blockNum": next.blockNum}, {"blockInfo.previous": undefined, previousExist: false})
+            await this.db.models.Blocks.updateOne({"blockNum": nextBlockNum}, {"previous": undefined, previousExist: false})
             await this.db.models.Blocks.deleteMany({ hash: blockData.hash })
             await this.db.models.StateChanges.deleteMany({ blockNum: blockData.number })
             logger.complete(`Clear error data success.`)
