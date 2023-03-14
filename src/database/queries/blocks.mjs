@@ -31,7 +31,7 @@ export const getBlockQueries = (db) => {
             for (const i of notFoundMissingBlock) {
                 // do nothing for genesis block
                 if (i.blockNum === "0" || i.blockNum === 0) return
-                let mblock = await db.models.MissingBlocks.findOne({ hash: i.hash })
+                let mblock = await db.models.MissingBlocks.findOne({ number: i.blockNum })
                 if (!mblock) {
                     mblock = new db.models.MissingBlocks({
                         number: i.blockNum
