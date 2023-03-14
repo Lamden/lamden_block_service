@@ -13,10 +13,6 @@ export const getBlockQueries = (db) => {
             $match: {
                 'previousExist': { "$ne": true }
             }
-        }, {
-            $project: {
-                missingBlockNum: "$number"
-            }
         }])
         if (!result) return []
         return result
@@ -34,11 +30,11 @@ export const getBlockQueries = (db) => {
 
             for (const i of notFoundMissingBlock) {
                 // do nothing for genesis block
-                if (i.number === "0" || i.number === 0) return
+                if (i.blockNum === "0" || i.blockNum === 0) return
                 let mblock = await db.models.MissingBlocks.findOne({ hash: i.hash })
                 if (!mblock) {
                     mblock = new db.models.MissingBlocks({
-                        number: i.number
+                        number: i.blockNum
                     })
                     await mblock.save()
                 }
