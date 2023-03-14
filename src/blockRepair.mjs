@@ -31,7 +31,7 @@ class BlockRepair {
             for (const i of missingBlocks) {
                 // 10s => 25 blocksnext
                 let blockData = await this.getBlock_MN(i, 450)
-                await this.blockProcessor(blockData)
+                await this.blockProcessor(blockData, i)
                 // this.taskPool.addTask(async (data) => {
                 //     await this.blockProcessor(data)
                 //     this.run()
