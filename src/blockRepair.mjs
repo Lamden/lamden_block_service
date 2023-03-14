@@ -75,10 +75,10 @@ class BlockRepair {
         }
     }
 
-    getBlock_MN(blockHash, timedelay = 0) {
+    getBlock_MN(blockNum, timedelay = 0) {
         return new Promise(resolver => {
             setTimeout(async () => {
-                await axios(`${this.MASTERNODE_URL}/blocks?hash=${blockHash}`)
+                await axios(`${this.MASTERNODE_URL}/prev_block?num=${blockNum}`)
                     .then(res => {
                         let block_res = res.data
                         resolver(block_res);
@@ -87,7 +87,7 @@ class BlockRepair {
                         logger.error(err)
                         resolver({
                             error: "Error: Error contacting maternode.",
-                            hash: blockHash
+                            hash: blockNum
                         })
                     })
             }, timedelay)
