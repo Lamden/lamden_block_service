@@ -31,6 +31,7 @@ class BlockRepair {
             for (const i of missingBlocks) {
                 // 10s => 25 blocks
                 let blockData = await this.getBlock_MN(i, 450)
+                blockData.previous = i.blockNum
                 await this.blockProcessor(blockData)
                 // this.taskPool.addTask(async (data) => {
                 //     await this.blockProcessor(data)
@@ -51,16 +52,16 @@ class BlockRepair {
 
     async blockProcessor(blockData) {
         if (blockData.error) {
-            logger.error(`Repair block ${blockData.hash} failed. Error: ${blockData.error}`)
+            logger.error(`Repair block ${blockData.number} failed. Error: ${blockData.error}`)
             return
         }
         
         try {
             await this.processor(blockData)
-            logger.success(`Repair block ${blockData.hash} success.`)
-            await this.db.models.Blocks.updateOne({"blockInfo.previous": blockData.hash}, {previousExist: true})
-            await this.db.models.MissingBlocks.deleteOne({ number: blockData.number })
-            logger.success(`Remove block ${blockData.hash} from missingBlocks collection success.`)
+            logger.success(`Repair block ${blockData.number} success.`)
+            await this.db.models.Blocks.updateOne({"blockInfo.previous": blockData.number}, {previousExist: true})
+            await this.db.models.MissingBlocks.deleteOne({ number: blockData.previous })
+            logger.success(`Remove next block ${blockData.number} from missingBlocks collection success.`)
         } catch (e) {
             logger.error(blockData)
             logger.error(e)
