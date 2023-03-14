@@ -22,7 +22,8 @@ var blocks = new mongoose.Schema({
     previousExist: {
         type: Boolean,
         required: false
-    }
+    },
+    previous: String,
 });
 
 var stateChanges = new mongoose.Schema({
