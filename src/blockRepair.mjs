@@ -59,7 +59,7 @@ class BlockRepair {
             await this.processor(blockData)
             logger.success(`Repair block ${blockData.hash} success.`)
             await this.db.models.Blocks.updateOne({"blockInfo.previous": blockData.hash}, {previousExist: true})
-            await this.db.models.MissingBlocks.deleteOne({ hash: blockData.hash })
+            await this.db.models.MissingBlocks.deleteOne({ number: blockData.number })
             logger.success(`Remove block ${blockData.hash} from missingBlocks collection success.`)
         } catch (e) {
             logger.error(blockData)
