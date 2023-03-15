@@ -13,35 +13,13 @@ export const getBlockQueries = (db) => {
             $match: {
                 'previousExist': { "$ne": true }
             }
-        }, {
-            $group: {
-                _id: null,
-                hashs: {
-                    $addToSet: "$hash"
-                },
-                pre_hashs: {
-                    $addToSet: "$blockInfo.previous"
-                }
-            }
-        }, {
-            $project: {
-                missingBlock: {
-                    $setDifference: ["$pre_hashs", "$hashs"]
-                }
-            }
-        }, {
-            $unwind: {
-                path: "$missingBlock"
-            }
         }])
         if (!result) return []
-        return result.map(item => {
-            return item.missingBlock
-        })
+        return result
     }
 
     /**
-     * @description Get all missing block number
+     * @description Get all next blocks number of missing block
      * @returns number[] 
      */
     async function getMissingBlocks() {
@@ -51,10 +29,12 @@ export const getBlockQueries = (db) => {
             logger.success(`${notFoundMissingBlock.length} previously undiscovered missing blocks was successfully found!`)
 
             for (const i of notFoundMissingBlock) {
-                let mblock = await db.models.MissingBlocks.findOne({ hash: i })
+                // do nothing for genesis block
+                if (i.blockNum === "0" || i.blockNum === 0) return
+                let mblock = await db.models.MissingBlocks.findOne({ number: i.blockNum })
                 if (!mblock) {
                     mblock = new db.models.MissingBlocks({
-                        hash: i
+                        number: i.blockNum
                     })
                     await mblock.save()
                 }
@@ -65,9 +45,8 @@ export const getBlockQueries = (db) => {
 
             if (!result) return []
             return result.map(item => {
-                return item.hash
+                return item.number
             })
-            v
         } catch (e) {
             return { error: e }
         }

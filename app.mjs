@@ -50,12 +50,12 @@ export const start = async () => {
     const server = await createServer(BLOCKSERVICE_HOST, BLOCKSERVICE_PORT, db)
 
     // ensure backward compatibility 
-    await db.models.Blocks.deleteMany({ hash: "block-does-not-exist" })
+    // await db.models.Blocks.deleteMany({ hash: "block-does-not-exist" })
 
     // parse rewards for old block data in database
-    await fixRewardsRecord(server.services, db)
+    // await fixRewardsRecord(server.services, db)
 
-    await fixStateChanges(server.services, db)
+    // await fixStateChanges(server.services, db)
 
     logger.info("Syncing Indexes...");
     //console.log( db.models)

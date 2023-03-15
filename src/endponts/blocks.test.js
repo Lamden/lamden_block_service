@@ -12,7 +12,6 @@ const validBlock = (item) => {
     // valid the block info
     expect(getType(item.hash)).toBe('string');
     expect(getType(item.number)).toBe('string');
-    expect(getType(item.previous)).toBe('string');
 }
 
 beforeAll(async () => {

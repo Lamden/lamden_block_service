@@ -29,9 +29,9 @@ class BlockRepair {
             let missingBlocks = await this.db.queries.getMissingBlocks()
             logger.log(`${missingBlocks.length} missing blocks found.`)
             for (const i of missingBlocks) {
-                // 10s => 25 blocks
+                // 10s => 25 blocksnext
                 let blockData = await this.getBlock_MN(i, 450)
-                await this.blockProcessor(blockData)
+                await this.blockProcessor(blockData, i)
                 // this.taskPool.addTask(async (data) => {
                 //     await this.blockProcessor(data)
                 //     this.run()
@@ -49,25 +49,25 @@ class BlockRepair {
         this.running = false
     }
 
-    async blockProcessor(blockData) {
+    async blockProcessor(blockData, nextBlockNum) {
         if (blockData.error) {
-            logger.error(`Repair block ${blockData.hash} failed. Error: ${blockData.error}`)
+            logger.error(`Repair block ${blockData.number} failed. Error: ${blockData.error}`)
             return
         }
         
         try {
             await this.processor(blockData)
-            logger.success(`Repair block ${blockData.hash} success.`)
-            await this.db.models.Blocks.updateOne({"blockInfo.previous": blockData.hash}, {previousExist: true})
-            await this.db.models.MissingBlocks.deleteOne({ hash: blockData.hash })
-            logger.success(`Remove block ${blockData.hash} from missingBlocks collection success.`)
+            logger.success(`Repair block ${blockData.number} success.`)
+            await this.db.models.Blocks.updateOne({"blockNum": nextBlockNum}, {"previous": blockData.number, previousExist: true})
+            await this.db.models.MissingBlocks.deleteOne({ number: nextBlockNum})
+            logger.success(`Remove next block ${blockData.number} from missingBlocks collection success.`)
         } catch (e) {
             logger.error(blockData)
             logger.error(e)
 
             // delete error data
             logger.start(`Starting clear error data.`)
-            await this.db.models.Blocks.updateOne({"blockInfo.previous": blockData.hash}, {previousExist: false})
+            await this.db.models.Blocks.updateOne({"blockNum": nextBlockNum}, {"previous": undefined, previousExist: false})
             await this.db.models.Blocks.deleteMany({ hash: blockData.hash })
             await this.db.models.StateChanges.deleteMany({ blockNum: blockData.number })
             logger.complete(`Clear error data success.`)
@@ -75,10 +75,10 @@ class BlockRepair {
         }
     }
 
-    getBlock_MN(blockHash, timedelay = 0) {
+    getBlock_MN(blockNum, timedelay = 0) {
         return new Promise(resolver => {
             setTimeout(async () => {
-                await axios(`${this.MASTERNODE_URL}/blocks?hash=${blockHash}`)
+                await axios(`${this.MASTERNODE_URL}/prev_block?num=${blockNum}`)
                     .then(res => {
                         let block_res = res.data
                         resolver(block_res);
@@ -87,7 +87,7 @@ class BlockRepair {
                         logger.error(err)
                         resolver({
                             error: "Error: Error contacting maternode.",
-                            hash: blockHash
+                            hash: blockNum
                         })
                     })
             }, timedelay)
