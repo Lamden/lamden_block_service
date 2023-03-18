@@ -82,7 +82,7 @@ export const getBlockProcessor = (services, db) => {
 
                 let currentState = await db.models.CurrentState.findOne({ rawKey: s.key })
                 if (currentState) {
-                    if (currentState.blockNum < number) {
+                    if (BigNumber(number).isGreaterThan(BigNumber(currentState.blockNum))) {
                         currentState.txHash = hash
                         currentState.prev_value = currentState.value
                         currentState.prev_blockNum = currentState.blockNum
@@ -98,7 +98,7 @@ export const getBlockProcessor = (services, db) => {
                             rawKey: s.key,
                             txHash: hash,
                             hlc_timestamp,
-                            blockNum: '0',
+                            blockNum: number,
                             prev_value: null,
                             prev_blockNum: null,
                             value: s.value,
