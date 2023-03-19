@@ -18,7 +18,7 @@ class BlockRepair {
         this.actionsWS = actionsWebsockets(nodeurl)
 
         // handle the websocket actions
-        this.actionsWS.setupActionsProcessor('prev_block', this.blockProcessor)
+        this.actionsWS.setupActionsProcessor('prev_block', this.blockProcessor.bind(this))
 
         this.actionsWS.start()
     }
