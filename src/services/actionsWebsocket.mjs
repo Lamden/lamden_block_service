@@ -11,6 +11,7 @@ const actionsWebsockets = (MASTERNODE_URL) => {
     let initialized = false
     let connected = false
     let timer = null
+    let wsconnection = null
 
     function start() {
         if (!url) throw new Error("No MASTERNODE_URL provided for websocket connection")
@@ -42,6 +43,8 @@ const actionsWebsockets = (MASTERNODE_URL) => {
 
     function onConnect(connection) {
         connected = true
+
+        wsconnection = connection
 
         clearInterval(timer)
         timer = null
@@ -108,7 +111,7 @@ const actionsWebsockets = (MASTERNODE_URL) => {
                 action,
                 payload
             })
-            wsClient.send(msg)
+            wsconnection.send(msg)
         } catch(e) {
             console.log(e)
         }
