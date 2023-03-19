@@ -44,9 +44,6 @@ class BlockRepair {
                 // }, blockData)
                 // logger.success(`Added block ${blockData.number} to repairing queue`)
             }
-            if (missingBlocks.length>0) {
-                this.run()
-            }
         } catch (e) {
             this.running = false
             logger.error(e)
@@ -67,7 +64,10 @@ class BlockRepair {
             logger.success(`Repair block ${blockData.number} success.`)
             await this.db.models.Blocks.updateOne({"blockNum": nextBlockNum}, {"previous": blockData.number, previousExist: true})
             await this.db.models.MissingBlocks.deleteOne({ number: nextBlockNum})
-            logger.success(`Remove next block ${nextBlockNum} from missingBlocks collection success.`)
+            // logger.success(`Remove next block ${nextBlockNum} from missingBlocks collection success.`)
+
+            await this.repair()
+
         } catch (e) {
             logger.error(blockData)
             logger.error(e)
