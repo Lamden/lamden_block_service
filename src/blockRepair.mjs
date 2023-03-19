@@ -83,7 +83,7 @@ class BlockRepair {
     }
 
     dispatchPrevBlock(blockNum) {
-        this.blockchainEvents.dispatchAction("prev_block", blockNum)
+        this.actionsWS.dispatchAction("prev_block", blockNum)
     };
 
     setupBlockProcessor(processor) {
