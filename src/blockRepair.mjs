@@ -3,7 +3,7 @@ import axios from 'axios'
 import { TaskPool } from './blockProcessingQueue.mjs'
 import { getBlockProcessor } from './blockProcessor.mjs'
 import { getDatabase } from './database/database.mjs'
-import { actionsWebsockets } from './src/services/actionsWebsocket.mjs'
+import { actionsWebsockets } from './services/actionsWebsocket.mjs'
 import * as utils from './utils.mjs'
 
 const logger = createLogger('Repair');
