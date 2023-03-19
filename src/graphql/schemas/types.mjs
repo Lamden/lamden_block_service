@@ -155,7 +155,7 @@ const typeDefs = `#graphql
         blockNum: String
         contractName: String!
         hlc_timestamp: String
-        prev_blockNumL: String
+        prev_blockNum: String
         prev_value: LamdenValue
         rawKey: String
         rootKey: String
