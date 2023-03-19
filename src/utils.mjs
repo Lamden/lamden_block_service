@@ -89,7 +89,7 @@ export const mergeObjects = (objectList) => {
         if (typeof obj1 === 'undefined') obj1 = {}
         if (typeof obj2 === 'undefined') obj2 = {}
         return merge(obj1, obj2)
-    })
+    }, 0)
 }
 
 export function make_tx_uid(blockNumber) {

@@ -3,6 +3,7 @@ import axios from 'axios'
 import { TaskPool } from './blockProcessingQueue.mjs'
 import { getBlockProcessor } from './blockProcessor.mjs'
 import { getDatabase } from './database/database.mjs'
+import { actionsWebsockets } from './services/actionsWebsocket.mjs'
 import * as utils from './utils.mjs'
 
 const logger = createLogger('Repair');
@@ -14,6 +15,12 @@ class BlockRepair {
         this.db = getDatabase()
         this.processor = getBlockProcessor(services, this.db)
         this.running = false
+        this.actionsWS = actionsWebsockets(nodeurl)
+
+        // handle the websocket actions
+        this.actionsWS.setupActionsProcessor('prev_block', this.blockProcessor.bind(this))
+
+        this.actionsWS.start()
     }
 
     run() {
@@ -30,16 +37,12 @@ class BlockRepair {
             logger.log(`${missingBlocks.length} missing blocks found.`)
             for (const i of missingBlocks) {
                 // 10s => 25 blocksnext
-                let blockData = await this.getBlock_MN(i, 450)
-                await this.blockProcessor(blockData, i)
+                this.dispatchPrevBlock(i)
                 // this.taskPool.addTask(async (data) => {
                 //     await this.blockProcessor(data)
                 //     this.run()
                 // }, blockData)
                 // logger.success(`Added block ${blockData.number} to repairing queue`)
-            }
-            if (missingBlocks.length>0) {
-                this.run()
             }
         } catch (e) {
             this.running = false
@@ -49,7 +52,8 @@ class BlockRepair {
         this.running = false
     }
 
-    async blockProcessor(blockData, nextBlockNum) {
+    async blockProcessor(blockData, payload) {
+        let nextBlockNum = payload
         if (blockData.error) {
             logger.error(`Repair block ${blockData.number} failed. Error: ${blockData.error}`)
             return
@@ -60,7 +64,10 @@ class BlockRepair {
             logger.success(`Repair block ${blockData.number} success.`)
             await this.db.models.Blocks.updateOne({"blockNum": nextBlockNum}, {"previous": blockData.number, previousExist: true})
             await this.db.models.MissingBlocks.deleteOne({ number: nextBlockNum})
-            logger.success(`Remove next block ${blockData.number} from missingBlocks collection success.`)
+            // logger.success(`Remove next block ${nextBlockNum} from missingBlocks collection success.`)
+
+            await this.repair()
+
         } catch (e) {
             logger.error(blockData)
             logger.error(e)
@@ -75,23 +82,8 @@ class BlockRepair {
         }
     }
 
-    getBlock_MN(blockNum, timedelay = 0) {
-        return new Promise(resolver => {
-            setTimeout(async () => {
-                await axios(`${this.MASTERNODE_URL}/prev_block?num=${blockNum}`)
-                    .then(res => {
-                        let block_res = res.data
-                        resolver(block_res);
-                    })
-                    .catch(err => {
-                        logger.error(err)
-                        resolver({
-                            error: "Error: Error contacting maternode.",
-                            hash: blockNum
-                        })
-                    })
-            }, timedelay)
-        })
+    dispatchPrevBlock(blockNum) {
+        this.actionsWS.dispatchAction("prev_block", blockNum)
     };
 
     setupBlockProcessor(processor) {
