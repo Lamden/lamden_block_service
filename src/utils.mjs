@@ -85,11 +85,16 @@ export const cleanObj = (obj) => {
 }
 
 export const mergeObjects = (objectList) => {
-    return objectList.reduce((obj1, obj2) => {
-        if (typeof obj1 === 'undefined') obj1 = {}
-        if (typeof obj2 === 'undefined') obj2 = {}
-        return merge(obj1, obj2)
-    }, 0)
+    if (Array.isArray(objectList) && objectList.length > 0) {
+        return objectList.reduce((obj1, obj2) => {
+            if (typeof obj1 === 'undefined') obj1 = {}
+            if (typeof obj2 === 'undefined') obj2 = {}
+            return merge(obj1, obj2)
+        }, 0)
+    } else {
+        return {}
+    }
+
 }
 
 export function make_tx_uid(blockNumber) {
