@@ -38,10 +38,9 @@ describe("Testing websocket server.", () => {
     clientSocket.once("new-state-changes-by-transaction", (msg) => {
       let message = JSON.parse(msg).message
       expect(getType(message)).toBe('object')
-      expect(getType(message.tx_uid)).toBe('string')
-      expect(getType(message.blockNum)).toBe('number')
+      expect(getType(message.hlc_timestamp)).toBe('string')
+      expect(getType(message.blockNum)).toBe('string')
       expect(message.blockNum).toBeDefined()
-      expect(message.timestamp).toBeDefined()
       expect(message.affectedContractsList).toBeDefined()
       expect(message.affectedVariablesList).toBeDefined()
       expect(message.affectedRootKeysList).toBeDefined()
@@ -148,7 +147,7 @@ describe("Testing websocket server.", () => {
   });
 
   test("Subscribe to the new_reward event in type rewards room ", (done) => {
-    let data = newblock[6]
+    let data = newblock[5]
     clientSocket.once("new_reward", (msg) => {
       let message = JSON.parse(msg).message
       expect(getType(message)).toBe('object')
