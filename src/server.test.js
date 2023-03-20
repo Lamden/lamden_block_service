@@ -30,7 +30,7 @@ describe("Testing websocket server.", () => {
   });
 
   test("Subscribe to the new-state-changes-by-transaction event in tx hash room ", (done) => {
-    let data = newblock
+    let data = newblock[0]
     clientSocket.once("new-block", (msg) => {
       let message = JSON.parse(msg).message
       expect(message).toEqual(data)
