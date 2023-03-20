@@ -69,10 +69,10 @@ export const socketService = (io) => {
             message: { ...messageBasic, affectedContractsList, affectedVariablesList, affectedRootKeysList, state_changes_obj }
         }));
 
-        io.to(hash).emit(`new-${emitName}`, {
+        io.to(hash).emit(`new-${emitName}`, JSON.stringify({
             room: hash,
             message: { ...messageBasic, affectedContractsList, affectedVariablesList, affectedRootKeysList, state_changes_obj }
-        })
+        }))
 
         for (const contractName of affectedContractsList) {
             io.to(contractName).emit(`new-${emitName}`, {

@@ -62,7 +62,7 @@ describe("Testing websocket server.", () => {
       expect(message).toEqual(data)
     });
     clientSocket.once("new-state-changes-by-transaction", (msg) => {
-      let message = msg.message
+      let message = JSON.parse(msg).message
       expect(getType(message)).toBe('object')
       expect(getType(message.hlc_timestamp)).toBe('string')
       expect(getType(message.blockNum)).toBe('string')
