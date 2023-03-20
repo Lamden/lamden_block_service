@@ -57,7 +57,7 @@ describe("Testing websocket server.", () => {
 
 
   test("Should get push notifications of new block after a new block was processed.", (done) => {
-    let data = newblock[0]
+    let data = newblock[1]
     clientSocket.once("new-block", (msg) => {
       let message = JSON.parse(msg).message
       expect(message).toEqual(data)
@@ -82,7 +82,7 @@ describe("Testing websocket server.", () => {
   });
 
   test("Subscribe to the new-state-changes-by-transaction event in tx hash room ", (done) => {
-    let data = newblock[1]
+    let data = newblock[2]
     clientSocket.once("new-block", (msg) => {
       let message = JSON.parse(msg).message
       expect(message).toEqual(data)
@@ -107,7 +107,7 @@ describe("Testing websocket server.", () => {
 
 
   test("Subscribe to new_reward event in rewards room ", (done) => {
-    let data = newblock[2]
+    let data = newblock[3]
     clientSocket.once("new_reward", (msg) => {
       let message = JSON.parse(msg).message
       expect(getType(message)).toBe('object')
@@ -122,7 +122,7 @@ describe("Testing websocket server.", () => {
   });
 
   test("Subscribe to the total_rewards event in rewards room ", (done) => {
-    let data = newblock[3]
+    let data = newblock[4]
     clientSocket.once("total_rewards", (msg) => {
       let message = JSON.parse(msg).message
       expect(message.amount).toBeDefined()
@@ -133,7 +133,7 @@ describe("Testing websocket server.", () => {
   });
 
   test("Subscribe to the new_reward event in recipient rewards room ", (done) => {
-    let data = newblock[4]
+    let data = newblock[5]
     clientSocket.once("new_reward", (msg) => {
       let message = JSON.parse(msg).message
       expect(getType(message)).toBe('object')
@@ -148,7 +148,7 @@ describe("Testing websocket server.", () => {
   });
 
   test("Subscribe to the new_reward event in type rewards room ", (done) => {
-    let data = newblock[5]
+    let data = newblock[6]
     clientSocket.once("new_reward", (msg) => {
       let message = JSON.parse(msg).message
       expect(getType(message)).toBe('object')
