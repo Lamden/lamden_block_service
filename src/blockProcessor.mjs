@@ -8,7 +8,7 @@ const logger = createLogger('Block Processor');
 export const getBlockProcessor = (services, db) => {
     const processRewards = getRewarsProcessor(services, db)
 
-    const processBlock = async (blockInfo = {}, fix = false) => {
+    const processBlock = async (blockInfo = {}) => {
         let blockNum = blockInfo.number;
         let block = await db.models.Blocks.findOne({ blockNum })
         if (!block) {
@@ -18,16 +18,11 @@ export const getBlockProcessor = (services, db) => {
                     blockNum,
                     hash: blockInfo.hash
                 }, { upsert: true });
-                services.sockets.emitNewBlock(block.blockInfo)
+                services.sockets.emitNewBlock(blockInfo)
                 
-                await processBlockStateChanges(block.blockInfo)
-                await processRewards(block.blockInfo)
+                await processBlockStateChanges(blockInfo)
+                await processRewards(blockInfo)
             }
-        }
-
-        if (fix) {
-            await processBlockStateChanges(blockInfo)
-            await processRewards(block.blockInfo)
         }
     };
 
