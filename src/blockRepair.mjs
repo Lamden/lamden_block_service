@@ -74,6 +74,7 @@ class BlockRepair {
 
             // delete error data
             logger.start(`Starting clear error data.`)
+            await this.db.models.MissingBlocks.updateOne({ number: nextBlockNum}, { number: nextBlockNum}, { upsert: true })
             await this.db.models.Blocks.updateOne({"blockNum": nextBlockNum}, {"previous": undefined, previousExist: false})
             await this.db.models.Blocks.deleteMany({ hash: blockData.hash })
             await this.db.models.StateChanges.deleteMany({ blockNum: blockData.number })

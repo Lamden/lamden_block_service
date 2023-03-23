@@ -13,12 +13,11 @@ export const getBlockProcessor = (services, db) => {
         let block = await db.models.Blocks.findOne({ blockNum })
         if (!block) {
             if (!blockInfo.error) {
-                block = new db.models.Blocks({
+                await db.models.Blocks.updateOne({ blockNum: number }, {
                     blockInfo,
                     blockNum,
                     hash: blockInfo.hash
-                })
-                await block.save()
+                }, { upsert: true });
                 services.sockets.emitNewBlock(block.blockInfo)
                 
                 await processBlockStateChanges(block.blockInfo)
