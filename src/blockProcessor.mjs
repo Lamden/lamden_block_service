@@ -13,7 +13,7 @@ export const getBlockProcessor = (services, db) => {
         let block = await db.models.Blocks.findOne({ blockNum })
         if (!block) {
             if (!blockInfo.error) {
-                await db.models.Blocks.updateOne({ blockNum: number }, {
+                await db.models.Blocks.updateOne({ blockNum: blockNum }, {
                     blockInfo,
                     blockNum,
                     hash: blockInfo.hash
