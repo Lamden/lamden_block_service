@@ -16,7 +16,7 @@ class BlockRepair {
         this.processor = getBlockProcessor(services, this.db)
         this.running = false
         this.actionsWS = actionsWebsockets(nodeurl)
-
+        this.actionsWS.setupInit(this.run.bind(this))
         // handle the websocket actions
         this.actionsWS.setupActionsProcessor('prev_block', this.blockProcessor.bind(this))
 
