@@ -15,6 +15,8 @@ class BlockRepair {
         this.db = getDatabase()
         this.processor = getBlockProcessor(services, this.db)
         this.running = false
+        this.processing = new Set()
+
         this.actionsWS = actionsWebsockets(nodeurl)
         this.actionsWS.setupInit(this.run.bind(this))
         // handle the websocket actions
@@ -36,8 +38,10 @@ class BlockRepair {
             let missingBlocks = await this.db.queries.getMissingBlocks()
             logger.log(`${missingBlocks.length} missing blocks found.`)
             for (const i of missingBlocks) {
-                // 10s => 25 blocksnext
-                this.dispatchPrevBlock(i)
+                let block = await db.models.Blocks.findOne({ blockNum: i, previousExist: true })
+                if (!block) {
+                    this.dispatchPrevBlock(i)
+                }
                 // this.taskPool.addTask(async (data) => {
                 //     await this.blockProcessor(data)
                 //     this.run()
@@ -54,6 +58,12 @@ class BlockRepair {
 
     async blockProcessor(blockData, payload) {
         let nextBlockNum = payload
+        if (this.processing.has(payload)) {
+            return
+        }
+
+        this.processing.add(payload)
+
         if (blockData.error) {
             logger.error(`Repair block ${blockData.number} failed. Error: ${blockData.error}`)
             return
