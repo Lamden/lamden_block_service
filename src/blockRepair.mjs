@@ -58,20 +58,22 @@ class BlockRepair {
 
     async blockProcessor(blockData, payload) {
         let nextBlockNum = payload
-        if (this.processing.has(payload)) {
-            return
-        }
-
-        this.processing.add(payload)
 
         if (blockData.error) {
             logger.error(`Repair block ${blockData.number} failed. Error: ${blockData.error}`)
             return
         }
+
+        if (this.processing.has(payload)) {
+            return
+        }
+
+        this.processing.add(payload)
         
         try {
             await this.processor(blockData)
             logger.success(`Repair block ${blockData.number} success.`)
+            this.processing.delete(payload)
             await this.db.models.Blocks.updateOne({"blockNum": nextBlockNum}, {"previous": blockData.number, previousExist: true})
             await this.db.models.MissingBlocks.deleteOne({ number: nextBlockNum})
             // logger.success(`Remove next block ${nextBlockNum} from missingBlocks collection success.`)
@@ -83,6 +85,7 @@ class BlockRepair {
             logger.error(e)
             return
         }
+
     }
 
     dispatchPrevBlock(blockNum) {
