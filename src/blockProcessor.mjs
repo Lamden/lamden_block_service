@@ -105,7 +105,7 @@ export const getBlockProcessor = (services, db) => {
                         }
                         await new db.models.CurrentState(new_current_state_document).save()
                     } catch (e) {
-                        logger.error(err)
+                        logger.error(e)
                         logger.debug(util.inspect({ blockInfo, txInfo: processed }, false, null, true))
                     }
                 }
