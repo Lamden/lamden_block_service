@@ -82,7 +82,7 @@ var currentState = new mongoose.Schema({
     rootKey: String
 });
 
-currentState.index({contractName: 1, variableName: 1, rootKey: 1, blockNum: 1}, {unique: true})
+currentState.index({contractName: 1, variableName: 1, rawKey: 1, blockNum: 1}, {unique: true})
 
 var contracts = new mongoose.Schema({
     contractName: {
