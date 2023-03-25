@@ -30,7 +30,7 @@ var stateChanges = new mongoose.Schema({
     blockNum: {
         type: String,
         required: true,
-        index: true
+        index: true,
     },
     hlc_timestamp: String,
     affectedContractsList: Array,
@@ -52,7 +52,7 @@ var stateChanges = new mongoose.Schema({
     rewards: Array
 });
 
-stateChanges.index({senderVk: 1, blockNum: 1})
+stateChanges.index({senderVk: 1, blockNum: 1, txHash: 1}, {unique: true})
 
 var currentState = new mongoose.Schema({
     rawKey: {
@@ -63,7 +63,7 @@ var currentState = new mongoose.Schema({
     blockNum: {
         type: String,
         required: true,
-        index: true
+        index: true,
     },
     senderVk: {
         type: String,
@@ -82,7 +82,7 @@ var currentState = new mongoose.Schema({
     rootKey: String
 });
 
-currentState.index({contractName: 1, variableName: 1, rootKey: 1})
+currentState.index({contractName: 1, variableName: 1, rootKey: 1}, {unique: true})
 
 var contracts = new mongoose.Schema({
     contractName: {
@@ -133,7 +133,7 @@ var rewards = new mongoose.Schema({
 });
 
 // Multiple Field Unique
-rewards.index({ recipient: 1, type: 1, blockNum: 1 }, { unique: true });
+rewards.index({ recipient: 1, type: 1, blockNum: 1, contract: 1}, { unique: true });
 
 export default {
     App: mongoose.model('App', app, 'app'),
