@@ -38,7 +38,7 @@ class BlockRepair {
             let missingBlocks = await this.db.queries.getMissingBlocks()
             logger.log(`${missingBlocks.length} missing blocks found.`)
             for (const i of missingBlocks) {
-                let block = await db.models.Blocks.findOne({ blockNum: i, previousExist: true })
+                let block = await this.db.models.Blocks.findOne({ blockNum: i, previousExist: true })
                 if (!block) {
                     this.dispatchPrevBlock(i)
                 }
