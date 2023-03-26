@@ -43,7 +43,7 @@ export const getBlockQueries = (db) => {
 
             let result = await db.models.MissingBlocks.find()
 
-            if (!result || !Array.isArray(result)) return []
+            if (!result || !Array.isArray(result) || JSON.stringify(obj) === '{}') return []
             return result.map(item => {
                 return item.number
             })

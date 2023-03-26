@@ -253,30 +253,34 @@ export const getRewarsProcessor = (services, db) => {
     
     const saveRewards = async (recipient, type, blocknumber, amount, contract) => {
         
-        // check type
-        const types = ["masternodes", "developer", "foundation", "burn"]
-        if (types.findIndex(t => t === type) === -1) return
-    
-        let reward = {
-            type,
-            recipient,
-            blockNum: blocknumber,
-            amount: amount
-        }
-    
-        // if type is developer, contract can not be populated
-        if (type === "developer") {
-            if (!contract) return
-            reward.contract = contract
-        }
+        try {
+            // check type
+            const types = ["masternodes", "developer", "foundation", "burn"]
+            if (types.findIndex(t => t === type) === -1) return
+        
+            let reward = {
+                type,
+                recipient,
+                blockNum: blocknumber,
+                amount: amount
+            }
+        
+            // if type is developer, contract can not be populated
+            if (type === "developer") {
+                if (!contract) return
+                reward.contract = contract
+            }
 
-        await db.models.Rewards.updateOne({
-            type,
-            recipient,
-            blockNum: blocknumber
-        }, {...reward}, { upsert: true })
-    
-        services.sockets.emitNewReward(reward)
+            await db.models.Rewards.updateOne({
+                type,
+                recipient,
+                blockNum: blocknumber
+            }, {...reward}, { upsert: true })
+        
+            services.sockets.emitNewReward(reward)
+        } catch (e) {
+            logger.error(e)
+        }
     }
 
     return processRewards
