@@ -12,6 +12,7 @@ const actionsWebsockets = (MASTERNODE_URL) => {
     let connected = false
     let timer = null
     let wsconnection = null
+    let init = null
 
     function start() {
         if (!url) throw new Error("No MASTERNODE_URL provided for websocket connection")
@@ -53,14 +54,13 @@ const actionsWebsockets = (MASTERNODE_URL) => {
         connection.on('close', onClose);
         connection.on('message', onMessage);
 
-
         if (initialized) {
             logger.success('Actions WebSocket Client Reconnected');
         } else {
             logger.success('Actions WebSocket Client Connected');
             initialized = true
         }
-
+        if(init) init()
     }
 
     function onMessage(message) {
@@ -117,10 +117,15 @@ const actionsWebsockets = (MASTERNODE_URL) => {
         }
     }
 
+    function setupInit(func) {
+        init = func
+    }
+
     return {
         start,
         setupActionsProcessor,
-        dispatchAction
+        dispatchAction,
+        setupInit
     }
 };
 

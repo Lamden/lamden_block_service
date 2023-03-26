@@ -15,8 +15,10 @@ class BlockRepair {
         this.db = getDatabase()
         this.processor = getBlockProcessor(services, this.db)
         this.running = false
-        this.actionsWS = actionsWebsockets(nodeurl)
+        this.processing = new Set()
 
+        this.actionsWS = actionsWebsockets(nodeurl)
+        this.actionsWS.setupInit(this.run.bind(this))
         // handle the websocket actions
         this.actionsWS.setupActionsProcessor('prev_block', this.blockProcessor.bind(this))
 
@@ -36,8 +38,10 @@ class BlockRepair {
             let missingBlocks = await this.db.queries.getMissingBlocks()
             logger.log(`${missingBlocks.length} missing blocks found.`)
             for (const i of missingBlocks) {
-                // 10s => 25 blocksnext
-                this.dispatchPrevBlock(i)
+                let block = await this.db.models.Blocks.findOne({ blockNum: i, previousExist: true })
+                if (!block) {
+                    this.dispatchPrevBlock(i)
+                }
                 // this.taskPool.addTask(async (data) => {
                 //     await this.blockProcessor(data)
                 //     this.run()
@@ -54,14 +58,22 @@ class BlockRepair {
 
     async blockProcessor(blockData, payload) {
         let nextBlockNum = payload
+
         if (blockData.error) {
             logger.error(`Repair block ${blockData.number} failed. Error: ${blockData.error}`)
             return
         }
+
+        if (this.processing.has(payload)) {
+            return
+        }
+
+        this.processing.add(payload)
         
         try {
             await this.processor(blockData)
             logger.success(`Repair block ${blockData.number} success.`)
+            this.processing.delete(payload)
             await this.db.models.Blocks.updateOne({"blockNum": nextBlockNum}, {"previous": blockData.number, previousExist: true})
             await this.db.models.MissingBlocks.deleteOne({ number: nextBlockNum})
             // logger.success(`Remove next block ${nextBlockNum} from missingBlocks collection success.`)
@@ -71,15 +83,9 @@ class BlockRepair {
         } catch (e) {
             logger.error(blockData)
             logger.error(e)
-
-            // delete error data
-            logger.start(`Starting clear error data.`)
-            await this.db.models.Blocks.updateOne({"blockNum": nextBlockNum}, {"previous": undefined, previousExist: false})
-            await this.db.models.Blocks.deleteMany({ hash: blockData.hash })
-            await this.db.models.StateChanges.deleteMany({ blockNum: blockData.number })
-            logger.complete(`Clear error data success.`)
             return
         }
+
     }
 
     dispatchPrevBlock(blockNum) {

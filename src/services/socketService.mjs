@@ -46,7 +46,7 @@ export const socketService = (io) => {
     }
 
     function emitTxStateChanges(stateChangeInfo) {
-        const { state_changes_obj, affectedContractsList, affectedVariablesList, affectedRootKeysList, txInfo, blockNum, hlc_timestamp } = stateChangeInfo
+        const { state_changes_obj, affectedContractsList, affectedVariablesList, affectedRootKeysList, affectedRawKeysList, txInfo, blockNum, hlc_timestamp, rewards } = stateChangeInfo
         const { transaction } = txInfo
         const { payload } = transaction
         const hash = txInfo['hash']
@@ -61,17 +61,18 @@ export const socketService = (io) => {
             contractCalled: payload.contract,
             methodCalled: payload.method,
             kwargs: payload.kwargs,
-            state_changes_obj
+            state_changes_obj,
+            rewards
         }
 
         io.to(`all-${emitName}`).emit(`new-${emitName}`, JSON.stringify({
             room: `all-${emitName}`,
-            message: { ...messageBasic, affectedContractsList, affectedVariablesList, affectedRootKeysList, state_changes_obj }
+            message: { ...messageBasic, affectedContractsList, affectedVariablesList, affectedRootKeysList, affectedRawKeysList, state_changes_obj }
         }));
 
         io.to(hash).emit(`new-${emitName}`, JSON.stringify({
             room: hash,
-            message: { ...messageBasic, affectedContractsList, affectedVariablesList, affectedRootKeysList, state_changes_obj }
+            message: { ...messageBasic, affectedContractsList, affectedVariablesList, affectedRootKeysList, affectedRawKeysList, state_changes_obj }
         }))
 
         for (const contractName of affectedContractsList) {

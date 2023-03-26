@@ -8,27 +8,21 @@ const logger = createLogger('Block Processor');
 export const getBlockProcessor = (services, db) => {
     const processRewards = getRewarsProcessor(services, db)
 
-    const processBlock = async (blockInfo = {}, fix = false) => {
+    const processBlock = async (blockInfo = {}) => {
         let blockNum = blockInfo.number;
         let block = await db.models.Blocks.findOne({ blockNum })
         if (!block) {
             if (!blockInfo.error) {
-                block = new db.models.Blocks({
+                await db.models.Blocks.updateOne({ blockNum: blockNum }, {
                     blockInfo,
                     blockNum,
                     hash: blockInfo.hash
-                })
-                await block.save()
-                services.sockets.emitNewBlock(block.blockInfo)
+                }, { upsert: true });
+                services.sockets.emitNewBlock(blockInfo)
                 
-                await processBlockStateChanges(block.blockInfo)
-                await processRewards(block.blockInfo)
+                await processBlockStateChanges(blockInfo)
+                await processRewards(blockInfo)
             }
-        }
-
-        if (fix) {
-            await processBlockStateChanges(blockInfo)
-            await processRewards(block.blockInfo)
         }
     };
 
@@ -111,7 +105,7 @@ export const getBlockProcessor = (services, db) => {
                         }
                         await new db.models.CurrentState(new_current_state_document).save()
                     } catch (e) {
-                        logger.error(err)
+                        logger.error(e)
                         logger.debug(util.inspect({ blockInfo, txInfo: processed }, false, null, true))
                     }
                 }
@@ -259,30 +253,34 @@ export const getRewarsProcessor = (services, db) => {
     
     const saveRewards = async (recipient, type, blocknumber, amount, contract) => {
         
-        // check type
-        const types = ["masternodes", "developer", "foundation", "burn"]
-        if (types.findIndex(t => t === type) === -1) return
-    
-        let reward = {
-            type,
-            recipient,
-            blockNum: blocknumber,
-            amount: amount
-        }
-    
-        // if type is developer, contract can not be populated
-        if (type === "developer") {
-            if (!contract) return
-            reward.contract = contract
-        }
+        try {
+            // check type
+            const types = ["masternodes", "developer", "foundation", "burn"]
+            if (types.findIndex(t => t === type) === -1) return
+        
+            let reward = {
+                type,
+                recipient,
+                blockNum: blocknumber,
+                amount: amount
+            }
+        
+            // if type is developer, contract can not be populated
+            if (type === "developer") {
+                if (!contract) return
+                reward.contract = contract
+            }
 
-        await db.models.Rewards.updateOne({
-            type,
-            recipient,
-            blockNum: blocknumber
-        }, {...reward}, { upsert: true })
-    
-        services.sockets.emitNewReward(reward)
+            await db.models.Rewards.updateOne({
+                type,
+                recipient,
+                blockNum: blocknumber
+            }, {...reward}, { upsert: true })
+        
+            services.sockets.emitNewReward(reward)
+        } catch (e) {
+            logger.error(e)
+        }
     }
 
     return processRewards
