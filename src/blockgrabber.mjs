@@ -86,19 +86,16 @@ const runBlockGrabber = (config) => {
     } 
 
     async function get_genesis_block_locally() {
+        const fullPath = path.join(GENESIS_BLOCK_LOCATION, "genesis_block.json");
+
         try {
-          const data = await fs.readFile(GENESIS_BLOCK_LOCATION, 'utf8');
+          const data = await fs.readFile(fullPath, 'utf8');
           const json = JSON.parse(data);
-          logger.log(`Opened ${GENESIS_BLOCK_LOCATION} from Home Directory.`)
+          logger.log(`Opened ${fullPath} from Home Directory.`)
           return json
         } catch (err) {
-            logger.error(err)
-            if (err.code === 'ENOENT') {
-                return null;
-              } else {
-                logger.error(`Error reading the file: ${err}`);
-                return null;
-              }
+            logger.error(`Error reading the file from ${fullPath}: ${err}`);
+            return null;
         }
     }
 
