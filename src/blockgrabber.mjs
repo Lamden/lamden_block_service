@@ -89,7 +89,7 @@ const runBlockGrabber = (config) => {
         try {
           const data = await fs.readFile(GENESIS_BLOCK_LOCATION, 'utf8');
           const json = JSON.parse(data);
-          logger.log(`Opened ~/genesis_block.json from Home Directory.`)
+          logger.log(`Opened ${GENESIS_BLOCK_LOCATION} from Home Directory.`)
           return json
         } catch (err) {
             logger.error(err)
@@ -127,7 +127,6 @@ const runBlockGrabber = (config) => {
                     logger.log(`Genesis States Download Finished.`)
                     return []
                 } else {
-                    console.log(e)
                     logger.error(`Load genesis state failed, the link is ${state_url}`)
                     throw new Error("load")
                 }
