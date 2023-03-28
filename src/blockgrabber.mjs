@@ -19,7 +19,8 @@ const runBlockGrabber = (config) => {
         blockchainEvents,
         server,
         MASTERNODE_URL,
-        GENESIS_BLOCK_URL
+        GENESIS_BLOCK_URL,
+        GENESIS_BLOCK_LOCATION
     } = config
 
     const blockRepair = GetBlockRepair(MASTERNODE_URL, server.services)
@@ -66,23 +67,27 @@ const runBlockGrabber = (config) => {
     }
 
     async function load_genesis_block(){
-        let genesis_block = await get_genesis_block_from_home()
+        let genesis_block = null
+        if (GENESIS_BLOCK_LOCATION){
+            genesis_block = await get_genesis_block_locally()
+        }
 
         if (!genesis_block){
             genesis_block = await get_genesis_block_from_github()
         }
-
-        const genesisBlockProcessor = getGenesisBlockProcessor(db)
-        await genesisBlockProcessor(genesis_block)
+        
+        if (genesis_block){
+            const genesisBlockProcessor = getGenesisBlockProcessor(db)
+            await genesisBlockProcessor(genesis_block)
+        }else{
+            logger.error("Cannot start blockserive without genesis block.")
+            process.exit()
+        }
     } 
 
-    async function get_genesis_block_from_home() {
-        logger.log(`Found ~/genesis_block.json in Home Directory, trying to open it.`)
-        logger.warn(`If you want to download the latest genesis block, please delete ~/genesis_block.json.`)
-
-        const filePath = path.join(os.homedir(), 'genesis_block.json');
+    async function get_genesis_block_locally() {
         try {
-          const data = await fs.readFile(filePath, 'utf8');
+          const data = await fs.readFile(GENESIS_BLOCK_LOCATION, 'utf8');
           const json = JSON.parse(data);
           logger.log(`Opened ~/genesis_block.json from Home Directory.`)
           return json
