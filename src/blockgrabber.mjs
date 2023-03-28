@@ -68,7 +68,7 @@ const runBlockGrabber = (config) => {
     async function load_genesis_block(){
         let genesis_block = await get_genesis_block_from_home()
 
-        if (!genesis_block){
+        if (isNull(genesis_block)){
             genesis_block = await get_genesis_block_from_github()
         }
 
@@ -77,14 +77,17 @@ const runBlockGrabber = (config) => {
     } 
 
     async function get_genesis_block_from_home() {
-        logger.log(`Found ~/genesis_block.json. Trying to load it.`)
+        logger.log(`Found ~/genesis_block.json in Home Directory, trying to open it.`)
         logger.warn(`If you want to download the latest genesis block, please delete ~/genesis_block.json.`)
 
         const filePath = path.join(os.homedir(), 'genesis_block.json');
         try {
           const data = await fs.readFile(filePath, 'utf8');
-          return JSON.parse(data);
+          const json = JSON.parse(data);
+          logger.log(`Opened ~/genesis_block.json from Home Directory.`)
+          return json
         } catch (err) {
+            log.error(err)
             if (err.code === 'ENOENT') {
                 return null;
               } else {
