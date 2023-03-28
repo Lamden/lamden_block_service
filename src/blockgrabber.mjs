@@ -6,6 +6,9 @@ import { BlockProcessingQueue } from './blockProcessingQueue.mjs'
 import { getDatabase } from './database/database.mjs'
 
 import axios from 'axios'
+import fs from 'fs/promises';
+import os from 'os';
+import path from 'path';
 
 const logger = createLogger('Blocks');
 const blockProcessingQueue = new BlockProcessingQueue()
@@ -63,6 +66,35 @@ const runBlockGrabber = (config) => {
     }
 
     async function load_genesis_block(){
+        let genesis_block = await get_genesis_block_from_home()
+
+        if (!genesis_block){
+            genesis_block = await get_genesis_block_from_github()
+        }
+
+        const genesisBlockProcessor = getGenesisBlockProcessor(db)
+        await genesisBlockProcessor(genesis_block)
+    } 
+
+    async function get_genesis_block_from_home() {
+        logger.log(`Found ~/genesis_block.json. Trying to load it.`)
+        logger.warn(`If you want to download the latest genesis block, please delete ~/genesis_block.json.`)
+
+        const filePath = path.join(os.homedir(), 'genesis_block.json');
+        try {
+          const data = await fs.readFile(filePath, 'utf8');
+          return JSON.parse(data);
+        } catch (err) {
+            if (err.code === 'ENOENT') {
+                return null;
+              } else {
+                logger.error(`Error reading the file: ${err}`);
+                return null;
+              }
+        }
+    }
+
+    async function get_genesis_block_from_github(){
         logger.log(`Downloading Genesis Block from Github. (${GENESIS_BLOCK_URL}/genesis_block.json)`)
         const genesis_block = await axios.get(`${GENESIS_BLOCK_URL}/genesis_block.json`).then(res => {
             return res.data
@@ -98,10 +130,8 @@ const runBlockGrabber = (config) => {
         if (genesis_block.genesis){
             logger.success(`Genesis Block Downloaded and contains ${genesis_block.genesis.length} initial state entries.`)
         }
-
-        const genesisBlockProcessor = getGenesisBlockProcessor(db)
-        await genesisBlockProcessor(genesis_block)
-    }   
+        return genesis_block
+    }
 
     return {
         start
