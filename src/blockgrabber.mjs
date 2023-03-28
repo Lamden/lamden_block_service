@@ -68,7 +68,7 @@ const runBlockGrabber = (config) => {
     async function load_genesis_block(){
         let genesis_block = await get_genesis_block_from_home()
 
-        if (isNull(genesis_block)){
+        if (!genesis_block){
             genesis_block = await get_genesis_block_from_github()
         }
 
