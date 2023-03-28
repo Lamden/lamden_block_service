@@ -6,6 +6,9 @@ import { BlockProcessingQueue } from './blockProcessingQueue.mjs'
 import { getDatabase } from './database/database.mjs'
 
 import axios from 'axios'
+import fs from 'fs/promises';
+import os from 'os';
+import path from 'path';
 
 const logger = createLogger('Blocks');
 const blockProcessingQueue = new BlockProcessingQueue()
@@ -16,7 +19,8 @@ const runBlockGrabber = (config) => {
         blockchainEvents,
         server,
         MASTERNODE_URL,
-        GENESIS_BLOCK_URL
+        GENESIS_BLOCK_URL,
+        GENESIS_BLOCK_LOCATION
     } = config
 
     const blockRepair = GetBlockRepair(MASTERNODE_URL, server.services)
@@ -63,10 +67,50 @@ const runBlockGrabber = (config) => {
     }
 
     async function load_genesis_block(){
+        let genesis_block = null
+        if (GENESIS_BLOCK_LOCATION){
+            genesis_block = await get_genesis_block_locally()
+        }
+
+        if (!genesis_block){
+            genesis_block = await get_genesis_block_from_github()
+        }
+        
+        if (genesis_block){
+            const genesisBlockProcessor = getGenesisBlockProcessor(db)
+            await genesisBlockProcessor(genesis_block)
+        }else{
+            logger.error("Cannot start blockserive without genesis block.")
+            process.exit()
+        }
+    } 
+
+    async function get_genesis_block_locally() {
+        const fullPath = path.join(GENESIS_BLOCK_LOCATION, "genesis_block.json");
+
+        try {
+          const data = await fs.readFile(fullPath, 'utf8');
+          const json = JSON.parse(data);
+          logger.log(`Opened ${fullPath} from Home Directory.`)
+          return json
+        } catch (err) {
+            logger.error(`Error reading the file from ${fullPath}: ${err}`);
+            return null;
+        }
+    }
+
+    async function get_genesis_block_from_github(){
         logger.log(`Downloading Genesis Block from Github. (${GENESIS_BLOCK_URL}/genesis_block.json)`)
-        const genesis_block = await axios.get(`${GENESIS_BLOCK_URL}/genesis_block.json`).then(res => {
+        const genesis_block = await axios.get(`${GENESIS_BLOCK_URL}/genesis_block.json`)
+        .then(res => {
             return res.data
         })
+        .catch(err => {
+            logger.error(`Cannot download genesis block from github: ${err}`)
+        })
+        if (!genesis_block){
+            return null
+        }
         // load gensis_state
         let flag = true
         let i = 1
@@ -87,9 +131,8 @@ const runBlockGrabber = (config) => {
                     logger.log(`Genesis States Download Finished.`)
                     return []
                 } else {
-                    console.log(e)
                     logger.error(`Load genesis state failed, the link is ${state_url}`)
-                    throw new Error("load")
+                    return null
                 }
             })   
             genesis_block.genesis = [...genesis_block.genesis, ...genesis_state]
@@ -98,10 +141,8 @@ const runBlockGrabber = (config) => {
         if (genesis_block.genesis){
             logger.success(`Genesis Block Downloaded and contains ${genesis_block.genesis.length} initial state entries.`)
         }
-
-        const genesisBlockProcessor = getGenesisBlockProcessor(db)
-        await genesisBlockProcessor(genesis_block)
-    }   
+        return genesis_block
+    }
 
     return {
         start

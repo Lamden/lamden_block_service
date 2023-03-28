@@ -35,11 +35,13 @@ const MASTERNODE_URL = process.env.MASTERNODE_URL || MASTERNODE_URLS[NETWORK]
 const BLOCKSERVICE_PORT = process.env.BLOCKSERVICE_PORT || 3535
 const BLOCKSERVICE_HOST = process.env.BLOCKSERVICE_HOST || 'localhost'
 const GENESIS_BLOCK_URL = process.env.GENESIS_BLOCK_URL || GENESIS_BLOCKS[NETWORK]
+const GENESIS_BLOCK_LOCATION = process.env.GENESIS_BLOCK_LOCATION || "/root"
 
 let grabberConfig = {
     DEBUG_ON: process.env.DEBUG_ON || false,
     MASTERNODE_URL,
-    GENESIS_BLOCK_URL
+    GENESIS_BLOCK_URL,
+    GENESIS_BLOCK_LOCATION
 }
 
 export const start = async () => {
