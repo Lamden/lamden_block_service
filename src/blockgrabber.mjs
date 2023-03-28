@@ -87,7 +87,7 @@ const runBlockGrabber = (config) => {
           logger.log(`Opened ~/genesis_block.json from Home Directory.`)
           return json
         } catch (err) {
-            log.error(err)
+            logger.error(err)
             if (err.code === 'ENOENT') {
                 return null;
               } else {
