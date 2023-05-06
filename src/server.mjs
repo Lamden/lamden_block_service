@@ -93,10 +93,21 @@ export const createServer = async (host, port, db) => {
         }
       });
 
+    const sockets =   socketService(io)
+
     io.on('connection', (socket) => {
         socket.on('join', (room) => {
             logger.log(" someone joined room " + room)
             socket.join(room)
+            // check if it is hash
+            if (room.length === 64) {
+                db.queries.getTransactionByHash(room).then(r => {
+                    // if tx already existing, then push the tx state changes
+                    if (r) {
+                        sockets.emitTxStateChanges(r)
+                    }
+                })
+            }
         });
         socket.on('leave', (room) => {
             logger.log(" someone left room " + room)
@@ -126,7 +137,7 @@ export const createServer = async (host, port, db) => {
         app,
         server,
         services: {
-            sockets: socketService(io)
+            sockets: sockets
         },
         socketClient
     }
