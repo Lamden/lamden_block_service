@@ -59,7 +59,6 @@ describe('Test Blocks Endpoints', () => {
             const item = response.body[0];
             validBlock(item)
 
-            console.log(response.body)
             expect(item.number).toBe(blocknum);
         })
 
