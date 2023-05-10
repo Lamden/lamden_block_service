@@ -9,7 +9,8 @@
         "docs:dev": "DEBUG_ON=true nodemon swagger.js",
         "docs": "node swagger.js",
         "test": "jest --verbose",
-        "test:watch": "jest --watch --verbose"
+        "test:watch": "jest --watch --verbose",
+        "test:server": "jest --verbose src/server.test.js"
     },
     "author": "jeffwscott",
     "license": "ISC",
