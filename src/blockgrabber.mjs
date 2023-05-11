@@ -44,6 +44,16 @@ const runBlockGrabber = (config) => {
         blockProcessingQueue.addBlock(blockData)
     }
 
+    async function processBlockReOrgFromWebsocket(blockData) {
+        blockData.reorg = true
+        blockProcessingQueue.addBlock(blockData)
+    }
+
+    async function processBlockFromWebsocket(blockData) {
+        await db.queries.setLatestBlock(blockData.number)
+        blockProcessingQueue.addBlock(blockData)
+    }
+
     async function start() {
         const processor = getBlockProcessor(server.services, db)
         // Create a block processing queue so we can add new blocks one at a time and process them in order
@@ -54,6 +64,7 @@ const runBlockGrabber = (config) => {
 
         // connect to the websocket events we want
         blockchainEvents.setupEventProcessor('new_block', processBlockFromWebsocket)
+        blockchainEvents.setupEventProcessor('block_reorg', processBlockReOrgFromWebsocket)
         blockchainEvents.setupEventProcessor('latest_block', processLatestBlockFromWebsocket)
         
         if (await db.queries.hasGenesisBlock()){

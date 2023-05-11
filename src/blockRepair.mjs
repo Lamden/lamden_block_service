@@ -67,7 +67,8 @@ class BlockRepair {
         if (this.processing.has(payload)) {
             return
         }
-
+        
+        payload.repair = true 
         this.processing.add(payload)
         
         try {
