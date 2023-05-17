@@ -68,10 +68,10 @@ class BlockRepair {
             return
         }
         
-        payload.repair = true 
         this.processing.add(payload)
         
         try {
+            blockData.repair = true 
             await this.processor(blockData)
             logger.success(`Repair block ${blockData.number} success.`)
             this.processing.delete(payload)
