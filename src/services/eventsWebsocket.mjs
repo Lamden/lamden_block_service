@@ -1,6 +1,3 @@
-import * as utils from '../utils.mjs'
-import util from 'util'
-
 import WebSocket from 'websocket'
 
 import { createLogger } from '../logger.mjs'
@@ -61,6 +58,8 @@ const eventWebsockets = (MASTERNODE_URL) => {
             initialized = true
         }
 
+        console.log({eventProcessors})
+
     }
 
     function onMessage(message) {
@@ -94,7 +93,7 @@ const eventWebsockets = (MASTERNODE_URL) => {
     }
 
     function createURL() {
-        if (MASTERNODE_URL.includes('ws://') || MASTERNODE_URL.includes('wss://')) return
+        if (MASTERNODE_URL.includes('ws://') || MASTERNODE_URL.includes('wss://')) return MASTERNODE_URL
 
         if (MASTERNODE_URL.includes('https://')) {
             return 'wss://' + MASTERNODE_URL.split('https://')[1]
