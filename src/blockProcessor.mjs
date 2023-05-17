@@ -35,7 +35,7 @@ export const getBlockProcessor = (services, db) => {
         await db.models.Blocks.deleteOne({ blockNum: old_block.number })
 
         // Find the previous block by hash
-        prev_block = await db.models.Blocks.findOne({ hash: new_block.previous})
+        const prev_block = await db.models.Blocks.findOne({ hash: new_block.previous})
 
         // Save the reorged block
         await db.models.Blocks.updateOne({ blockNum: new_block.number }, {
