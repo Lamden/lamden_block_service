@@ -23,8 +23,28 @@ export const getBlockProcessor = (services, db) => {
                 await processBlockStateChanges(blockInfo)
                 await processRewards(blockInfo)
             }
+        }else{
+            if (blockInfo.reorg || blockInfo.repair) {
+                processBlockReOrg(block, blockInfo)
+            }
         }
     };
+
+    const processBlockReOrg = async (old_block, new_block) => {
+        // Remove old_block
+        await db.models.Blocks.deleteOne({ blockNum: old_block.number })
+
+        // Find the previous block by hash
+        const prev_block = await db.models.Blocks.findOne({ hash: new_block.previous})
+
+        // Save the reorged block
+        await db.models.Blocks.updateOne({ blockNum: new_block.number }, {
+            blockInfo: new_block,
+            blockNum: new_block.number,
+            hash: new_block.hash,
+            previousExist: prev_block ? true : false,
+        }, { upsert: true });
+    }
 
     const processBlockStateChanges = async (blockInfo) => {
         const { processed, hlc_timestamp, number, rewards } = blockInfo
