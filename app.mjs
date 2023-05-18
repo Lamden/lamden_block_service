@@ -26,6 +26,7 @@ const GENESIS_BLOCKS = {
     "staging": "https://raw.githubusercontent.com/Lamden/genesis_block/main/staging"
 } 
 
+console.log({env: process.env})
 
 /******* MONGO DB CONNECTION INFO **/
 const NETWORK = process.env.NETWORK || 'testnet'
