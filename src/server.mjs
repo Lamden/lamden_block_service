@@ -41,7 +41,12 @@ export const createExpressApp = async (db, socketClient) => {
 
     await server.start();
 
+    logger.log({RATE_LIMIT_ENABLE: process.env.RATE_LIMIT_ENABLE})
+
     if (process.env.RATE_LIMIT_ENABLE) {
+        logger.log("Enabling rate Limiting:")
+        logger.log({RATE_LIMIT_PERIOD: process.env.RATE_LIMIT_PERIOD})
+        logger.log({RATE_LIMIT_NUM: process.env.RATE_LIMIT_NUM})
         const limiter = rateLimit({
             max: process.env.RATE_LIMIT_NUM || 10,
             windowMs: process.env.RATE_LIMIT_PERIOD || 600000, // default 10min
