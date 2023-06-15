@@ -43,7 +43,15 @@ export const createExpressApp = async (db, socketClient) => {
 
     logger.log({RATE_LIMIT_ENABLE: process.env.RATE_LIMIT_ENABLE})
 
+    let RATE_LIMIT_ENABLE = 0; // Default to 0
     if (process.env.RATE_LIMIT_ENABLE) {
+        RATE_LIMIT_ENABLE = parseInt(process.env.RATE_LIMIT_ENABLE);
+        if (isNaN(RATE_LIMIT_ENABLE)) { // If parsing failed
+            RATE_LIMIT_ENABLE = 0; // Default to 0
+        }
+    }
+
+    if (RATE_LIMIT_ENABLE) {
         logger.log("Enabling rate Limiting:")
         logger.log({RATE_LIMIT_PERIOD: process.env.RATE_LIMIT_PERIOD})
         logger.log({RATE_LIMIT_NUM: process.env.RATE_LIMIT_NUM})
